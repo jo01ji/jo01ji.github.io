@@ -1,0 +1,480 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>body{margin:0}</style></head><body>
+<title>Martensite Traces in 3D</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a lab notebook on etched-steel grey; three worked instruments (3D block, stereogram, section map) each followed by the reading notes */
+:root{
+  --bg:#eef1f3; --panel:#f8fafb; --ink:#17212b; --muted:#56636f; --rule:#cfd6dc;
+  --habit:#2f6fb3; --axis:#d0701e; --trace:#c2257a; --lath:#7d8a97; --surface:#9aa7a0; --ok:#1f8a5b;
+  --display:"Spectral",Georgia,serif; --body:"Source Sans 3","Segoe UI",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12171c; --panel:#1a2128; --ink:#e3e8ec; --muted:#9aa6b1; --rule:#2d3740;
+  --habit:#6aa6e8; --axis:#f09a4e; --trace:#ee5fa8; --lath:#8f9dab; --surface:#6f7d76; --ok:#4cc38a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12171c; --panel:#1a2128; --ink:#e3e8ec; --muted:#9aa6b1; --rule:#2d3740;
+  --habit:#6aa6e8; --axis:#f09a4e; --trace:#ee5fa8; --lath:#8f9dab; --surface:#6f7d76; --ok:#4cc38a; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--body)}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:16px;padding-block:28px 64px}
+h1,h2,h3{font-family:var(--display);font-weight:600;text-wrap:balance;margin:0}
+h1{font-size:clamp(28px,4.4vw,42px);line-height:1.1}
+h2{font-size:clamp(22px,3vw,28px);margin-top:8px}
+h3{font-size:18px}
+p{margin:0;max-width:68ch}
+.lede{color:var(--muted);font-size:17px;margin-top:10px}
+.eyebrow{font:500 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+section{display:grid;gap:14px;padding-block:34px;border-top:1px solid var(--rule)}
+header{display:grid;gap:6px;padding-bottom:26px}
+.links{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:10px;font-size:15px}
+a{color:var(--habit)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:820px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:14px;display:grid;gap:10px;min-width:0}
+canvas{display:block;width:100%;max-width:100%;touch-action:none}
+#view3d{aspect-ratio:4/3.3;cursor:grab;border-radius:4px}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 18px}
+.ctl{display:grid;gap:2px;font-size:14px}
+.ctl label{display:flex;justify-content:space-between;gap:8px}
+.ctl output{font:500 13px var(--mono);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--habit)}
+select,button{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--rule);border-radius:4px;padding:5px 10px}
+button{cursor:pointer}
+button:hover{border-color:var(--habit)}
+:focus-visible{outline:2px solid var(--habit);outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.key{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted)}
+.key span::before{content:"";display:inline-block;width:14px;height:4px;border-radius:2px;margin-right:6px;vertical-align:middle;background:var(--c)}
+dl.read{display:grid;grid-template-columns:auto auto;gap:4px 14px;margin:0;font-size:14px}
+dl.read dt{color:var(--muted)}
+dl.read dd{margin:0;font:500 13px var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+.note{font-size:14px;color:var(--muted)}
+.callout{border-left:3px solid var(--trace);padding:4px 0 4px 12px;font-size:15px;max-width:none}
+.defs{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.defs div{display:grid;gap:4px;align-content:start}
+.defs b{font-family:var(--display);font-size:17px}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;background:var(--c)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;font-size:14px;width:100%}
+th,td{padding:6px 10px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font:500 12px var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.ks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.ks{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.ks table td,.ks table th{padding:4px 6px}
+ol.steps{margin:0;padding-left:22px;display:grid;gap:10px;max-width:72ch}
+ol.steps b{font-weight:600}
+code{font:13px var(--mono)}
+.cand{font:13px var(--mono);display:flex;flex-wrap:wrap;gap:4px 12px}
+.cand .hit{color:var(--ok);font-weight:500}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Martensite morphology · section geometry · EBSD</div>
+  <h1>Long axis, habit plane and the trace you actually see</h1>
+  <p class="lede">A lath or plate is a 3D object. A polished section only shows where its habit plane cuts the surface. Tilt the block below and watch which measurements on the section change and which do not.</p>
+  <div class="links">
+    <a href="ks-variant-atlas.html">KS Variant Atlas</a>
+    <a href="pole-figures.html">Reading Pole Figures</a>
+  </div>
+</header>
+
+<section id="terms">
+  <div class="eyebrow">1 · Three things that are easy to conflate</div>
+  <div class="defs">
+    <div><b><span class="sw" style="--c:var(--habit)"></span>Habit plane</b><p>The broad, flat face of the lath or plate: the plane the transformation interface grows along. It is a crystallographic plane of the parent, e.g. near {557}γ for lath (≈9.4° from {111}γ), {225}γ or {259}γ for plate martensite.</p></div>
+    <div><b><span class="sw" style="--c:var(--axis)"></span>Long axis</b><p>The direction the lath is longest along. It lies <em>inside</em> the habit plane. For lath martensite it is close to the KS parallel direction, ⟨110⟩γ ∥ ⟨111⟩α. A plate has no strong long axis inside its habit plane.</p></div>
+    <div><b><span class="sw" style="--c:var(--trace)"></span>Habit plane trace</b><p>The line where the habit plane meets the polished surface: <code>t = n × z</code>. It depends only on the habit plane normal <code>n</code> and the surface. The long axis does not set it.</p></div>
+  </div>
+</section>
+
+<section id="geometry">
+  <div class="eyebrow">2 · One lath cut by a polished surface</div>
+  <h2>Drag the block to rotate it. Use the sliders to tilt the habit plane and swing the long axis.</h2>
+  <div class="grid2">
+    <div class="panel">
+      <canvas id="view3d" aria-label="3D view of a martensite lath crossing the polished surface"></canvas>
+      <div class="key">
+        <span style="--c:var(--habit)">habit plane & normal n</span>
+        <span style="--c:var(--axis)">long axis</span>
+        <span style="--c:var(--trace)">trace on surface</span>
+        <span style="--c:var(--surface)">polished surface (z = 0)</span>
+      </div>
+      <div class="controls">
+        <div class="ctl"><label for="th">Habit plane inclination to surface θ <output id="thv"></output></label><input id="th" type="range" min="5" max="90" value="62"></div>
+        <div class="ctl"><label for="ph">Trace azimuth from X <output id="phv"></output></label><input id="ph" type="range" min="0" max="179" value="25"></div>
+        <div class="ctl"><label for="ps">Long axis angle to trace, in the habit plane ψ <output id="psv"></output></label><input id="ps" type="range" min="-90" max="90" value="40"></div>
+        <div class="ctl"><label for="shape">Shape</label>
+          <select id="shape"><option value="lath">Lath (ribbon, long ≫ wide ≫ thin)</option><option value="plate">Plate (wide in both directions)</option></select></div>
+      </div>
+      <div class="row">
+        <button id="p1">Long axis lies in the section</button>
+        <button id="p2">Long axis plunges steeply</button>
+        <button id="p3">Habit plane nearly parallel to surface</button>
+        <label class="row" style="font-size:14px"><input type="checkbox" id="showHabit" checked> show habit plane</label>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>What the section shows</h3>
+      <canvas id="sect" aria-label="Plan view of the polished surface showing the section of the lath"></canvas>
+      <dl class="read">
+        <dt>Trace angle from X (measurable)</dt><dd id="r1"></dd>
+        <dt>Apparent width ÷ true thickness = 1/sin θ</dt><dd id="r2"></dd>
+        <dt>Visible length along trace</dt><dd id="r3"></dd>
+        <dt>Projected long axis vs trace</dt><dd id="r4"></dd>
+        <dt>Long axis plunge below surface</dt><dd id="r5"></dd>
+      </dl>
+      <p class="note" id="sectNote"></p>
+    </div>
+  </div>
+  <p class="callout">Rule of thumb: the elongated features on a section run along the <b>trace</b>, not along the long axis. Their width tells you thickness and inclination (width = T / sin θ). Their length along the trace mixes the true length, the width and the angle ψ. The long axis itself is only visible when it happens to lie along the trace (ψ = 0).</p>
+</section>
+
+<section id="trace">
+  <div class="eyebrow">3 · Trace analysis with the crystal orientation</div>
+  <h2>One trace puts the habit plane pole on a great circle. The crystal orientation tells you which candidate sits on it.</h2>
+  <div class="grid2">
+    <div class="panel">
+      <canvas id="stereo" aria-label="Stereographic projection of candidate habit plane poles"></canvas>
+      <div class="key">
+        <span style="--c:var(--trace)">great circle from surface trace</span>
+        <span style="--c:var(--axis)">great circle from side face trace</span>
+        <span style="--c:var(--ok)">candidate within tolerance</span>
+        <span style="--c:var(--muted)">other candidates</span>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="controls">
+        <div class="ctl"><label for="fam">Candidate family</label>
+          <select id="fam"><option value="111">{111}γ (packet plane, 4 poles)</option><option value="557" selected>{557}γ (lath habit, 12 poles)</option><option value="225">{225}γ (plate, 12 poles)</option><option value="259">{259}γ (plate, 24 poles)</option></select></div>
+        <div class="ctl"><label for="tol">Tolerance <output id="tolv"></output></label><input id="tol" type="range" min="1" max="10" value="3"></div>
+        <div class="ctl"><label for="e1">Parent φ1 <output id="e1v"></output></label><input id="e1" type="range" min="0" max="360" value="38"></div>
+        <div class="ctl"><label for="e2">Parent Φ <output id="e2v"></output></label><input id="e2" type="range" min="0" max="180" value="52"></div>
+        <div class="ctl"><label for="e3">Parent φ2 <output id="e3v"></output></label><input id="e3" type="range" min="0" max="360" value="17"></div>
+      </div>
+      <div class="row">
+        <button id="newGrain">New grain and lath</button>
+        <label class="row" style="font-size:14px"><input type="checkbox" id="side"> add a second (side) face</label>
+        <label class="row" style="font-size:14px"><input type="checkbox" id="reveal"> reveal true plane</label>
+      </div>
+      <dl class="read">
+        <dt>Measured trace on surface, from X</dt><dd id="s1"></dd>
+        <dt>Consistent candidates</dt><dd id="s2"></dd>
+      </dl>
+      <div class="cand" id="candList"></div>
+      <p class="note">Upper-hemisphere stereographic projection, sample frame (X right, Y up, Z out of the page = surface normal). The trace is a direction in the surface, so its great circle is a diameter at 90° to it. A side face perpendicular to X gives a second, independent circle; the two cross at the habit plane pole. Here the parent orientation is given directly; in practice it comes from parent reconstruction, or from the α orientation plus the OR.</p>
+    </div>
+  </div>
+</section>
+
+<section id="ebsd">
+  <div class="eyebrow">4 · Reading a lath martensite EBSD map</div>
+  <h2>The hierarchy, and how it shows up on a section</h2>
+  <div class="grid2">
+    <div class="panel">
+      <canvas id="pmap" aria-label="Schematic section through one prior austenite grain showing four packets"></canvas>
+      <p class="note">Schematic section of one prior austenite grain, using the parent orientation from section 3. Each colour family is a packet (one {111}γ plane, six KS variants). Bands are blocks, split into two sub-blocks (e.g. V1/V4, 10.5° apart). Bands run along each packet's {111}γ trace. Every block has the same true thickness here, so the differences in apparent band width come only from 1/sin θ.</p>
+      <dl class="read" id="pleg"></dl>
+    </div>
+    <div class="panel">
+      <div class="defs" style="grid-template-columns:1fr">
+        <div><b>Prior austenite grain (PAG)</b><p>One parent orientation. Up to 24 KS variants can form in it. Typical size 10–100 µm.</p></div>
+        <div><b>Packet</b><p>Variants sharing one {111}γ ∥ {011}α plane (6 per packet, 4 packets). All laths in a packet have near-parallel habit planes, so the packet shows as one family of parallel traces.</p></div>
+        <div><b>Block</b><p>Laths of one variant pair within a packet (V1/V4, V2/V5, V3/V6 in Morito numbering). Blocks meet across high-angle boundaries (≈50–60°) that run along the trace. Typically 1–5 µm wide in section.</p></div>
+        <div><b>Sub-block and lath</b><p>Sub-blocks are the two variants of a block, 10.5° apart. Laths within one sub-block are separated by low-angle boundaries of a few degrees, and are typically 0.1–0.5 µm thick. Many lath boundaries fall below both angular and spatial resolution.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Misorientation from V1 to each KS variant (computed here from the KS relation with cubic symmetry)</h3>
+  <div class="ks" id="ks"></div>
+  <p class="note">If the OR were exactly KS, variant-to-variant boundaries could only take these angles. So a misorientation histogram from lath martensite shows a low-angle cluster (≈10–21°), a gap roughly from 21° to 47°, and a cluster at 47–60°. Real ORs sit between KS and NW (e.g. Greninger–Troiano) and spread these peaks by a few degrees. Boundaries in the gap usually mean prior austenite grain boundaries, or ferrite/bainite that is not martensite.</p>
+
+  <h3>Practical reading order</h3>
+  <ol class="steps">
+    <li><b>Index as BCC α.</b> Low-carbon martensite is only slightly tetragonal and BCC indexing is standard. Above about 0.6 wt% C the c/a ratio can cause pseudosymmetry misindexing. Add FCC γ as a phase to catch retained austenite, which is often thin films below the step size.</li>
+    <li><b>Pick the step size for the level you care about.</b> About 50–100 nm resolves blocks and most sub-blocks. Individual laths usually need TKD or TEM. PAGs and packets are fine at 0.2–0.5 µm.</li>
+    <li><b>Expect low pattern quality.</b> Dislocation density is high, so band contrast is low and KAM is high everywhere. Compare KAM and GND only between maps with the same step size and filtering. Avoid heavy clean-up, which erases sub-blocks.</li>
+    <li><b>Set grain thresholds by level.</b> Around 15° picks out blocks, 2–5° picks out sub-blocks and some laths. Plot the misorientation angle histogram and compare with the table above.</li>
+    <li><b>Reconstruct the parent austenite.</b> Use the α–α misorientations to fit the OR and group pixels into PAGs, e.g. MTEX <code>parentGrainReconstructor</code>, ARPGE, or graph-cut methods. Check the OR fit residual, and watch for annealing twins in the parent (Σ3), because twin-related parents share a {111} and are easy to merge by mistake.</li>
+    <li><b>Assign variants, packets and blocks.</b> With the parent orientation known, each pixel gets a variant ID (V1–V24). Packet and block maps follow from the grouping above. Compare each packet's predicted {111}γ trace with the observed band direction as a sanity check.</li>
+  </ol>
+</section>
+
+<section id="to3d">
+  <div class="eyebrow">5 · Getting from 2D to 3D</div>
+  <h2>What each method actually pins down</h2>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Method</th><th>What you measure</th><th>What you get in 3D</th><th>Limits</th></tr></thead>
+    <tbody>
+      <tr><td>Single-surface trace analysis</td><td>Trace angle of each feature plus its crystal orientation</td><td>Habit plane pole restricted to one great circle. Unique when only one candidate lies on it (often true for {111}γ). Per-feature true thickness = apparent width × sin θ once n is known.</td><td>Ambiguous for large families like {557}γ or {259}γ. Resolve statistically: over many laths, the correct family gives the smallest trace residuals.</td></tr>
+      <tr><td>Parent reconstruction + trace check</td><td>α orientations only</td><td>Parent orientation, variant IDs, and predicted {111}γ and {557}γ traces for every packet. Lets you test the habit plane hypothesis across a whole map.</td><td>Depends on OR fit quality and correct PAG segmentation.</td></tr>
+      <tr><td>Two-surface trace analysis</td><td>Traces on two non-parallel faces (a polished edge, or a FIB trench wall)</td><td>Habit plane normal uniquely, as n ∝ t₁ × t₂, independent of crystal candidates.</td><td>You must match the same feature on both faces and know the angle between faces precisely.</td></tr>
+      <tr><td>Serial sectioning / 3D EBSD</td><td>Stack of EBSD maps (FIB or plasma FIB, or mechanical serial polishing)</td><td>Full shape: habit plane, true long axis, lath and block thickness, packet morphology, true PAG size.</td><td>Slice spacing must be finer than the feature. FIB volumes are small, a few tens of µm; mechanical sectioning is larger but coarser. Needs slice alignment.</td></tr>
+      <tr><td>Stereology</td><td>Distributions of apparent widths and lengths</td><td>Mean true sizes, assuming random orientation of features.</td><td>No per-feature information. Apparent widths overestimate thickness by 1/sin θ, so raw means are biased upwards.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="callout">The long axis is the hardest quantity to get from a single section. It lies in the habit plane at some angle ψ to the trace, and nothing on one surface fixes ψ. In practice it is taken from crystallography (⟨110⟩γ ∥ ⟨111⟩α for lath), or measured directly with a second face or serial sections.</p>
+</section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const D2R=Math.PI/180, R2D=180/Math.PI;
+const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const norm=a=>{const l=Math.hypot(a[0],a[1],a[2])||1;return [a[0]/l,a[1]/l,a[2]/l]};
+const add=(a,b,s=1)=>[a[0]+s*b[0],a[1]+s*b[1],a[2]+s*b[2]];
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function fitCanvas(c,aspect){const w=c.clientWidth||300,h=Math.round(w*aspect),r=window.devicePixelRatio||1;c.width=w*r;c.height=h*r;c.style.height=h+'px';const x=c.getContext('2d');x.setTransform(r,0,0,r,0,0);return {x,w,h}}
+
+/* ---------- Section 2: geometry ---------- */
+const SH={lath:{L:8,W:2.2,T:0.45},plate:{L:6,W:6,T:0.6}};
+function geom(){
+  const th=+$('th').value*D2R, ph=+$('ph').value*D2R, ps=+$('ps').value*D2R;
+  const t=[Math.cos(ph),Math.sin(ph),0];
+  const n=[Math.sin(th)*Math.sin(ph),-Math.sin(th)*Math.cos(ph),Math.cos(th)];
+  const u2=norm(cross(n,t));
+  const l=norm(add(t.map(v=>v*Math.cos(ps)),u2,Math.sin(ps)));
+  const w=norm(cross(n,l));
+  return {th,ph,ps,t,n,u2,l,w,...SH[$('shape').value]};
+}
+function sectionPoly(g){
+  const hs=[[g.L/2,g.l],[g.W/2,g.w],[g.T/2,g.n]];const V=[];
+  for(let i=0;i<8;i++){let p=[0,0,0];hs.forEach(([h,e],k)=>{p=add(p,e,((i>>k)&1?1:-1)*h)});V.push(p)}
+  const pts=[];for(let i=0;i<8;i++)for(let k=0;k<3;k++){const j=i^(1<<k);if(j<i)continue;const a=V[i],b=V[j];
+    if((a[2]<=0)!==(b[2]<=0)){const s=a[2]/(a[2]-b[2]);pts.push([a[0]+s*(b[0]-a[0]),a[1]+s*(b[1]-a[1])])}}
+  if(pts.length<3)return [];
+  const cx=pts.reduce((s,p)=>s+p[0],0)/pts.length,cy=pts.reduce((s,p)=>s+p[1],0)/pts.length;
+  return pts.sort((a,b)=>Math.atan2(a[1]-cy,a[0]-cx)-Math.atan2(b[1]-cy,b[0]-cx));
+}
+
+let three=null;
+function init3d(){
+  if(!window.THREE)return null;
+  const c=$('view3d');
+  const R=new THREE.WebGLRenderer({canvas:c,antialias:true,alpha:true});
+  R.localClippingEnabled=true;R.setPixelRatio(window.devicePixelRatio||1);
+  const scene=new THREE.Scene();
+  const cam=new THREE.PerspectiveCamera(32,4/3.3,0.1,200);cam.up.set(0,0,1);
+  scene.add(new THREE.AmbientLight(0xffffff,0.55));
+  const dl=new THREE.DirectionalLight(0xffffff,0.7);dl.position.set(6,-8,12);scene.add(dl);
+  const root=new THREE.Group();scene.add(root);
+  const st={R,scene,cam,root,az:-58*D2R,el:30*D2R,dist:30};
+  let drag=null;
+  c.addEventListener('pointerdown',e=>{drag=[e.clientX,e.clientY];c.setPointerCapture(e.pointerId);c.style.cursor='grabbing'});
+  c.addEventListener('pointermove',e=>{if(!drag)return;st.az-=(e.clientX-drag[0])*0.008;st.el=Math.max(-0.2,Math.min(1.5,st.el+(e.clientY-drag[1])*0.008));drag=[e.clientX,e.clientY];render3d()});
+  const end=()=>{drag=null;c.style.cursor='grab'};c.addEventListener('pointerup',end);c.addEventListener('pointercancel',end);
+  return st;
+}
+function arrow(dir,len,color,r,origin){
+  const g=new THREE.Group();const m=new THREE.MeshLambertMaterial({color});
+  const cyl=new THREE.Mesh(new THREE.CylinderGeometry(r,r,len*0.84,12),m);cyl.position.y=len*0.42;
+  const cone=new THREE.Mesh(new THREE.ConeGeometry(r*2.6,len*0.16,16),m);cone.position.y=len*0.92;
+  g.add(cyl,cone);g.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...dir));
+  if(origin)g.position.set(...origin);return g;
+}
+function rod(a,b,color,r){
+  const d=new THREE.Vector3(b[0]-a[0],b[1]-a[1],b[2]-a[2]);const L=d.length();
+  const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,L,10),new THREE.MeshBasicMaterial({color}));
+  m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().normalize());
+  m.position.set((a[0]+b[0])/2,(a[1]+b[1])/2,(a[2]+b[2])/2);return m;
+}
+function build3d(g){
+  if(!three)return;const {root}=three;
+  root.children.slice().forEach(o=>{root.remove(o);o.traverse(x=>{x.geometry&&x.geometry.dispose();x.material&&x.material.dispose()})});
+  const C={habit:css('--habit'),axis:css('--axis'),trace:css('--trace'),lath:css('--lath'),surf:css('--surface'),ink:css('--ink')};
+  const S=6;
+  const below=new THREE.Plane(new THREE.Vector3(0,0,-1),0), above=new THREE.Plane(new THREE.Vector3(0,0,1),0);
+  // specimen block outline
+  const blk=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(2*S,2*S,4)),new THREE.LineBasicMaterial({color:C.surf,transparent:true,opacity:0.7}));blk.position.z=-2;root.add(blk);
+  // lath
+  const basis=new THREE.Matrix4().makeBasis(new THREE.Vector3(...g.l),new THREE.Vector3(...g.w),new THREE.Vector3(...g.n));
+  const bg=new THREE.BoxGeometry(g.L,g.W,g.T);
+  const solid=new THREE.Mesh(bg,new THREE.MeshLambertMaterial({color:C.lath,clippingPlanes:[below],side:THREE.DoubleSide}));solid.applyMatrix4(basis);root.add(solid);
+  const ghost=new THREE.LineSegments(new THREE.EdgesGeometry(bg),new THREE.LineDashedMaterial({color:C.lath,dashSize:0.25,gapSize:0.18,clippingPlanes:[above],transparent:true,opacity:0.8}));ghost.applyMatrix4(basis);ghost.computeLineDistances();root.add(ghost);
+  // section polygon
+  const poly=sectionPoly(g);
+  if(poly.length>=3){const sh=new THREE.Shape(poly.map(p=>new THREE.Vector2(p[0],p[1])));
+    const sm=new THREE.Mesh(new THREE.ShapeGeometry(sh),new THREE.MeshBasicMaterial({color:C.ink,side:THREE.DoubleSide}));sm.position.z=0.004;root.add(sm);}
+  // surface
+  const surf=new THREE.Mesh(new THREE.PlaneGeometry(2*S,2*S),new THREE.MeshBasicMaterial({color:C.surf,transparent:true,opacity:0.32,side:THREE.DoubleSide,depthWrite:false}));surf.renderOrder=2;root.add(surf);
+  // habit plane
+  if($('showHabit').checked){
+    const hb=new THREE.Matrix4().makeBasis(new THREE.Vector3(...g.t),new THREE.Vector3(...g.u2),new THREE.Vector3(...g.n));
+    const hp=new THREE.Mesh(new THREE.PlaneGeometry(10,10),new THREE.MeshBasicMaterial({color:C.habit,transparent:true,opacity:0.16,side:THREE.DoubleSide,depthWrite:false}));hp.applyMatrix4(hb);hp.renderOrder=3;root.add(hp);
+    root.add(arrow(g.n,3.2,C.habit,0.06));
+  }
+  // trace across surface
+  root.add(rod(add([0,0,0.02],g.t,-S*0.98),add([0,0,0.02],g.t,S*0.98),C.trace,0.05));
+  // long axis
+  root.add(rod(g.l.map(v=>-v*(g.L/2+0.6)),g.l.map(v=>v*(g.L/2+0.6)),C.axis,0.045));
+  root.add(arrow(g.l,g.L/2+1.4,C.axis,0.05));
+  // sample axes
+  root.add(arrow([1,0,0],1.6,C.ink,0.03,[-S,-S,0.02]));root.add(arrow([0,1,0],1.6,C.ink,0.03,[-S,-S,0.02]));root.add(arrow([0,0,1],1.6,C.ink,0.03,[-S,-S,0.02]));
+  render3d();
+}
+function render3d(){
+  if(!three)return;const {R,scene,cam,az,el,dist}=three;const c=$('view3d');
+  const w=c.clientWidth,h=Math.round(w/(4/3.3));R.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();
+  cam.position.set(dist*Math.cos(el)*Math.cos(az),dist*Math.cos(el)*Math.sin(az),dist*Math.sin(el));cam.lookAt(0,0,-0.8);
+  R.render(scene,cam);
+}
+function drawSection(g){
+  const {x,w,h}=fitCanvas($('sect'),0.72);const S=6,sc=Math.min(w,h)/(2*S)*0.96,cx=w/2,cy=h/2;
+  const P=p=>[cx+p[0]*sc,cy-p[1]*sc];
+  x.clearRect(0,0,w,h);x.fillStyle=css('--bg');x.fillRect(0,0,w,h);
+  x.strokeStyle=css('--rule');x.lineWidth=1;for(let i=-S;i<=S;i+=2){x.beginPath();x.moveTo(...P([i,-S]));x.lineTo(...P([i,S]));x.moveTo(...P([-S,i]));x.lineTo(...P([S,i]));x.stroke()}
+  x.setLineDash([6,5]);x.strokeStyle=css('--trace');x.lineWidth=1.6;x.beginPath();x.moveTo(...P(g.t.map(v=>-v*S*1.5)));x.lineTo(...P(g.t.map(v=>v*S*1.5)));x.stroke();x.setLineDash([]);
+  const poly=sectionPoly(g);
+  if(poly.length>=3){x.fillStyle=css('--ink');x.beginPath();poly.forEach((p,i)=>i?x.lineTo(...P(p)):x.moveTo(...P(p)));x.closePath();x.fill();}
+  const lp=[g.l[0],g.l[1]],ll=Math.hypot(...lp);
+  if(ll>1e-3){const d=[lp[0]/ll,lp[1]/ll],e=[d[0]*S*0.85,d[1]*S*0.85];
+    x.strokeStyle=css('--axis');x.lineWidth=2.2;x.beginPath();x.moveTo(...P([-e[0],-e[1]]));x.lineTo(...P(e));x.stroke();
+    const [ex,ey]=P(e),a=Math.atan2(-d[1],d[0]);x.fillStyle=css('--axis');x.beginPath();x.moveTo(ex,ey);x.lineTo(ex-10*Math.cos(a-0.4),ey-10*Math.sin(a-0.4));x.lineTo(ex-10*Math.cos(a+0.4),ey-10*Math.sin(a+0.4));x.fill();}
+  x.font='12px '+css('--mono');x.fillStyle=css('--muted');x.fillText('X →',w-34,h-8);x.fillText('↑ Y',6,14);
+  x.fillStyle=css('--trace');x.fillText('trace',...P(g.t.map(v=>v*S*0.62)).map((v,i)=>v+(i?-8:6)));
+  x.fillStyle=css('--axis');x.fillText('long axis (projected)',8,h-8);
+}
+function update1(){
+  const g=geom();
+  $('thv').textContent=$('th').value+'°';$('phv').textContent=$('ph').value+'°';$('psv').textContent=$('ps').value+'°';
+  const s=Math.sin(g.th),cps=Math.abs(Math.cos(g.ps)),sps=Math.abs(Math.sin(g.ps));
+  const len=Math.min(cps>1e-6?g.L/cps:1e9,sps>1e-6?g.W/sps:1e9);
+  const proj=Math.atan2(Math.sin(g.ps)*Math.cos(g.th),Math.cos(g.ps))*R2D;
+  const plunge=Math.asin(Math.abs(g.l[2]))*R2D;
+  $('r1').textContent=(+$('ph').value).toFixed(0)+'°';
+  $('r2').textContent=(1/s).toFixed(2)+'×';
+  $('r3').textContent=(len/g.L*100).toFixed(0)+'% of true length';
+  $('r4').textContent=proj.toFixed(1)+'°';
+  $('r5').textContent=plunge.toFixed(1)+'°';
+  let note;
+  if(+$('th').value<20) note='The habit plane is close to the surface, so the section is a broad smear. Apparent width is several times the true thickness and the trace direction becomes hard to measure.';
+  else if(Math.abs(+$('ps').value)<5) note='The long axis lies almost along the trace, so the feature shows close to its full length. This is the only case where the section shows the long axis directly.';
+  else if(Math.abs(+$('ps').value)>60&&$('shape').value==='lath') note='The long axis dives steeply into the sample. The lath shows as a short stub along the trace, about as long as its width. It is still aligned with the trace, not with the long axis.';
+  else note='The feature is elongated along the trace. The projected long axis (orange) points somewhere else, and nothing on this one surface shows it.';
+  $('sectNote').textContent=note;
+  build3d(g);drawSection(g);
+}
+['th','ph','ps','shape','showHabit'].forEach(id=>$(id).addEventListener('input',update1));
+$('p1').onclick=()=>{$('ps').value=0;$('th').value=70;update1()};
+$('p2').onclick=()=>{$('ps').value=80;$('th').value=75;$('shape').value='lath';update1()};
+$('p3').onclick=()=>{$('th').value=12;$('ps').value=30;update1()};
+
+/* ---------- Section 3: trace analysis ---------- */
+function euler(){const [a,b,c]=['e1','e2','e3'].map(i=>+$(i).value*D2R);
+  const c1=Math.cos(a),s1=Math.sin(a),cP=Math.cos(b),sP=Math.sin(b),c2=Math.cos(c),s2=Math.sin(c);
+  return [[c1*c2-s1*s2*cP,s1*c2+c1*s2*cP,s2*sP],[-c1*s2-s1*c2*cP,-s1*s2+c1*c2*cP,c2*sP],[s1*sP,-c1*sP,cP]];}
+const toSample=(g,v)=>[0,1,2].map(j=>g[0][j]*v[0]+g[1][j]*v[1]+g[2][j]*v[2]);
+function family(key){
+  const base={'111':[1,1,1],'557':[5,5,7],'225':[2,2,5],'259':[2,5,9]}[key];
+  const perms=[[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]];const out=[],seen=new Set();
+  for(const p of perms)for(let s=0;s<8;s++){let v=p.map((k,i)=>base[k]*((s>>i)&1?-1:1));
+    const f=v.find(z=>z!==0);if(f<0)v=v.map(z=>-z);const id=v.join(',');if(seen.has(id))continue;seen.add(id);out.push(v)}
+  return out;
+}
+const hkl=v=>'('+v.map(z=>z<0?'−'+(-z):''+z).join(' ')+')';
+let trueIdx=5;
+function update2(){
+  ['e1','e2','e3'].forEach(i=>$(i+'v').textContent=$(i).value+'°');$('tolv').textContent=$('tol').value+'°';
+  const g=euler(),fam=family($('fam').value);trueIdx%=fam.length;
+  const poles=fam.map(v=>{let p=norm(toSample(g,v));if(p[2]<0)p=p.map(z=>-z);return p});
+  const nT=poles[trueIdx];
+  const t1=norm(cross(nT,[0,0,1])), useSide=$('side').checked, t2=norm(cross(nT,[1,0,0]));
+  const tol=+$('tol').value;
+  const res=poles.map(p=>{const r1=Math.abs(Math.asin(Math.max(-1,Math.min(1,dot(p,t1)))))*R2D;
+    const r2=useSide?Math.abs(Math.asin(Math.max(-1,Math.min(1,dot(p,t2)))))*R2D:0;return Math.max(r1,r2)});
+  let ta=Math.atan2(t1[1],t1[0])*R2D;ta=(ta+360)%180;$('s1').textContent=ta.toFixed(1)+'°';
+  const hits=res.map((r,i)=>[r,i]).filter(([r])=>r<=tol).sort((a,b)=>a[0]-b[0]);
+  $('s2').textContent=hits.length+' of '+fam.length;
+  $('candList').innerHTML=hits.map(([r,i])=>`<span class="hit">${hkl(fam[i])}γ ${r.toFixed(1)}°${$('reveal').checked&&i===trueIdx?' ✓ true':''}</span>`).join('');
+  // draw
+  const {x,w,h}=fitCanvas($('stereo'),1);const Rr=Math.min(w,h)/2-22,cx=w/2,cy=h/2;
+  const P=p=>[cx+Rr*p[0]/(1+p[2]),cy-Rr*p[1]/(1+p[2])];
+  x.clearRect(0,0,w,h);x.fillStyle=css('--bg');x.fillRect(0,0,w,h);
+  x.fillStyle=css('--panel');x.strokeStyle=css('--muted');x.lineWidth=1.2;x.beginPath();x.arc(cx,cy,Rr,0,2*Math.PI);x.fill();x.stroke();
+  x.strokeStyle=css('--rule');x.beginPath();x.moveTo(cx-Rr,cy);x.lineTo(cx+Rr,cy);x.moveTo(cx,cy-Rr);x.lineTo(cx,cy+Rr);x.stroke();
+  const gc=(t,col)=>{const e1=norm(Math.abs(t[2])<0.9?cross(t,[0,0,1]):cross(t,[1,0,0])),e2=cross(t,e1);
+    x.strokeStyle=col;x.lineWidth=2;x.beginPath();let pen=false;
+    for(let k=0;k<=720;k++){const a=k/720*2*Math.PI,p=add(e1.map(v=>v*Math.cos(a)),e2,Math.sin(a));
+      if(p[2]<-1e-9){pen=false;continue}const q=P(p);pen?x.lineTo(...q):x.moveTo(...q);pen=true}x.stroke();};
+  gc(t1,css('--trace'));if(useSide)gc(t2,css('--axis'));
+  // trace direction marks on primitive
+  x.fillStyle=css('--trace');[1,-1].forEach(s=>{const q=P([s*t1[0],s*t1[1],0]);x.beginPath();x.arc(q[0],q[1],4,0,7);x.fill()});
+  poles.forEach((p,i)=>{const q=P(p),hit=res[i]<=tol;x.fillStyle=hit?css('--ok'):css('--muted');x.beginPath();x.arc(q[0],q[1],hit?6:4,0,7);x.fill();
+    if(hit){x.font='11px '+css('--mono');x.fillStyle=css('--ink');x.fillText(hkl(fam[i]),q[0]+8,q[1]-6)}});
+  if($('reveal').checked){const q=P(nT);x.strokeStyle=css('--ink');x.lineWidth=2;x.beginPath();x.arc(q[0],q[1],10,0,7);x.stroke()}
+  x.font='12px '+css('--mono');x.fillStyle=css('--muted');x.fillText('X',cx+Rr+6,cy+4);x.fillText('Y',cx-4,cy-Rr-7);
+  x.fillStyle=css('--trace');x.fillText('trace',...P([t1[0],t1[1],0]).map((v,i)=>v+(i?14:-14)));
+  drawPackets(g);
+}
+['e1','e2','e3','fam','tol','side','reveal'].forEach(id=>$(id).addEventListener('input',update2));
+$('newGrain').onclick=()=>{$('e1').value=Math.round(Math.random()*360);$('e2').value=Math.round(Math.acos(2*Math.random()-1)*R2D);$('e3').value=Math.round(Math.random()*360);
+  trueIdx=Math.floor(Math.random()*family($('fam').value).length);$('reveal').checked=false;update2()};
+
+/* ---------- Section 4: packet map ---------- */
+const PK=[[1,1,1],[1,-1,1],[-1,1,1],[1,1,-1]];
+const seeds=[[0.22,0.3],[0.7,0.22],[0.3,0.78],[0.78,0.72]];
+function hsl(h,s,l){s/=100;l/=100;const k=n=>(n+h/30)%12,a=s*Math.min(l,1-l),f=n=>l-a*Math.max(-1,Math.min(k(n)-3,9-k(n),1));return [f(0),f(8),f(4)].map(v=>Math.round(v*255))}
+function drawPackets(g){
+  const c=$('pmap');const {x,w,h}=fitCanvas(c,0.62);const r=window.devicePixelRatio||1;
+  const W=Math.round(w*r),H=Math.round(h*r);const img=x.createImageData(W,H);
+  const dark=getComputedStyle(document.documentElement).colorScheme.includes('dark')||css('--bg').toLowerCase()==='#12171c';
+  const info=PK.map((v,k)=>{const n=norm(toSample(g,v));const th=Math.acos(Math.min(1,Math.abs(n[2])));
+    let t=norm(cross(n,[0,0,1]));if(Math.hypot(t[0],t[1])<1e-6)t=[1,0,0];const perp=[-t[1],t[0]];
+    return {th,t,perp,sp:14*r/Math.max(Math.sin(th),0.18),hue:[210,28,150,320][k]}});
+  const pk=new Int8Array(W*H);
+  for(let j=0;j<H;j++)for(let i=0;i<W;i++){const u=i/W,v=j/H;let b=0,bd=9;
+    seeds.forEach((s,k)=>{const wob=0.04*Math.sin(9*v+k*2)+0.03*Math.cos(7*u+k);const d=Math.hypot(u-s[0],(v-s[1])*H/W)+wob;if(d<bd){bd=d;b=k}});pk[j*W+i]=b;}
+  for(let j=0;j<H;j++)for(let i=0;i<W;i++){const k=pk[j*W+i],I=info[k];
+    const s=(i*I.perp[0]-j*I.perp[1])/I.sp+k*0.37;const blk=((Math.floor(s)%3)+3)%3,sub=Math.floor(s*2)&1;
+    let L=(dark?[42,52,62]:[48,60,72])[blk]+(sub?(dark?-6:-7):0);
+    let col=hsl(I.hue,dark?45:52,L);
+    const edge=(i>0&&pk[j*W+i-1]!==k)||(j>0&&pk[(j-1)*W+i]!==k);
+    if(edge)col=dark?[235,240,244]:[23,33,43];
+    const o=(j*W+i)*4;img.data[o]=col[0];img.data[o+1]=col[1];img.data[o+2]=col[2];img.data[o+3]=255;}
+  x.setTransform(1,0,0,1,0,0);x.putImageData(img,0,0);x.setTransform(r,0,0,r,0,0);
+  const names=['(111)γ','(1 −1 1)γ','(−1 1 1)γ','(1 1 −1)γ'];
+  x.font='600 12px '+css('--mono');
+  info.forEach((I,k)=>{const sx=seeds[k][0]*w,sy=seeds[k][1]*h;x.fillStyle=dark?'rgba(18,23,28,.78)':'rgba(248,250,251,.85)';
+    const tw=x.measureText('CP'+(k+1)).width+10;x.fillRect(sx-tw/2,sy-10,tw,18);x.fillStyle=css('--ink');x.fillText('CP'+(k+1),sx-tw/2+5,sy+3)});
+  $('pleg').innerHTML=info.map((I,k)=>`<dt><span class="sw" style="--c:hsl(${I.hue} 50% 55%)"></span>CP${k+1} ${names[k]} inclination θ</dt><dd>${(I.th*R2D).toFixed(0)}° · width ×${(1/Math.max(Math.sin(I.th),0.18)).toFixed(2)}</dd>`).join('');
+}
+
+/* ---------- KS table ---------- */
+function ksTable(){
+  const P=[[1,1,1],[1,-1,1],[-1,1,1],[1,1,-1]];
+  const Dg=[[[-1,0,1],[0,1,-1],[1,-1,0]],[[1,0,-1],[-1,-1,0],[0,1,1]],[[0,-1,1],[-1,0,-1],[1,1,0]],[[-1,1,0],[0,-1,-1],[1,0,1]]];
+  const DA=[[-1,-1,1],[-1,1,-1]];
+  const frame=(d,p)=>{const e1=norm(d),e3=norm(p);return [e1,cross(e3,e1),e3]};
+  const mm=(A,B)=>A.map((r,i)=>B[0].map((_,j)=>A[i][0]*B[0][j]+A[i][1]*B[1][j]+A[i][2]*B[2][j]));
+  const T=A=>A[0].map((_,j)=>A.map(r=>r[j]));
+  const V=[];for(let k=0;k<4;k++)for(const d of Dg[k])for(const da of DA)V.push(mm(T(frame(da,[0,1,1])),frame(d,P[k])));
+  const S=[],perms=[[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]];
+  for(const p of perms)for(let s=0;s<8;s++){const M=[[0,0,0],[0,0,0],[0,0,0]];for(let i=0;i<3;i++)M[i][p[i]]=(s>>i)&1?-1:1;
+    const det=M[0][0]*(M[1][1]*M[2][2]-M[1][2]*M[2][1])-M[0][1]*(M[1][0]*M[2][2]-M[1][2]*M[2][0])+M[0][2]*(M[1][0]*M[2][1]-M[1][1]*M[2][0]);if(det>0)S.push(M)}
+  const mis=(A,B)=>{const d=mm(B,T(A));let b=180;for(const s of S){const m=mm(s,d);b=Math.min(b,Math.acos(Math.max(-1,Math.min(1,(m[0][0]+m[1][1]+m[2][2]-1)/2)))*R2D)}return b};
+  const blockOf=i=>{const r=i%6;return Math.floor(i/6)*3+[0,1,2,0,1,2][r]+1};
+  const planes=['(111)γ','(1 −1 1)γ','(−1 1 1)γ','(1 1 −1)γ'];
+  let html='';
+  for(let k=0;k<4;k++){html+=`<div class="tablewrap"><table><thead><tr><th colspan="3">CP${k+1} ${planes[k]}</th></tr><tr><th>Var</th><th>Block</th><th style="text-align:right">vs V1</th></tr></thead><tbody>`;
+    for(let j=0;j<6;j++){const i=k*6+j;html+=`<tr><td>V${i+1}</td><td>B${blockOf(i)}</td><td class="num">${i?mis(V[0],V[i]).toFixed(1)+'°':'—'}</td></tr>`}
+    html+='</tbody></table></div>'}
+  $('ks').innerHTML=html;
+}
+
+/* ---------- boot ---------- */
+function all(){update1();update2()}
+try{three=init3d()}catch(e){three=null}
+if(!three){$('view3d').replaceWith(Object.assign(document.createElement('p'),{className:'note',textContent:'The 3D view needs WebGL, which is not available here. The section view and readouts still work.'}))}
+ksTable();all();
+let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(all,120)});
+const mq=matchMedia('(prefers-color-scheme: dark)');mq.addEventListener&&mq.addEventListener('change',all);
+new MutationObserver(all).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+})();
+</script>
+</body></html>

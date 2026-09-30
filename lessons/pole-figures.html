@@ -1,0 +1,446 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Reading Pole Figures</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: a lab bench on top (stereonet + controls + unit cell), then the lesson reads down the page and keeps sending you back to the bench. */
+:root{
+  --bg:#F2F4F6; --surface:#FFFFFF; --ink:#17202B; --muted:#586473; --rule:#D3DAE2; --net:#CBD3DC;
+  --fcc:#0A7580; --bcc:#B04F16;
+  --d1:#D8E3F1; --d2:#A3BDE0; --d3:#6389C6; --d4:#2F559E; --d5:#142A5E;
+  --hi:#C0182F;
+  --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --phase:var(--fcc);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10151C; --surface:#171F29; --ink:#E4E9EF; --muted:#94A0B0; --rule:#2A3541; --net:#2E3A48;
+  --fcc:#46C3CB; --bcc:#F0904F;
+  --d1:#1D2A3F; --d2:#2D4A77; --d3:#4B77B7; --d4:#86A8DF; --d5:#D3E1F8; --hi:#FF5C6E; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10151C; --surface:#171F29; --ink:#E4E9EF; --muted:#94A0B0; --rule:#2A3541; --net:#2E3A48;
+  --fcc:#46C3CB; --bcc:#F0904F;
+  --d1:#1D2A3F; --d2:#2D4A77; --d3:#4B77B7; --d4:#86A8DF; --d5:#D3E1F8; --hi:#FF5C6E; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15.5px;line-height:1.55}
+body[data-lat="bcc"]{--phase:var(--bcc)}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:20px;padding-block:28px 64px}
+h1,h2,h3{font-family:var(--display);font-weight:600;text-wrap:balance;line-height:1.15;margin:0}
+h1{font-size:clamp(30px,4.4vw,46px);letter-spacing:-.01em}
+h2{font-size:26px;margin-bottom:10px}
+h3{font-size:18px}
+p{margin:0}
+.lede{max-width:66ch;color:var(--muted);font-size:17px;margin-top:10px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.mi{font-family:var(--mono);font-size:.94em;white-space:nowrap}
+.bar{text-decoration:overline}
+.fcc{color:var(--fcc)} .bcc{color:var(--bcc)}
+a{color:var(--phase)}
+header{display:grid;gap:6px;margin-bottom:22px}
+
+/* bench */
+.bench{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:22px;background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:20px}
+@media (max-width:860px){.bench{grid-template-columns:minmax(0,1fr);padding:14px}}
+.pfbox{position:relative;width:100%;max-width:560px;margin:0 auto;aspect-ratio:1}
+.pfbox canvas{position:absolute;left:11.538%;top:11.538%;width:76.923%;height:76.923%;border-radius:50%;image-rendering:auto}
+.pfbox svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.pfcap{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline;margin-bottom:4px}
+.pfcap .t{font-family:var(--display);font-size:20px;font-weight:600}
+.pfcap .s{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.minis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.mini{display:grid;gap:2px;text-align:center}
+.mini .pfbox{max-width:190px}
+.mini .lab{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center;font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:8px;justify-content:center}
+.legend i{display:inline-block;width:14px;height:10px;border-radius:2px;vertical-align:-1px;margin-right:4px;border:1px solid var(--rule)}
+
+.controls{display:grid;gap:16px;align-content:start;min-width:0}
+.ctl{display:grid;gap:6px}
+.ctl>label,.ctl>.lbl{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button,.btn{font:inherit;font-size:14px;border:1px solid var(--rule);background:var(--bg);color:var(--ink);border-radius:6px;padding:5px 11px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--phase);border-color:var(--phase);color:var(--surface)}
+.seg button:disabled{opacity:.45;cursor:not-allowed}
+.seg button:focus-visible,.btn:focus-visible,input:focus-visible{outline:2px solid var(--phase);outline-offset:2px}
+.btn:hover,.seg button:hover:not([aria-pressed="true"]):not(:disabled){border-color:var(--phase)}
+.presets button{font-size:13px}
+.slider{display:grid;grid-template-columns:34px minmax(0,1fr) 46px;gap:8px;align-items:center;font-family:var(--mono);font-size:13px}
+.slider input{width:100%;accent-color:var(--phase)}
+.slider output{text-align:right;font-variant-numeric:tabular-nums}
+.ctl>label.chk,.chk{display:flex;gap:8px;align-items:center;font-size:14px;font-family:var(--body);text-transform:none;letter-spacing:0;color:var(--ink)}
+.chk input{accent-color:var(--phase)}
+.note{font-size:13.5px;color:var(--muted);background:var(--bg);border-radius:6px;padding:8px 10px;border-left:3px solid var(--phase)}
+.row2{display:grid;grid-template-columns:minmax(0,150px) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:460px){.row2{grid-template-columns:minmax(0,1fr)}}
+.cell svg{width:100%;max-width:170px;height:auto;display:block;margin:0 auto}
+.tablewrap{overflow-x:auto;max-height:220px;overflow-y:auto;border:1px solid var(--rule);border-radius:6px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:4px 8px;text-align:left;border-bottom:1px solid var(--rule);white-space:nowrap}
+th{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);position:sticky;top:0;background:var(--surface)}
+td{font-family:var(--mono);font-variant-numeric:tabular-nums}
+tr.on td{background:color-mix(in srgb,var(--hi) 14%,transparent)}
+tbody tr{cursor:default}
+
+/* lesson */
+section.lesson{margin-top:44px;display:grid;gap:14px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:start}
+@media (max-width:860px){.two{grid-template-columns:minmax(0,1fr)}}
+.prose{display:grid;gap:12px;max-width:66ch}
+.diagram{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:10px;overflow-x:auto}
+.diagram svg{width:100%;height:auto;display:block;min-width:300px}
+ol.steps{list-style:none;padding:0;margin:0;display:grid;gap:0;counter-reset:s}
+ol.steps li{counter-increment:s;display:grid;grid-template-columns:40px minmax(0,1fr);gap:4px 12px;padding:14px 0;border-top:1px solid var(--rule)}
+ol.steps li::before{content:counter(s);font-family:var(--display);font-size:26px;font-weight:600;color:var(--phase);line-height:1}
+ol.steps li>div{display:grid;gap:6px;min-width:0}
+ol.steps .btn{justify-self:start;font-size:13px;padding:3px 10px}
+.compare{overflow-x:auto;border:1px solid var(--rule);border-radius:10px;background:var(--surface)}
+.compare table{font-size:14px;min-width:640px}
+.compare td,.compare th{white-space:normal;vertical-align:top;padding:10px 12px;font-family:var(--body)}
+.compare th{position:static;font-family:var(--mono)}
+.compare td:first-child{font-weight:600;width:22%}
+.verdict{font-size:17px;max-width:70ch;border-left:3px solid var(--ink);padding:4px 0 4px 14px}
+.quiz{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:18px}
+@media (max-width:760px){.quiz{grid-template-columns:minmax(0,1fr)}}
+.qfigs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.qfigs .pfbox{max-width:260px}
+.qside{display:grid;gap:12px;align-content:start}
+.fb{min-height:3.2em;font-size:14.5px}
+.fb.ok{color:var(--phase)}
+footer{margin-top:48px;color:var(--muted);font-size:13.5px;border-top:1px solid var(--rule);padding-top:14px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">Texture · Iron and steels</span>
+  <h1>Reading pole figures</h1>
+  <p class="lede">A pole figure is a map of where one family of crystal planes points, relative to the sample. Pick a lattice and a texture on the bench below, turn the crystal, and watch the poles move. The lesson underneath explains what you are looking at and what changes between austenite and ferrite.</p>
+</header>
+
+<div class="bench" id="bench">
+  <div>
+    <div class="pfcap"><span class="t" id="pfTitle">{111} pole figure</span><span class="s" id="pfSub">upper hemisphere · stereographic</span></div>
+    <div class="pfbox" id="pfMain"></div>
+    <div class="legend" id="legend" hidden></div>
+    <div class="minis" id="minis"></div>
+  </div>
+  <div class="controls">
+    <div class="ctl"><span class="lbl">Phase</span>
+      <div class="seg" id="latSeg">
+        <button type="button" id="lat-fcc" data-lat="fcc" aria-pressed="true">FCC austenite γ</button>
+        <button type="button" id="lat-bcc" data-lat="bcc" aria-pressed="false">BCC ferrite / martensite α</button>
+      </div></div>
+    <div class="ctl"><span class="lbl">Plane family plotted</span>
+      <div class="seg" id="famSeg"></div>
+      <p class="note" id="reflNote"></p></div>
+    <div class="ctl"><span class="lbl">Ideal texture components</span>
+      <div class="seg presets" id="presetSeg"></div>
+      <p class="note" id="presetNote">Pick a component, or set your own orientation with the Euler angles.</p></div>
+    <div class="ctl"><span class="lbl">Orientation (Bunge Euler angles)</span>
+      <div class="slider"><span>φ₁</span><input id="e1" type="range" min="0" max="360" step="1" value="0"><output id="o1">0°</output></div>
+      <div class="slider"><span>Φ</span><input id="e2" type="range" min="0" max="180" step="1" value="0"><output id="o2">0°</output></div>
+      <div class="slider"><span>φ₂</span><input id="e3" type="range" min="0" max="360" step="1" value="0"><output id="o3">0°</output></div>
+    </div>
+    <div class="ctl"><span class="lbl">Sample</span>
+      <label class="chk"><input type="checkbox" id="poly"> Polycrystal: 300 grains scattered around this orientation</label>
+      <div class="slider" id="spreadRow"><span>σ</span><input id="spread" type="range" min="1" max="20" step="1" value="6"><output id="oS">6°</output></div>
+      <label class="chk"><input type="checkbox" id="sym"> Rolled-sheet symmetry (mirror about RD and TD)</label>
+      <div class="seg" id="modeSeg">
+        <button type="button" id="mode-pts" data-mode="points" aria-pressed="true">Points</button>
+        <button type="button" id="mode-den" data-mode="density" aria-pressed="false">Intensity (mrd)</button>
+      </div></div>
+    <div class="row2">
+      <div class="cell"><svg id="cell" viewBox="-1.45 -1.45 2.9 2.9" role="img" aria-label="Unit cell in the sample frame"></svg>
+        <p class="eyebrow" style="text-align:center;margin-top:2px">unit cell in the sheet</p></div>
+      <div class="ctl" style="min-width:0"><span class="lbl">Where each pole sits</span>
+        <div class="tablewrap"><table><thead><tr><th>Pole</th><th>α from ND</th><th>β from RD</th></tr></thead><tbody id="readout"></tbody></table></div>
+        <p class="eyebrow" style="letter-spacing:.03em;text-transform:none">Hover a row to find it on the figure.</p></div>
+    </div>
+  </div>
+</div>
+
+<section class="lesson">
+  <span class="eyebrow">Part 1</span>
+  <div class="two">
+    <div class="prose">
+      <h2>How a crystal plane becomes a dot</h2>
+      <p>Put one grain at the centre of an imaginary sphere. Every plane in a family, say the four {111} planes, has a normal. Where each normal pierces the sphere is its <b>pole</b>.</p>
+      <p>Draw a line from the pole to the south pole of the sphere. Where that line crosses the equatorial plane is the dot you see on the pole figure. That is the <b>stereographic projection</b>. The equatorial plane is the sheet surface, so the centre of the figure is the sheet normal <b>ND</b>, and the outer circle is everything lying in the sheet, with the rolling direction <b>RD</b> and transverse direction <b>TD</b> marked on it.</p>
+      <p>Two consequences matter for reading. Distance from the centre is the tilt angle α from ND, but it is not linear: r = tan(α/2), so the outer 30° of tilt is squashed into a narrower band than the inner 30°. And because a plane normal has no front or back, a pole that would land on the lower hemisphere is flipped to its opposite end, which is always on the upper one.</p>
+    </div>
+    <div class="diagram">
+      <svg viewBox="0 0 400 290" role="img" aria-label="Cross-section of the reference sphere showing a plane normal projected to the equatorial plane">
+        <circle cx="170" cy="140" r="100" fill="none" stroke="var(--muted)" stroke-width="1.4"/>
+        <line x1="40" y1="140" x2="300" y2="140" stroke="var(--ink)" stroke-width="2"/>
+        <text x="302" y="136" font-size="11" fill="var(--muted)" font-family="var(--mono)">sheet plane</text>
+        <text x="302" y="150" font-size="11" fill="var(--muted)" font-family="var(--mono)">= projection plane</text>
+        <line x1="170" y1="28" x2="170" y2="252" stroke="var(--net)" stroke-dasharray="3 4"/>
+        <text x="176" y="30" font-size="12" fill="var(--ink)" font-family="var(--mono)">ND</text>
+        <circle cx="170" cy="240" r="3.5" fill="var(--muted)"/>
+        <text x="178" y="256" font-size="11" fill="var(--muted)" font-family="var(--mono)">south pole S</text>
+        <g transform="rotate(50 170 140)"><rect x="152" y="122" width="36" height="36" fill="none" stroke="var(--phase)" stroke-width="1.5"/></g>
+        <line x1="138.5" y1="102.5" x2="201.5" y2="177.5" stroke="var(--phase)" stroke-width="2.4"/>
+        <text x="96" y="92" font-size="11" fill="var(--phase)" font-family="var(--mono)">crystal plane</text>
+        <line x1="170" y1="140" x2="246.6" y2="75.7" stroke="var(--ink)" stroke-width="1.6"/>
+        <line x1="246.6" y1="75.7" x2="170" y2="240" stroke="var(--hi)" stroke-width="1.4" stroke-dasharray="5 4"/>
+        <circle cx="246.6" cy="75.7" r="5" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.6"/>
+        <text x="254" y="72" font-size="12" fill="var(--ink)" font-family="var(--mono)">pole P</text>
+        <circle cx="216.6" cy="140" r="5.5" fill="var(--hi)"/>
+        <text x="206" y="162" font-size="12" fill="var(--hi)" font-family="var(--mono)">P′ (the dot)</text>
+        <path d="M170 110 A30 30 0 0 1 193 120.7" fill="none" stroke="var(--ink)"/>
+        <text x="178" y="104" font-size="12" fill="var(--ink)" font-family="var(--mono)">α</text>
+        <line x1="170" y1="120" x2="216.6" y2="120" stroke="var(--muted)" stroke-width="1"/>
+        <text x="30" y="282" font-size="12" fill="var(--muted)" font-family="var(--mono)">distance from centre r = R·tan(α/2)</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<section class="lesson">
+  <span class="eyebrow">Part 2</span>
+  <h2>A reading routine that works for any cubic pole figure</h2>
+  <ol class="steps">
+    <li><div><h3>Check the frame before the dots</h3><p>Find RD, TD and ND, the plane family ({111}, {110}, {200}…), and the phase. Conventions vary: some labs put RD at the top, others to the right. Intensities are in <b>multiples of random density (mrd)</b>, where 1 means “as many poles here as a random sample would have”.</p></div></li>
+    <li><div><h3>Know how many poles one grain makes</h3><p>One grain gives 3 poles on a {100} figure, 6 on {110}, 4 on {111} and 12 on {112}. If you count 4 blobs on a {111} figure, that can be one strong orientation. If you count 8, look for two, or for sample symmetry making copies.</p><button type="button" class="btn" data-show='{"lat":"fcc","preset":"cube","fam":"111","poly":false,"sym":false}'>Show a cube grain on {111}</button></div></li>
+    <li><div><h3>Read the centre: which plane lies flat in the sheet</h3><p>A pole at the centre means that plane is parallel to the sheet surface, so ND is parallel to its normal. Cube texture puts a {100} pole at the centre. The γ-fibre in ferrite puts a {111} pole there.</p><button type="button" class="btn" data-show='{"lat":"bcc","preset":"g1","fam":"111","poly":false,"sym":false}'>Show ND ∥ ⟨111⟩ in ferrite</button></div></li>
+    <li><div><h3>Read the rim at RD: which direction was rolled</h3><p>A pole sitting on the outer circle at RD tells you a crystal direction lies along RD. Goss has a {100} pole on RD. Copper has a {111} pole on RD. The α-fibre in ferrite has a {110} pole on RD.</p><button type="button" class="btn" data-show='{"lat":"fcc","preset":"copper","fam":"111","poly":false,"sym":false}'>Show copper on {111}</button></div></li>
+    <li><div><h3>Use the other poles as a check</h3><p>Once you have guessed {hkl}⟨uvw⟩ from the centre and RD, the remaining poles must sit at the right angles, for example 54.7° between ⟨100⟩ and ⟨111⟩, or 60° and 90° between ⟨110⟩ poles. The table on the bench lists α and β for every pole so you can check the guess.</p></div></li>
+    <li><div><h3>Expect copies from sample symmetry</h3><p>A rolled sheet looks the same after a 180° turn about RD, TD or ND. So one ideal component like copper or S shows up two or four times, mirrored about RD and TD. Tick “Rolled-sheet symmetry” and watch a single S orientation become four.</p><button type="button" class="btn" data-show='{"lat":"fcc","preset":"s","fam":"111","poly":true,"sym":true,"mode":"density"}'>Show S with sheet symmetry</button></div></li>
+    <li><div><h3>Read blobs and bands, not points</h3><p>Real samples have spread. A texture component becomes a blob whose width is the spread; a fibre (all orientations sharing one axis) becomes a ring or a band. One pole figure cannot always separate overlapping components; that is what the orientation distribution function (ODF) is for.</p><button type="button" class="btn" data-show='{"lat":"bcc","preset":"g2","fam":"110","poly":true,"sym":true,"mode":"density","spread":10}'>Show a γ-fibre steel on {110}</button></div></li>
+  </ol>
+</section>
+
+<section class="lesson">
+  <span class="eyebrow">Part 3</span>
+  <h2>FCC versus BCC: is the reading different?</h2>
+  <p class="verdict">No. The reading routine and the geometry are identical, because austenite and ferrite are both cubic. A grain with a given orientation puts its {100}, {110} and {111} poles in exactly the same places whether the atoms are arranged FCC or BCC. Switch the phase on the bench with any orientation: the dots do not move, only the colour and the unit cell change. What differs is what you measure and what you expect to find.</p>
+  <div class="compare">
+    <table>
+      <thead><tr><th></th><th class="fcc">FCC austenite (γ-Fe)</th><th class="bcc">BCC ferrite / martensite (α-Fe)</th></tr></thead>
+      <tbody>
+        <tr><td>Reflections you can measure by X-ray or neutron diffraction</td><td>h, k, l all odd or all even: <span class="mi">111, 200, 220, 311</span>. The usual set is {111}, {200}, {220}.</td><td>h + k + l even: <span class="mi">110, 200, 211, 310</span>. The usual set is {110}, {200}, {211}.</td></tr>
+        <tr><td>The “headline” pole figure</td><td>{111}, the close-packed planes.</td><td>{110}, the most densely packed planes.</td></tr>
+        <tr><td>Family names that hide a subtlety</td><td>{110} normals are measured through the 220 peak, since 110 is extinct.</td><td>{111} normals would need the weak 222 peak, so they are usually recalculated from the ODF or taken from EBSD.</td></tr>
+        <tr><td>Typical textures to recognise</td><td>Rolling: Copper {112}⟨111⟩, Brass {011}⟨211⟩, S {123}⟨634⟩, Goss {011}⟨100⟩. Recrystallisation: Cube {001}⟨100⟩. Seen in austenitic stainless steels and in hot-rolled austenite.</td><td>Cold rolling and annealing of low-carbon sheet: the α-fibre (RD ∥ ⟨110⟩) and γ-fibre (ND ∥ ⟨111⟩, good for deep drawing). Goss {011}⟨100⟩ in grain-oriented electrical steel. Rotated cube {001}⟨110⟩.</td></tr>
+        <tr><td>Where the texture came from</td><td>Deformation and recrystallisation of austenite itself.</td><td>Often inherited from austenite through the γ→α transformation, following an orientation relationship such as Kurdjumov–Sachs, with {111}γ ∥ {110}α. One parent grain gives up to 24 variants.</td></tr>
+        <tr><td>Practical catches in steel</td><td>Retained austenite in TRIP or Q&amp;P steels is a minor phase, so its pole figures are noisy and need its own peaks.</td><td>Martensite is really body-centred tetragonal. At normal carbon levels c/a is so close to 1 that it is treated as BCC; at high carbon the peaks split.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="prose" style="max-width:74ch">The practical habit that follows: a {111} figure of austenite and a {110} figure of ferrite from the same steel are the natural pair to compare, because K–S makes those planes parallel. The <a href="ks-variant-atlas.html">KS Variant Atlas</a> in this project shows the 24 ferrite variants from one austenite grain on a {100}α pole figure, which is a good next exercise once this page feels easy.</p>
+</section>
+
+<section class="lesson" id="quizSec">
+  <span class="eyebrow">Part 4</span>
+  <h2>Name that texture</h2>
+  <div class="quiz">
+    <div>
+      <div class="qfigs">
+        <div class="mini"><div class="pfbox" id="q1"></div><span class="lab" id="q1lab">{200}</span></div>
+        <div class="mini"><div class="pfbox" id="q2"></div><span class="lab" id="q2lab">{111}</span></div>
+      </div>
+    </div>
+    <div class="qside">
+      <p id="qPrompt">A rolled <b>austenite</b> sheet with some spread and sheet symmetry. Which ideal component is it?</p>
+      <div class="seg" id="qChoices"></div>
+      <p class="fb" id="qFb" aria-live="polite"></p>
+      <div class="seg"><button type="button" class="btn" id="qNext">New sample</button><button type="button" class="btn" id="qBench">Load it on the bench</button></div>
+    </div>
+  </div>
+</section>
+
+<footer>Conventions used here: RD at the top, TD to the right, ND out of the page; upper-hemisphere stereographic projection; Bunge (φ₁, Φ, φ₂) Euler angles; intensity bands in multiples of random density, smoothed with a 7° kernel. Negative Miller indices are written with an overbar.</footer>
+</div>
+
+<script>
+(()=>{
+const D=Math.PI/180;
+const FAM={'100':[1,0,0],'110':[1,1,0],'111':[1,1,1],'112':[1,1,2]};
+const REFL={fcc:{'100':'200','110':'220','111':'111','112':'224'},bcc:{'100':'200','110':'110','111':'222','112':'211'}};
+const REFLNOTE={
+ fcc:{'100':'Measured with the 200 reflection (100 is extinct in FCC).','110':'Measured with the 220 reflection (110 is extinct in FCC).','111':'Measured directly with the 111 reflection, the strongest austenite peak.','112':'The first allowed peak is 224, so {112} figures are usually recalculated from the ODF.'},
+ bcc:{'100':'Measured with the 200 reflection (100 is extinct in BCC).','110':'Measured directly with the 110 reflection, the strongest ferrite peak.','111':'Needs the weak 222 reflection, so usually recalculated from the ODF or EBSD.','112':'Measured directly with the 211 reflection.'}};
+const MINIS={fcc:['111','100','110'],bcc:['110','100','112']};
+const PRE={
+ fcc:[
+  {id:'cube',name:'Cube',hkl:[0,0,1],uvw:[1,0,0],note:'Recrystallisation texture of FCC. Signature: a {100} pole at the centre and two on RD and TD; {111} poles on the diagonals at α = 54.7°.'},
+  {id:'goss',name:'Goss',hkl:[0,1,1],uvw:[1,0,0],note:'Signature: a {100} pole on the rim at RD, a {110} pole at the centre.'},
+  {id:'brass',name:'Brass',hkl:[0,1,1],uvw:[2,1,-1],note:'Common in low stacking-fault-energy FCC such as austenitic stainless steel. Signature: a {110} pole at the centre and a {111} pole on the rim at TD.'},
+  {id:'copper',name:'Copper',hkl:[1,1,2],uvw:[1,1,-1],note:'Signature: a {111} pole on the rim at RD, and a {112} pole at the centre.'},
+  {id:'s',name:'S',hkl:[1,2,3],uvw:[6,3,-4],note:'Sits between Brass and Copper with no special pole at the centre or on RD. With sheet symmetry it appears four times.'}],
+ bcc:[
+  {id:'rcube',name:'Rotated cube',hkl:[0,0,1],uvw:[1,-1,0],note:'Signature: a {100} pole at the centre, the other two on the rim at 45° between RD and TD; a {110} pole on RD.'},
+  {id:'g1',name:'{111}⟨110⟩',hkl:[1,1,1],uvw:[1,-1,0],note:'γ-fibre member. Signature: a {111} pole at the centre and a {110} pole on the rim at RD, so it is on the α-fibre too.'},
+  {id:'g2',name:'{111}⟨112⟩',hkl:[1,1,1],uvw:[-1,-1,2],note:'γ-fibre member, typical of annealed deep-drawing steel. Signature: a {111} pole at the centre and a {110} pole on the rim at TD.'},
+  {id:'a112',name:'{112}⟨110⟩',hkl:[1,1,2],uvw:[1,-1,0],note:'α-fibre member, strong after cold rolling. Signature: a {110} pole on the rim at RD and a {111} pole on the rim at TD.'},
+  {id:'goss',name:'Goss',hkl:[0,1,1],uvw:[1,0,0],note:'The texture of grain-oriented electrical steel: easy magnetisation ⟨100⟩ along RD. Signature: a {100} pole on RD, a {110} pole at the centre.'}]};
+
+const st={lat:'fcc',fam:'111',e:[0,0,0],poly:false,spread:6,sym:false,mode:'points',preset:'cube',hi:-1};
+
+/* ---------- math ---------- */
+const norm=v=>{const n=Math.hypot(...v);return v.map(x=>x/n)};
+const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const mv=(M,v)=>[M[0][0]*v[0]+M[0][1]*v[1]+M[0][2]*v[2],M[1][0]*v[0]+M[1][1]*v[1]+M[1][2]*v[2],M[2][0]*v[0]+M[2][1]*v[1]+M[2][2]*v[2]];
+const mm=(A,B)=>A.map((r,i)=>[0,1,2].map(j=>r[0]*B[0][j]+r[1]*B[1][j]+r[2]*B[2][j]));
+const tr=M=>[0,1,2].map(i=>[M[0][i],M[1][i],M[2][i]]);
+function euler2g(p1,P,p2){const c1=Math.cos(p1*D),s1=Math.sin(p1*D),c=Math.cos(P*D),s=Math.sin(P*D),c2=Math.cos(p2*D),s2=Math.sin(p2*D);
+ return [[c1*c2-s1*s2*c, s1*c2+c1*s2*c, s2*s],[-c1*s2-s1*c2*c, -s1*s2+c1*c2*c, c2*s],[s1*s, -c1*s, c]];}
+function comp2euler(hkl,uvw){const RD=norm(uvw),ND=norm(hkl),TD=cross(ND,RD);const g=tr([RD,TD,ND]);
+ const P=Math.acos(Math.max(-1,Math.min(1,g[2][2])))/D;let p1,p2;
+ if(Math.abs(Math.sin(P*D))<1e-6){p1=Math.atan2(g[0][1],g[0][0])/D;p2=0;}else{p1=Math.atan2(g[2][0],-g[2][1])/D;p2=Math.atan2(g[0][2],g[1][2])/D;}
+ const w=x=>{const r=((x%360)+360)%360;return r>359.9999?0:r;};return [w(p1),P,w(p2)];}
+function famVecs(key){const b=FAM[key].map(Math.abs);const perms=[[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]];const seen=new Set(),out=[];
+ for(const p of perms)for(let sg=0;sg<8;sg++){const v=[0,1,2].map(i=>b[p[i]]*((sg>>i)&1?-1:1));
+  let f=v.findIndex(x=>x!==0);const c=v[f]<0?v.map(x=>-x):v;const k=c.join(',');if(seen.has(k))continue;seen.add(k);out.push({idx:c,v:norm(c)});}
+ return out;}
+function rod(w){const a=Math.hypot(...w);if(a<1e-12)return [[1,0,0],[0,1,0],[0,0,1]];const [x,y,z]=w.map(t=>t/a),c=Math.cos(a),s=Math.sin(a),C=1-c;
+ return [[c+x*x*C,x*y*C-z*s,x*z*C+y*s],[y*x*C+z*s,c+y*y*C,y*z*C-x*s],[z*x*C-y*s,z*y*C+x*s,c+z*z*C]];}
+function rng(seed){return()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+function gaussList(n,seed){const r=rng(seed),o=[];for(let i=0;i<n;i++){const g=()=>Math.sqrt(-2*Math.log(r()+1e-12))*Math.cos(2*Math.PI*r());o.push([g(),g(),g()]);}return o;}
+const BASE=gaussList(300,7);
+const SYMS=[[1,1,1],[1,-1,-1],[-1,1,-1],[-1,-1,1]];
+
+/* ---------- labels ---------- */
+const mi=(a,open='(',close=')')=>open+a.map(x=>x<0?`<span class="bar">${-x}</span>`:x).join('')+close;
+function svgIdx(a){return a.map(x=>x<0?`<tspan text-decoration="overline">${-x}</tspan>`:`<tspan>${x}</tspan>`).join('');}
+const famLabel=k=>'{'+k+'}';
+
+/* ---------- orientation sets ---------- */
+function grainMats(){const gT=tr(euler2g(...st.e));if(!st.poly)return [gT];const s=st.spread*D;return BASE.map(w=>mm(rod(w.map(x=>x*s)),gT));}
+function poleSet(mats,fam,sym){const fv=famVecs(fam),syms=sym?SYMS:[SYMS[0]],out=[];
+ for(const g of mats)for(const S of syms)for(let i=0;i<fv.length;i++){const s=mv(g,fv[i].v);out.push({v:[s[0]*S[0],s[1]*S[1],s[2]*S[2]],idx:fv[i].idx,i});}
+ return out;}
+const proj=v=>{const d=1+v[2];return [v[1]/d,-v[0]/d];}; // screen x = TD, screen y = -RD (RD up)
+
+/* ---------- rendering ---------- */
+function css(n){return getComputedStyle(document.body).getPropertyValue(n).trim();}
+function hexRgb(h){h=h.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');const n=parseInt(h,16);return [n>>16&255,n>>8&255,n&255];}
+const LEVELS=[1,2,4,8,16];
+function drawDensity(cv,poles,res){
+ cv.width=res;cv.height=res;const ctx=cv.getContext('2d');const img=ctx.createImageData(res,res);
+ const hw=7*D,k=1/(1-Math.cos(hw)),cut=1-6/k,n=poles.length,normc=n*(1-Math.exp(-k))/k;
+ const P=new Float32Array(n*3);poles.forEach((p,j)=>{P[3*j]=p.v[0];P[3*j+1]=p.v[1];P[3*j+2]=p.v[2];});
+ const cols=['--d1','--d2','--d3','--d4','--d5'].map(c=>hexRgb(css(c)));let mx=0;
+ for(let py=0;py<res;py++)for(let px=0;px<res;px++){const Y=(px+.5)/res*2-1,X=-((py+.5)/res*2-1),r2=X*X+Y*Y;if(r2>1)continue;
+  const q=1+r2,vx=2*X/q,vy=2*Y/q,vz=(1-r2)/q;let sum=0;
+  for(let j=0;j<n;j++){let d=vx*P[3*j]+vy*P[3*j+1]+vz*P[3*j+2];if(d<0)d=-d;if(d>cut)sum+=Math.exp(k*(d-1));}
+  const m=sum/normc;if(m>mx)mx=m;let b=-1;for(let l=0;l<5;l++)if(m>=LEVELS[l])b=l;if(b<0)continue;
+  const o=4*(py*res+px);img.data[o]=cols[b][0];img.data[o+1]=cols[b][1];img.data[o+2]=cols[b][2];img.data[o+3]=255;}
+ ctx.putImageData(img,0,0);return mx;}
+
+function ensureBox(box){if(!box._cv){box._cv=document.createElement('canvas');box._svg=document.createElementNS('http://www.w3.org/2000/svg','svg');box._svg.setAttribute('viewBox','-1.3 -1.3 2.6 2.6');box.append(box._cv,box._svg);}return box;}
+function net(big){let s='';for(const a of [15,30,45,60,75])s+=`<circle r="${Math.tan(a*D/2).toFixed(4)}" fill="none" stroke="var(--net)" stroke-width="${big?.006:.008}"/>`;
+ for(let b=0;b<180;b+=30){const x=Math.sin(b*D),y=Math.cos(b*D);s+=`<line x1="${-x}" y1="${-y}" x2="${x}" y2="${y}" stroke="var(--net)" stroke-width="${big?.006:.008}"/>`;}
+ if(big)for(const a of [30,60])s+=`<text x="${(Math.tan(a*D/2)+.015).toFixed(3)}" y="-.02" font-size=".045" fill="var(--muted)" font-family="var(--mono)">${a}°</text>`;
+ return s;}
+function renderPF(box,{fam,mats,sym,mode,big,res,labels,hi}){
+ ensureBox(box);const poles=poleSet(mats,fam,sym);let mx=0;
+ const dens=mode==='density';box._cv.hidden=!dens;if(dens)mx=drawDensity(box._cv,poles,res);
+ let s=`<circle r="1" fill="${dens?'none':'var(--surface)'}"/>`+net(big);
+ if(!dens){const single=mats.length===1&&!sym,rad=single?(big?.042:.07):(big?.012:.02);const ph='var(--phase)';
+  for(const p of poles){let v=p.v,idx=p.idx;const both=Math.abs(v[2])<1e-7;const list=[];
+   if(v[2]<-1e-7){v=v.map(x=>-x);idx=idx.map(x=>-x);}list.push([v,idx]);if(both)list.push([v.map(x=>-x),idx.map(x=>-x)]);
+   for(const [w,ix] of list){const [x,y]=proj(w);const on=single&&hi===p.i;
+    s+=`<circle cx="${x.toFixed(4)}" cy="${y.toFixed(4)}" r="${on?rad*1.45:rad}" fill="${on?'var(--hi)':ph}" fill-opacity="${single?1:.45}" stroke="${single?'var(--surface)':'none'}" stroke-width="${big?.008:.012}"><title>(${ix.map(t=>t<0?'-'+(-t):t).join(' ')})</title></circle>`;
+    if(single&&labels){const lx=x+(x>.55?-.06:.06),anchor=x>.55?'end':'start';s+=`<text x="${lx.toFixed(3)}" y="${(y-.05).toFixed(3)}" font-size=".058" font-family="var(--mono)" fill="${on?'var(--hi)':'var(--ink)'}" text-anchor="${anchor}">(${svgIdx(ix)})</text>`;}}}}
+ s+=`<circle r="1" fill="none" stroke="var(--ink)" stroke-width="${big?.01:.016}"/>`;
+ const fs=big?.075:.13;
+ s+=`<text x="0" y="${-1.06}" font-size="${fs}" text-anchor="middle" font-family="var(--mono)" fill="var(--ink)" font-weight="500">RD</text>`;
+ s+=`<text x="${1.04}" y="${fs*.35}" font-size="${fs}" font-family="var(--mono)" fill="var(--ink)" font-weight="500">TD</text>`;
+ if(big)s+=`<g stroke="var(--muted)" stroke-width=".008"><line x1="-.03" x2=".03"/><line y1="-.03" y2=".03"/></g><text x=".035" y=".075" font-size=".045" font-family="var(--mono)" fill="var(--muted)">ND</text>`;
+ box._svg.innerHTML=s;return mx;}
+
+function renderCell(){const svg=document.getElementById('cell');const gT=tr(euler2g(...st.e));const az=32*D,el=24*D;
+ const pr=v=>{const dep=v[0]*Math.cos(az)+v[1]*Math.sin(az);return [v[1]*Math.cos(az)-v[0]*Math.sin(az),-(v[2]*Math.cos(el)-dep*Math.sin(el)),dep];};
+ const toS=c=>mv(gT,c);let s='';
+ const sq=[[1,1,0],[1,-1,0],[-1,-1,0],[-1,1,0]].map(p=>pr(p.map(x=>x*1.05)));
+ s+=`<polygon points="${sq.map(p=>p[0].toFixed(3)+','+p[1].toFixed(3)).join(' ')}" fill="var(--net)" fill-opacity=".35" stroke="var(--net)" stroke-width=".015"/>`;
+ for(const [v,l] of [[[1.25,0,0],'RD'],[[0,1.25,0],'TD'],[[0,0,1.25],'ND']]){const p=pr(v);s+=`<line x1="0" y1="0" x2="${p[0].toFixed(3)}" y2="${p[1].toFixed(3)}" stroke="var(--muted)" stroke-width=".02" stroke-dasharray=".05 .04"/><text x="${(p[0]*1.08).toFixed(3)}" y="${(p[1]*1.08+.05).toFixed(3)}" font-size=".16" text-anchor="middle" font-family="var(--mono)" fill="var(--muted)">${l}</text>`;}
+ const h=.5,V=[];for(const x of[-h,h])for(const y of[-h,h])for(const z of[-h,h])V.push([x,y,z]);
+ const E=[];for(let i=0;i<8;i++)for(let j=i+1;j<8;j++){let d=0;for(let k=0;k<3;k++)if(V[i][k]!==V[j][k])d++;if(d===1)E.push([i,j]);}
+ const PV=V.map(c=>pr(toS(c)));for(const [i,j] of E)s+=`<line x1="${PV[i][0].toFixed(3)}" y1="${PV[i][1].toFixed(3)}" x2="${PV[j][0].toFixed(3)}" y2="${PV[j][1].toFixed(3)}" stroke="var(--ink)" stroke-width=".018" stroke-opacity=".7"/>`;
+ const atoms=V.slice();if(st.lat==='fcc'){for(const k of[0,1,2])for(const sg of[-h,h]){const a=[0,0,0];a[k]=sg;atoms.push(a);}}else atoms.push([0,0,0]);
+ const fv=famVecs(st.fam);
+ const items=atoms.map(c=>{const p=pr(toS(c));return {z:p[2],svg:`<circle cx="${p[0].toFixed(3)}" cy="${p[1].toFixed(3)}" r="${st.lat==='fcc'?.085:.1}" fill="var(--phase)" stroke="var(--surface)" stroke-width=".02"/>`};});
+ fv.forEach((f,i)=>{let w=toS(f.v);if(w[2]<-1e-7)w=w.map(x=>-x);const p=pr(w.map(x=>x*1.05)),on=st.hi===i;
+  items.push({z:p[2]+.3,svg:`<line x1="0" y1="0" x2="${p[0].toFixed(3)}" y2="${p[1].toFixed(3)}" stroke="${on?'var(--hi)':'var(--ink)'}" stroke-width="${on?.04:.022}"/><circle cx="${p[0].toFixed(3)}" cy="${p[1].toFixed(3)}" r="${on?.06:.035}" fill="${on?'var(--hi)':'var(--ink)'}"/>`});});
+ items.sort((a,b)=>b.z-a.z);s+=items.map(i=>i.svg).join('');svg.innerHTML=s;}
+
+function renderReadout(){const gT=tr(euler2g(...st.e));const rows=famVecs(st.fam).map((f,i)=>{let v=mv(gT,f.v),ix=f.idx;if(v[2]<-1e-7){v=v.map(x=>-x);ix=ix.map(x=>-x);}
+  const a=Math.acos(Math.min(1,v[2]))/D;let b=Math.atan2(v[1],v[0])/D;b=(b+360)%360;return {i,ix,a,b};}).sort((p,q)=>p.a-q.a);
+ document.getElementById('readout').innerHTML=rows.map(r=>`<tr data-i="${r.i}" class="${st.hi===r.i?'on':''}"><td>${mi(r.ix)}</td><td>${r.a.toFixed(1)}°</td><td>${r.a<.05?'–':r.b.toFixed(1)+'°'}</td></tr>`).join('');}
+
+function renderLegend(mx){const el=document.getElementById('legend');const show=st.poly&&st.mode==='density';el.hidden=!show;if(!show)return;
+ const names=['1–2','2–4','4–8','8–16','≥16'];el.innerHTML=names.map((n,i)=>`<span><i style="background:var(--d${i+1})"></i>${n}</span>`).join('')+`<span>mrd · max ${mx.toFixed(1)}</span>`;}
+
+let raf=0;function update(){cancelAnimationFrame(raf);raf=requestAnimationFrame(draw);}
+function draw(){
+ document.body.dataset.lat=st.lat;
+ for(const b of document.querySelectorAll('#latSeg button'))b.setAttribute('aria-pressed',b.dataset.lat===st.lat);
+ document.getElementById('famSeg').innerHTML=Object.keys(FAM).map(k=>`<button type="button" id="fam-${k}" data-fam="${k}" aria-pressed="${k===st.fam}">${famLabel(k)} <span style="opacity:.7;font-size:12px">via ${REFL[st.lat][k]}</span></button>`).join('');
+ document.getElementById('reflNote').textContent=REFLNOTE[st.lat][st.fam];
+ document.getElementById('presetSeg').innerHTML=PRE[st.lat].map(p=>`<button type="button" id="pre-${p.id}" data-pre="${p.id}" aria-pressed="${p.id===st.preset}">${p.name}</button>`).join('');
+ const pr=PRE[st.lat].find(p=>p.id===st.preset);
+ document.getElementById('presetNote').innerHTML=pr?`<b>${pr.name}</b> <span class="mi">${mi(pr.hkl,'{','}')}${mi(pr.uvw,'⟨','⟩')}</span>: plane ${mi(pr.hkl,'{','}')} lies in the sheet, direction ${mi(pr.uvw,'⟨','⟩')} points along RD. ${pr.note}`:'Custom orientation. Pick a component to snap back to an ideal texture.';
+ st.e.forEach((v,i)=>{document.getElementById('e'+(i+1)).value=v;document.getElementById('o'+(i+1)).textContent=(Math.round(v*10)/10)+'°';});
+ document.getElementById('poly').checked=st.poly;document.getElementById('sym').checked=st.sym;
+ document.getElementById('spread').value=st.spread;document.getElementById('oS').textContent=st.spread+'°';
+ document.getElementById('spread').disabled=!st.poly;
+ const mode=st.poly?st.mode:'points';
+ for(const b of document.querySelectorAll('#modeSeg button')){b.setAttribute('aria-pressed',b.dataset.mode===mode);b.disabled=!st.poly&&b.dataset.mode==='density';}
+ document.getElementById('pfTitle').textContent=`${famLabel(st.fam)} pole figure, ${st.lat==='fcc'?'austenite':'ferrite'}`;
+ document.getElementById('pfSub').textContent=st.poly?`300 grains · σ = ${st.spread}°${st.sym?' · sheet symmetry':''}`:(st.sym?'one orientation + sheet-symmetry copies':'one grain · upper hemisphere');
+ const mats=grainMats();
+ const mx=renderPF(document.getElementById('pfMain'),{fam:st.fam,mats,sym:st.sym,mode,big:true,res:200,labels:true,hi:st.hi});
+ renderLegend(mx);
+ const minis=document.getElementById('minis');
+ if(!minis.children.length)minis.innerHTML=[0,1,2].map(i=>`<div class="mini"><div class="pfbox" id="mini${i}"></div><span class="lab" id="minil${i}"></span></div>`).join('');
+ MINIS[st.lat].forEach((f,i)=>{renderPF(document.getElementById('mini'+i),{fam:f,mats,sym:st.sym,mode,big:false,res:90,labels:false,hi:-1});document.getElementById('minil'+i).textContent=`${famLabel(f)} via ${REFL[st.lat][f]}`;});
+ renderCell();renderReadout();}
+
+function setPreset(id){const p=PRE[st.lat].find(q=>q.id===id);if(!p)return;st.preset=id;st.e=comp2euler(p.hkl,p.uvw);st.hi=-1;}
+
+/* ---------- events ---------- */
+document.getElementById('latSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const old=st.lat;st.lat=b.dataset.lat;
+ if(old!==st.lat){const same=PRE[st.lat].find(p=>p.id===st.preset);if(!same)st.preset=null;st.fam=st.lat==='fcc'?'111':'110';st.hi=-1;}update();});
+document.getElementById('famSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;st.fam=b.dataset.fam;st.hi=-1;update();});
+document.getElementById('presetSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;setPreset(b.dataset.pre);update();});
+[1,2,3].forEach(i=>document.getElementById('e'+i).addEventListener('input',e=>{st.e[i-1]=+e.target.value;st.preset=null;update();}));
+document.getElementById('poly').addEventListener('change',e=>{st.poly=e.target.checked;if(st.poly)st.mode='density';update();});
+document.getElementById('sym').addEventListener('change',e=>{st.sym=e.target.checked;update();});
+document.getElementById('spread').addEventListener('input',e=>{st.spread=+e.target.value;update();});
+document.getElementById('modeSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;st.mode=b.dataset.mode;update();});
+const ro=document.getElementById('readout');
+ro.addEventListener('mouseover',e=>{const r=e.target.closest('tr');if(!r)return;const i=+r.dataset.i;if(st.hi!==i){st.hi=i;update();}});
+ro.addEventListener('mouseleave',()=>{st.hi=-1;update();});
+document.querySelectorAll('[data-show]').forEach(b=>b.addEventListener('click',()=>{const o=JSON.parse(b.dataset.show);
+ st.lat=o.lat;st.fam=o.fam;st.poly=!!o.poly;st.sym=!!o.sym;st.mode=o.mode||'points';if(o.spread)st.spread=o.spread;setPreset(o.preset);update();
+ document.getElementById('bench').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});}));
+
+/* ---------- quiz ---------- */
+const qz={lat:'fcc',id:null,done:false};let qr=rng(Date.now()%100000);
+function newQuiz(){qz.lat=qr()<.5?'fcc':'bcc';const list=PRE[qz.lat];let p;do{p=list[Math.floor(qr()*list.length)];}while(p.id===qz.id&&list.length>1);qz.id=p.id;qz.done=false;renderQuiz();}
+function renderQuiz(){const p=PRE[qz.lat].find(q=>q.id===qz.id);const gT=tr(euler2g(...comp2euler(p.hkl,p.uvw)));const mats=BASE.map(w=>mm(rod(w.map(x=>x*6*D)),gT));
+ const prim=qz.lat==='fcc'?'111':'110';
+ renderPF(document.getElementById('q1'),{fam:'100',mats,sym:true,mode:'density',big:false,res:110,labels:false,hi:-1});
+ renderPF(document.getElementById('q2'),{fam:prim,mats,sym:true,mode:'density',big:false,res:110,labels:false,hi:-1});
+ document.getElementById('q1lab').textContent='{100} via 200';document.getElementById('q2lab').textContent=`${famLabel(prim)} via ${REFL[qz.lat][prim]}`;
+ document.getElementById('qPrompt').innerHTML=`A rolled <b class="${qz.lat}">${qz.lat==='fcc'?'austenite':'ferrite'}</b> sheet with 6° spread and sheet symmetry. Which ideal component is it?`;
+ document.getElementById('qChoices').innerHTML=PRE[qz.lat].map(q=>`<button type="button" id="q-${q.id}" data-q="${q.id}" aria-pressed="false">${q.name}</button>`).join('');
+ const fb=document.getElementById('qFb');fb.textContent='Start at the centre of each figure, then look at RD and TD on the rim.';fb.className='fb';}
+document.getElementById('qChoices').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const p=PRE[qz.lat].find(q=>q.id===qz.id);const fb=document.getElementById('qFb');
+ document.querySelectorAll('#qChoices button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+ if(b.dataset.q===qz.id){fb.className='fb ok';fb.innerHTML=`Correct: ${p.name} ${mi(p.hkl,'{','}')}${mi(p.uvw,'⟨','⟩')}. ${p.note}`;}
+ else{const g=PRE[qz.lat].find(q=>q.id===b.dataset.q);fb.className='fb';fb.innerHTML=`Not ${g.name}. ${g.note.split('Signature:')[1]?'For '+g.name+' you would expect:'+g.note.split('Signature:')[1]:''} Look again.`;}});
+document.getElementById('qNext').addEventListener('click',newQuiz);
+document.getElementById('qBench').addEventListener('click',()=>{st.lat=qz.lat;st.fam=qz.lat==='fcc'?'111':'110';st.poly=true;st.sym=true;st.mode='density';st.spread=6;setPreset(qz.id);update();document.getElementById('bench').scrollIntoView({block:'start'});});
+
+/* theme changes need a canvas repaint */
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{update();renderQuiz();});}catch(e){}
+new MutationObserver(()=>{update();renderQuiz();}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+
+setPreset('cube');draw();newQuiz();
+})();
+</script>
+
+</body></html>
