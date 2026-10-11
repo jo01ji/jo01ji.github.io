@@ -1,0 +1,1119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>316L Texture Lab</title>
+<meta name="description" content="Interactive explorer of how scan rotation, hatch spacing, layer thickness, laser power and speed steer crystallographic texture in laser powder bed fusion of 316L stainless steel.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: an instrument bench. Sticky control rack on the left, stacked
+   measurement panels on the right, a reading section below. */
+:root {
+  --bg: #eef1f4;
+  --panel: #fbfcfd;
+  --ink: #18212b;
+  --ink-2: #4a5866;
+  --ink-3: #7a8794;
+  --line: #d3dae1;
+  --accent: #2b5c99;
+  --accent-ink: #ffffff;
+  --laser: #c4661c;
+  --substrate: #c9d0d7;
+  --pore: #b3261e;
+  --warn: #9a6400;
+  --good: #2e7d4f;
+  --seq0: #f4f6f9;
+  --seq1: #1d3f73;
+  --font-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f141a; --panel: #161d25; --ink: #e4e9ef; --ink-2: #aab5c1; --ink-3: #7c8896;
+    --line: #2a3440; --accent: #7fa8de; --accent-ink: #0f141a; --laser: #f0964a;
+    --substrate: #3a4552; --pore: #ff6b5e; --warn: #e3b04b; --good: #6cc995;
+    --seq0: #161d25; --seq1: #a9cdfa; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f141a; --panel: #161d25; --ink: #e4e9ef; --ink-2: #aab5c1; --ink-3: #7c8896;
+  --line: #2a3440; --accent: #7fa8de; --accent-ink: #0f141a; --laser: #f0964a;
+  --substrate: #3a4552; --pore: #ff6b5e; --warn: #e3b04b; --good: #6cc995;
+  --seq0: #161d25; --seq1: #a9cdfa; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.55; margin: 0; }
+.wrap { max-width: 1280px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 64px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; letter-spacing: .01em; text-wrap: balance; margin: 0; line-height: 1.1; }
+h1 { font-size: clamp(2.4rem, 5vw, 3.6rem); font-weight: 700; }
+h2 { font-size: 1.75rem; }
+h3 { font-size: 1.2rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); }
+p { margin: 0; }
+a { color: var(--accent); }
+code, .mono { font-family: var(--font-mono); font-size: .92em; }
+.eyebrow { font-family: var(--font-mono); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+header.top { display: grid; gap: 12px; margin-bottom: 26px; max-width: 75ch; }
+header.top p.lede { color: var(--ink-2); font-size: 1.05rem; }
+.miller { white-space: nowrap; font-family: var(--font-mono); font-size: .92em; }
+
+.bench { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 900px) { .bench { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; min-width: 0; }
+.rack { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); display: grid; gap: 16px; }
+@media (max-width: 900px) { .rack { position: static; } }
+.ctl { display: grid; gap: 4px; }
+.ctl-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.ctl label { font-weight: 500; font-size: .92rem; }
+.ctl output { font-family: var(--font-mono); font-size: .88rem; color: var(--ink); font-variant-numeric: tabular-nums; }
+.ctl .hint { font-size: .78rem; color: var(--ink-3); }
+input[type=range] { width: 100%; accent-color: var(--accent); }
+.seg { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+.seg button { font: inherit; font-family: var(--font-mono); font-size: .85rem; padding: 7px 4px; border: 0; background: transparent; color: var(--ink); cursor: pointer; border-right: 1px solid var(--line); }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--laser); outline-offset: 2px; }
+.btn { font: inherit; font-size: .88rem; font-weight: 500; padding: 8px 12px; border-radius: var(--r); border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; }
+.btn:hover { border-color: var(--accent); }
+.rack-title { display: flex; justify-content: space-between; align-items: baseline; }
+.material { font-size: .82rem; color: var(--ink-2); border-top: 1px solid var(--line); padding-top: 12px; display: grid; gap: 2px; }
+.material .mono { color: var(--ink); }
+
+.views { display: grid; gap: 20px; min-width: 0; }
+.panel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.panel-head p { font-size: .85rem; color: var(--ink-2); max-width: 70ch; }
+canvas { display: block; width: 100%; touch-action: none; }
+.row2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
+@media (max-width: 1100px) { .row2 { grid-template-columns: minmax(0, 1fr); } }
+.row3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start; }
+@media (max-width: 1100px) { .row3 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+@media (max-width: 620px) { .row3 { grid-template-columns: minmax(0, 1fr); } }
+
+.readouts { display: flex; flex-wrap: wrap; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; margin-top: 12px; }
+.readouts div { flex: 1 1 118px; background: var(--panel); padding: 8px 10px; display: grid; gap: 1px; }
+.readouts dt { font-size: .72rem; color: var(--ink-3); text-transform: uppercase; letter-spacing: .06em; }
+.readouts dd { margin: 0; font-family: var(--font-mono); font-size: 1rem; font-variant-numeric: tabular-nums; }
+.flags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; min-height: 28px; }
+.flag { font-size: .8rem; font-weight: 500; padding: 3px 9px 3px 7px; border-radius: 99px; border: 1px solid currentColor; display: inline-flex; gap: 6px; align-items: center; }
+.flag::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.flag.bad { color: var(--pore); } .flag.warn { color: var(--warn); } .flag.ok { color: var(--good); }
+
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: .8rem; color: var(--ink-2); margin-top: 8px; align-items: center; }
+.sw { display: inline-block; width: 12px; height: 12px; border-radius: 2px; vertical-align: -2px; margin-right: 5px; border: 1px solid var(--line); }
+.tabs { display: inline-flex; border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+.tabs button { font: inherit; font-size: .8rem; padding: 4px 10px; border: 0; background: transparent; color: var(--ink-2); cursor: pointer; border-right: 1px solid var(--line); }
+.tabs button:last-child { border-right: 0; }
+.tabs button[aria-pressed="true"] { background: var(--ink); color: var(--panel); }
+.toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+.verdict { display: grid; gap: 10px; }
+.verdict .head { font-family: var(--font-display); font-size: 1.6rem; font-weight: 600; line-height: 1.1; }
+.verdict .sub { color: var(--ink-2); font-size: .92rem; }
+.verdict ul { margin: 0; padding-left: 18px; font-size: .88rem; color: var(--ink-2); display: grid; gap: 4px; }
+.shares { display: grid; gap: 6px; }
+.share { display: grid; grid-template-columns: 64px minmax(0, 1fr) 44px; gap: 8px; align-items: center; font-size: .82rem; }
+.share .lab { font-family: var(--font-mono); }
+.share .track { position: relative; height: 12px; background: color-mix(in srgb, var(--line) 55%, transparent); border-radius: 3px; }
+.share .fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; transition: width .4s ease; }
+.share .rnd { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--ink); }
+.share .val { font-family: var(--font-mono); text-align: right; font-variant-numeric: tabular-nums; }
+.busy { font-family: var(--font-mono); font-size: .78rem; color: var(--laser); }
+
+.tip { position: fixed; pointer-events: none; z-index: 20; background: var(--ink); color: var(--panel); font-size: .78rem; padding: 6px 8px; border-radius: 4px; max-width: 260px; line-height: 1.35; }
+
+section.read { margin-top: 48px; display: grid; gap: 18px; }
+.experiments { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.exp { text-align: left; font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; cursor: pointer; display: grid; gap: 6px; align-content: start; }
+.exp:hover { border-color: var(--accent); }
+.exp .t { font-family: var(--font-display); font-size: 1.2rem; font-weight: 600; }
+.exp .p { font-family: var(--font-mono); font-size: .76rem; color: var(--ink-3); }
+.exp .w { font-size: .86rem; color: var(--ink-2); }
+.prose { max-width: 72ch; display: grid; gap: 12px; }
+.prose p, .prose li { color: var(--ink); }
+.prose ul, .prose ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 28px; }
+.mech { display: grid; gap: 8px; }
+.mech h3 { color: var(--accent); }
+.quiz { display: grid; gap: 16px; max-width: 80ch; }
+.q { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; display: grid; gap: 10px; }
+.q .opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.q .opts button { font: inherit; font-size: .88rem; padding: 6px 12px; border: 1px solid var(--line); background: transparent; color: var(--ink); border-radius: 99px; cursor: pointer; }
+.q .opts button.right { border-color: var(--good); color: var(--good); font-weight: 600; }
+.q .opts button.wrong { border-color: var(--pore); color: var(--pore); text-decoration: line-through; }
+.q .why { font-size: .88rem; color: var(--ink-2); }
+.refs { font-size: .88rem; display: grid; gap: 8px; padding-left: 22px; margin: 0; max-width: 90ch; }
+.limits li { color: var(--ink-2); }
+footer { margin-top: 48px; font-size: .8rem; color: var(--ink-3); border-top: 1px solid var(--line); padding-top: 14px; }
+@media (prefers-reduced-motion: reduce) { .share .fill { transition: none; } }
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Laser powder bed fusion · 316L austenitic stainless steel · fcc</span>
+    <h1>316L Texture Lab</h1>
+    <p class="lede">Each laser track melts a small pool, and the new metal grows epitaxially from the grains underneath along the <span class="miller">⟨100⟩</span> direction closest to the heat flow. Change the scan rotation, hatch spacing, layer thickness, power and speed below and watch which crystal orientations win.</p>
+  </header>
+
+  <div class="bench">
+    <aside class="rack panel" aria-label="Process parameters">
+      <div class="rack-title"><h3>Process</h3><span class="busy" id="busy" hidden>growing…</span></div>
+
+      <div class="ctl">
+        <div class="ctl-head"><label for="rot">Scan rotation per layer</label><output id="rotOut">0°</output></div>
+        <div class="seg" role="group" aria-label="Rotation presets">
+          <button type="button" data-rot="0">0°</button>
+          <button type="button" data-rot="90">90°</button>
+          <button type="button" data-rot="67">67°</button>
+          <button type="button" data-rot="45">45°</button>
+        </div>
+        <input type="range" id="rot" min="0" max="90" step="1" value="0">
+      </div>
+
+      <div class="ctl">
+        <div class="ctl-head"><label for="P">Laser power</label><output id="POut"></output></div>
+        <input type="range" id="P" min="100" max="400" step="5" value="200">
+      </div>
+      <div class="ctl">
+        <div class="ctl-head"><label for="v">Scan speed</label><output id="vOut"></output></div>
+        <input type="range" id="v" min="200" max="2500" step="25" value="1000">
+      </div>
+      <div class="ctl">
+        <div class="ctl-head"><label for="h">Hatch spacing</label><output id="hOut"></output></div>
+        <input type="range" id="h" min="40" max="180" step="5" value="90">
+        <span class="hint">Distance between neighbouring tracks</span>
+      </div>
+      <div class="ctl">
+        <div class="ctl-head"><label for="t">Layer thickness</label><output id="tOut"></output></div>
+        <input type="range" id="t" min="20" max="80" step="5" value="30">
+      </div>
+      <div class="ctl">
+        <div class="ctl-head"><label for="d">Beam diameter</label><output id="dOut"></output></div>
+        <input type="range" id="d" min="50" max="150" step="5" value="80">
+      </div>
+      <div class="toolbar">
+        <button class="btn" type="button" id="reseed">Regrow (new random baseplate)</button>
+      </div>
+      <div class="material">
+        <span>316L constants used: ρ <span class="mono">7950 kg/m³</span>, c<sub>p</sub> <span class="mono">600 J/kg·K</span>, k <span class="mono">22 W/m·K</span>, T<sub>m</sub> <span class="mono">1700 K</span>, T<sub>b</sub> <span class="mono">3090 K</span>, absorptivity <span class="mono">0.40</span>.</span>
+      </div>
+    </aside>
+
+    <main class="views">
+      <section class="panel" aria-labelledby="csTitle">
+        <div class="panel-head">
+          <h2 id="csTitle">Melt pool cross-section</h2>
+          <p>Slice perpendicular to the layer-1 scan direction through 7 layers, each scanned at its own angle (left labels). Rotated layers cut their tracks obliquely; at 90° the slice runs along a track. Colour is the build-direction orientation a cell would have if it grows along the local heat flow; ticks show the growth direction projected into the slice.</p>
+        </div>
+        <canvas id="cs" height="300" aria-label="Simulated melt pool cross-section"></canvas>
+        <div class="legend">
+          <span><span class="sw" style="background:rgb(255,0,0)"></span>vertical cells → <span class="miller">⟨001⟩∥BD</span></span>
+          <span><span class="sw" style="background:rgb(0,255,0)"></span>±45° cells → <span class="miller">⟨011⟩∥BD</span></span>
+          <span><span class="sw" style="background:var(--pore)"></span>unmelted gap (lack of fusion)</span>
+          <span><span class="sw" style="background:var(--substrate)"></span>baseplate</span>
+        </div>
+        <dl class="readouts" id="readouts"></dl>
+        <div class="flags" id="flags"></div>
+      </section>
+
+      <div class="row2">
+        <section class="panel" aria-labelledby="scanTitle">
+          <div class="panel-head"><h2 id="scanTitle">Scan strategy</h2><p>Top view of the first four layers. Arrows show bidirectional hatching.</p></div>
+          <canvas id="scan" height="190" aria-label="Scan vectors of layers 1 to 4"></canvas>
+        </section>
+        <section class="panel" aria-labelledby="zoneTitle">
+          <div class="panel-head"><h2 id="zoneTitle">What survives remelting</h2><p>Area share of each cell-growth zone left in the finished part, after neighbouring tracks and the next layers remelt part of every pool.</p></div>
+          <canvas id="zones" height="190" aria-label="Surviving cell growth zones"></canvas>
+        </section>
+      </div>
+
+      <section class="panel" aria-labelledby="mapTitle">
+        <div class="panel-head">
+          <h2 id="mapTitle">Virtual EBSD map</h2>
+          <div class="toolbar">
+            <div class="tabs" role="group" aria-label="IPF reference direction" id="refTabs">
+              <button type="button" data-ref="Z" aria-pressed="true">IPF-BD</button>
+              <button type="button" data-ref="X" aria-pressed="false">IPF-X</button>
+              <button type="button" data-ref="Y" aria-pressed="false">IPF-Y</button>
+            </div>
+            <div class="tabs" role="group" aria-label="Map scale" id="scaleTabs">
+              <button type="button" data-scale="true" aria-pressed="true">Top layers, true scale</button>
+              <button type="button" data-scale="all" aria-pressed="false">Whole build</button>
+            </div>
+          </div>
+        </div>
+        <p style="font-size:.85rem;color:var(--ink-2);margin-bottom:10px" id="mapNote"></p>
+        <canvas id="map" height="260" aria-label="Simulated EBSD inverse pole figure map"></canvas>
+      </section>
+
+      <section class="row3" aria-label="Texture results">
+        <div class="panel">
+          <div class="panel-head"><h3>Inverse pole figure · BD</h3></div>
+          <canvas id="ipf" height="240" aria-label="Inverse pole figure density for the build direction"></canvas>
+          <div class="legend" id="ipfLegend"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>{100} pole figure</h3></div>
+          <canvas id="pf" height="240" aria-label="100 pole figure density"></canvas>
+          <div class="legend" id="pfLegend"></div>
+        </div>
+        <div class="panel verdict" aria-live="polite">
+          <h3>Predicted texture</h3>
+          <div class="head" id="vHead">…</div>
+          <div class="sub" id="vSub"></div>
+          <div class="shares" id="shares"></div>
+          <ul id="vNotes"></ul>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <section class="read" aria-labelledby="expTitle">
+    <h2 id="expTitle">Try these experiments</h2>
+    <div class="experiments" id="experiments"></div>
+  </section>
+
+  <section class="read" aria-labelledby="howTitle">
+    <h2 id="howTitle">How the texture forms</h2>
+    <div class="cols">
+      <div class="mech">
+        <h3>1 · Epitaxy and ⟨100⟩ growth</h3>
+        <p>316L solidifies as fcc austenite (sometimes with a little δ-ferrite). Cells and dendrites in cubic metals grow fastest along <span class="miller">⟨100⟩</span>. A new pool does not nucleate fresh grains; it continues the grains at its fusion boundary, and each cell picks the <span class="miller">⟨100⟩</span> of that grain closest to the local thermal gradient, which points roughly normal to the pool boundary.</p>
+      </div>
+      <div class="mech">
+        <h3>2 · Melt pool shape sets the cell directions</h3>
+        <p>At the bottom of the pool the gradient is vertical, so cells grow along BD. On the side walls the gradient leans toward the pool centre. In a near-parabolic conduction pool much of the wall sits near 45°, giving ±45° cells. A grain that can feed both +45° and −45° cells with two of its <span class="miller">⟨100⟩</span> axes has <span class="miller">⟨110⟩</span> along BD and its third <span class="miller">⟨100⟩</span> along the scan direction. Steep keyhole walls instead give near-horizontal cells, which <span class="miller">⟨100⟩∥BD</span> grains can serve.</p>
+      </div>
+      <div class="mech">
+        <h3>3 · Hatch and layer decide what survives</h3>
+        <p>Every pool is partly remelted by the next track (overlap = 1 − h/W) and by the next layer (remelt depth ≈ D − t). Only the surviving part of each pool is the substrate for the next one. Tight hatch spacing removes most side-wall material and leaves the vertical-cell centre, favouring <span class="miller">⟨100⟩</span>. Wide hatch leaves more side wall, favouring <span class="miller">⟨110⟩</span>, until gaps open and you get lack-of-fusion pores.</p>
+      </div>
+      <div class="mech">
+        <h3>4 · Rotation decides whether in-plane order survives</h3>
+        <p>With 0° rotation the scan direction never changes, so the selected grains keep one in-plane orientation and the part becomes single-crystal-like. With 90° rotation a grain must have <span class="miller">⟨100⟩</span> along both X and Y, which only the cube orientation offers. Any rotation that is not a multiple of 90°, such as 67°, keeps changing the required in-plane direction, so grains align only about BD: a fibre texture, usually weaker.</p>
+      </div>
+      <div class="mech">
+        <h3>5 · Speed and stray grains</h3>
+        <p>Higher speed shrinks the pool, reduces remelting and raises the chance of grains that do not grow epitaxially (stray grains, partly melted powder, solute undercooling). They break the competition and weaken the texture, which matches the near-random specimen reported at the highest speed by Ishimoto et al. (2020).</p>
+      </div>
+      <div class="mech">
+        <h3>Notation</h3>
+        <p><span class="miller">⟨110⟩∥BD</span> means a <span class="miller">⟨110⟩</span> crystal direction points along the build direction. <span class="miller">{110}⟨001⟩</span> (Goss-type) adds the in-plane part: <span class="miller">{110}</span> planes face BD and <span class="miller">⟨001⟩</span> lies along the scan direction. In IPF colouring red is <span class="miller">⟨001⟩</span>, green <span class="miller">⟨101⟩</span>, blue <span class="miller">⟨111⟩</span>. MRD = multiples of a random distribution.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="read" aria-labelledby="quizTitle">
+    <h2 id="quizTitle">Check yourself</h2>
+    <div class="quiz" id="quiz"></div>
+  </section>
+
+  <section class="read" aria-labelledby="modelTitle">
+    <h2 id="modelTitle">What the model does, and what it leaves out</h2>
+    <div class="cols">
+      <div class="prose">
+        <h3>Model</h3>
+        <ol>
+          <li><strong>Melt pool size.</strong> Width from the Rosenthal moving point-source solution plus a beam-size term. Depth from a conduction aspect ratio of 0.38 that grows with the normalised enthalpy ΔH/h<sub>s</sub> once it passes the keyhole threshold πT<sub>b</sub>/T<sub>m</sub> (Hann et al. 2011). Keyhole pools also get steeper walls.</li>
+          <li><strong>Cross-section.</strong> Each track is a U-shaped pool, boundary depth D(1 − |x/a|ⁿ), stacked at hatch spacing h and layer thickness t; later pools overwrite earlier ones. Inside each pool the heat flow is taken normal to the nested pool shape through that point.</li>
+          <li><strong>Grain competition.</strong> A line of sites across the hatch is built up layer by layer from a random baseplate. At each layer a site keeps its crystal or is overgrown by a neighbour whose <span class="miller">⟨100⟩</span> axes fit the local heat-flow directions better (Walton–Chalmers style selection). Overgrowing branches carry a small misorientation. Stray grains appear with a probability that rises with speed and with shallow remelting. For rotated layers, the same pool cross-section is applied along the rotated transverse direction.</li>
+          <li><strong>Texture.</strong> Orientations from the top 20 layers of four independent lines (about 15 000 orientations) feed the pole figure, inverse pole figure and family shares, each normalised against a random sample.</li>
+        </ol>
+      </div>
+      <div class="prose limits">
+        <h3>Simplifications</h3>
+        <ul>
+          <li>Cells only feel the heat-flow component in the transverse–build plane. Real cells also tilt toward the scan direction at the back of the pool, especially at high speed.</li>
+          <li>Melt pool size is an analytic estimate with constant properties and absorptivity. Marangoni flow, vapour recoil and powder effects are ignored. Calibrate D and W against your own single-track cross-sections before trusting numbers.</li>
+          <li>Stray-grain probability is phenomenological, chosen to reproduce the trend, not derived.</li>
+          <li>No contour scans, island/stripe patterns, interlayer hatch offsets, gas-flow effects (Andreau et al. 2019), solid-state recrystallisation or δ-ferrite.</li>
+          <li>The 67° fibre axis reported for 316L varies between studies. The model predicts a mainly <span class="miller">⟨100⟩</span> fibre, as Sun et al. (2018) found in Ni–25Mo; treat it as a prediction to test.</li>
+          <li>Trends are the lesson. Absolute MRD values and process windows are illustrative.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="read" aria-labelledby="refTitle">
+    <h2 id="refTitle">Sources</h2>
+    <ol class="refs">
+      <li>S.-H. Sun, T. Ishimoto, K. Hagihara, Y. Tsutsumi, T. Hanawa, T. Nakano. Excellent mechanical and corrosion properties of austenitic stainless steel with a unique crystallographic lamellar microstructure via selective laser melting. <em>Scripta Materialia</em> 159 (2019) 89–93. <a href="https://ir.library.osaka-u.ac.jp/repo/ouka/all/89826/ScriptaMater_159_89.pdf" target="_blank" rel="noopener">Open-access PDF</a>. Vertical cells at pool centres and ±45° cells at the sides give <span class="miller">⟨011⟩</span> main grains with <span class="miller">⟨001⟩</span> lamellae along BD in 316L.</li>
+      <li>T. Ishimoto, S. Wu, Y. Ito, S.-H. Sun, H. Amano, T. Nakano. Crystallographic orientation control of 316L austenitic stainless steel via selective laser melting. <em>ISIJ International</em> 60 (2020) 1758–1764. <a href="https://www.jstage.jst.go.jp/article/isijinternational/60/8/60_ISIJINT-2019-744/_article" target="_blank" rel="noopener">J-STAGE</a>. With 0° bidirectional scanning, slow (keyhole-like) gives single-crystal-like <span class="miller">{001}</span>, medium gives the lamellar <span class="miller">{011}+{001}</span>, fast gives near-random texture.</li>
+      <li>J. J. Marattukalam et al. The effect of laser scanning strategies on texture, mechanical properties, and site-specific grain orientation in selective laser melted 316L SS. <em>Materials &amp; Design</em> 193 (2020) 108852. <a href="https://doi.org/10.1016/j.matdes.2020.108852" target="_blank" rel="noopener">doi:10.1016/j.matdes.2020.108852</a>. No rotation: <span class="miller">⟨100⟩</span> along the scan direction and <span class="miller">⟨110⟩</span> along BD; 67° rotation: fibre texture.</li>
+      <li>O. Andreau et al. Texture control of 316L parts by modulation of the melt pool morphology in selective laser melting. <em>Journal of Materials Processing Technology</em> 264 (2019) 21–31. <a href="https://sam.ensam.eu/handle/10985/14646" target="_blank" rel="noopener">Open archive</a>. Shallow conduction pools give a strong <span class="miller">{110}⟨001⟩</span> Goss texture; melt pool depth and overlap control it.</li>
+      <li>S.-H. Sun, K. Hagihara, T. Nakano. Effect of scanning strategy on texture formation in Ni-25 at.%Mo alloys fabricated by selective laser melting. <em>Materials &amp; Design</em> 140 (2018) 307–316. <a href="https://ir.library.osaka-u.ac.jp/repo/ouka/all/89832/" target="_blank" rel="noopener">Open-access record</a>. X-scan gives <span class="miller">⟨101⟩∥BD</span>, XY (90°) gives <span class="miller">⟨001⟩∥BD</span>, 67° gives a fibre texture (fcc model alloy).</li>
+      <li>H. L. Wei, J. Mazumder, T. DebRoy. Evolution of solidification texture during additive manufacturing. <em>Scientific Reports</em> 5 (2015) 16446. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC4639736/" target="_blank" rel="noopener">PMC</a>. Growth along the easy-growth direction closest to the local heat flow and its dependence on scan pattern.</li>
+      <li>D. B. Hann, J. Iammi, J. Folkes. A simple methodology for predicting laser-weld properties from material and laser parameters. <em>Journal of Physics D: Applied Physics</em> 44 (2011) 445401. Normalised enthalpy and the keyhole threshold.</li>
+      <li>W. E. King et al. Observation of keyhole-mode laser melting in laser powder-bed fusion additive manufacturing. <em>Journal of Materials Processing Technology</em> 214 (2014) 2915–2925. Keyhole onset in 316L single tracks.</li>
+      <li>D. Rosenthal. The theory of moving sources of heat and its application to metal treatments. <em>Transactions of the ASME</em> 68 (1946) 849–866.</li>
+    </ol>
+  </section>
+
+  <footer>A teaching model: it reproduces the published trends qualitatively and is not a process-qualification tool. Single self-contained page, no build step.</footer>
+</div>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+/* ===== 316L LPBF texture model (pure functions, no DOM) ===== */
+const MAT = { rho: 7950, cp: 600, k: 22, Tm: 1700, T0: 300, Tb: 3090, A: 0.4 };
+MAT.alpha = MAT.k / (MAT.rho * MAT.cp);
+const DEG = Math.PI / 180;
+const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+
+function mulberry32(seed) {
+  return function () {
+    seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/* Melt pool estimate: Rosenthal moving point source for width, plus a
+   normalised-enthalpy (Hann et al. 2011) correction for depth. Inputs: W, m/s, um. */
+function meltPool(P, v, dBeam) {
+  const { A, k, alpha, Tm, T0, Tb, rho, cp } = MAT;
+  const C = A * P / (2 * Math.PI * k), tgt = Tm - T0;
+  let rmax = 0, len = 0;
+  for (let i = 0; i < 600; i++) {
+    const xi = -i * 2e-6;
+    const f = R => C / R * Math.exp(-v * (R + xi) / (2 * alpha));
+    let lo = Math.max(Math.abs(xi), 1e-8);
+    if (f(lo) < tgt) { if (i > 5) break; else continue; }
+    let hi = lo * 2 + 1e-6; while (f(hi) > tgt) hi *= 2;
+    for (let j = 0; j < 40; j++) { const m = (lo + hi) / 2; if (f(m) > tgt) lo = m; else hi = m; }
+    const r = Math.sqrt(Math.max(0, lo * lo - xi * xi));
+    if (r > rmax) rmax = r; len = -xi;
+  }
+  const d = dBeam * 1e-6, s = d / 2, hs = rho * cp * Tm;
+  const NH = A * P / (Math.PI * hs * Math.sqrt(alpha * v * s * s * s));
+  const NHkey = Math.PI * Tb / Tm;
+  const W = Math.sqrt((2 * rmax) ** 2 + (0.6 * d) ** 2);
+  const DW = Math.min(2, 0.38 + 0.11 * Math.max(0, NH - NHkey));
+  const nExp = 2 + 3 * clamp((NH - NHkey) / 4, 0, 1);
+  let mode = 'conduction';
+  if (NH > NHkey + 2.5) mode = 'keyhole'; else if (NH > NHkey) mode = 'transition';
+  return { W: W * 1e6, D: W * DW * 1e6, DW, NH, NHkey, mode, nExp, L: len * 1e6 };
+}
+
+/* 2-D cross-section (TD-BD plane) built track by track, layer by layer.
+   Each pool is a parabolic U (near-parabolic conduction pools, Sun et al. 2019);
+   inside it the local heat-flow direction is the normal of the nested parabola
+   through that point. Later pools overwrite. */
+const NTH = 37; // theta bins, 5 deg from -90 to +90
+function crossSection(W, D, h, t, opts) {
+  // boundary depth = D(1-|x/a|^n): n=2 is a parabola (conduction); larger n gives
+  // the steep walls and rounder bottom of keyhole-mode pools
+  const nExp = (opts && opts.nExp) || 2;
+  const nTr = 9, nL = 7;
+  const a = W / 2;
+  const width = (nTr + 1) * h + W;
+  const base = Math.max(D, t) + 10;
+  const height = base + nL * t + 12;
+  let dx = Math.max(1, Math.sqrt(width * height / 160000));
+  const nx = Math.ceil(width / dx), nz = Math.ceil(height / dx);
+  const th = new Float32Array(nx * nz).fill(NaN); // NaN = powder/unmelted
+  const tag = new Int8Array(nx * nz); // 0 powder, 1 substrate, 2 melted
+  const id = new Int16Array(nx * nz); // which track/layer melted this pixel last
+  for (let iz = 0; iz < nz; iz++) {
+    const z = (iz + 0.5) * dx;
+    if (z < base) for (let ix = 0; ix < nx; ix++) tag[iz * nx + ix] = 1;
+  }
+  const x0 = W / 2 + h / 2;
+  for (let L = 0; L < nL; L++) {
+    const top = base + (L + 1) * t;
+    for (let j = 0; j < nTr; j++) {
+      const xc = x0 + j * h;
+      const ix0 = Math.max(0, Math.floor((xc - a) / dx)), ix1 = Math.min(nx - 1, Math.ceil((xc + a) / dx));
+      const iz0 = Math.max(0, Math.floor((top - D) / dx)), iz1 = Math.min(nz - 1, Math.floor(top / dx));
+      for (let iz = iz0; iz <= iz1; iz++) {
+        const z = (iz + 0.5) * dx; if (z > top) continue;
+        const dz = (top - z) / D;
+        for (let ix = ix0; ix <= ix1; ix++) {
+          const xr = ((ix + 0.5) * dx - xc) / a, axr = Math.abs(xr);
+          if (Math.pow(axr, nExp) + dz > 1) continue; // U-shaped pool boundary
+          const gx = -Math.sign(xr) * nExp * Math.pow(axr, nExp - 1) / a, gz = 1 / D;
+          const k = iz * nx + ix;
+          th[k] = Math.atan2(gx, gz + 1e-9) / DEG; tag[k] = 2; id[k] = L * nTr + j + 1;
+        }
+      }
+    }
+  }
+  // steady-state statistics, binned by position across the hatch (s = x mod h)
+  const NB = 24;
+  const hist = Array.from({ length: NB }, () => new Float64Array(NTH));
+  let nV = 0, nI = 0, nH = 0, nPore = 0, nTot = 0;
+  const zA = base + 2 * t, zB = base + (nL - 1) * t;
+  const xA = x0 + 2 * h, xB = x0 + (nTr - 3) * h;
+  for (let iz = 0; iz < nz; iz++) {
+    const z = (iz + 0.5) * dx; if (z < zA || z >= zB) continue;
+    for (let ix = 0; ix < nx; ix++) {
+      const x = (ix + 0.5) * dx; if (x < xA || x >= xB) continue;
+      const k = iz * nx + ix; nTot++;
+      if (tag[k] !== 2) { nPore++; continue; }
+      const v = th[k], av = Math.abs(v);
+      if (av < 22.5) nV++; else if (av < 67.5) nI++; else nH++;
+      let s = ((x - x0) % h + h) % h;
+      const b = Math.min(NB - 1, Math.floor(s / h * NB));
+      hist[b][Math.round((v + 90) / 5)]++;
+    }
+  }
+  // cells sweep sideways across the pool, so each position also feels its neighbours
+  const SW = opts && opts.smooth != null ? opts.smooth : 2;
+  const hs2 = hist.map((_, b) => { const o = new Float64Array(NTH);
+    for (let q = -SW; q <= SW; q++) { const hb = hist[(b + q + NB) % NB]; const tot = hb.reduce((p, c) => p + c, 0) || 1; for (let i = 0; i < NTH; i++) o[i] += hb[i] / tot; }
+    return o; });
+  const req = hs2.map(hb => {
+    const tot = hb.reduce((p, c) => p + c, 0); const list = [];
+    if (tot > 0) for (let i = 0; i < NTH; i++) if (hb[i] / tot > 0.01) list.push([i * 5 - 90, hb[i] / tot]);
+    if (!list.length) list.push([0, 1]);
+    const sw = list.reduce((p, c) => p + c[1], 0); list.forEach(e => e[1] /= sw);
+    return list;
+  });
+  const m = nV + nI + nH || 1;
+  return { nx, nz, dx, th, tag, id, base, nL, nTr, x0, width, height, NB, req,
+    fV: nV / m, fI: nI / m, fH: nH / m, pore: nPore / (nTot || 1) };
+}
+
+/* Display-only cross-section for a rotating scan strategy. The slice is the
+   plane perpendicular to the layer-1 scan direction (X), so a layer scanned at
+   angle phi cuts its tracks obliquely (apparent width W/|cos phi|); at 90 deg the
+   slice runs along one track. th = true tilt of the heat flow from BD (deg),
+   thp = its projection in the slice. Texture statistics still use crossSection(). */
+function crossSectionRotated(W, D, h, t, rot, opts) {
+  const nExp = (opts && opts.nExp) || 2;
+  const nTr = 9, nL = 7, a = W / 2;
+  const width = (nTr + 1) * h + W;
+  const base = Math.max(D, t) + 10;
+  const height = base + nL * t + 12;
+  const dx = Math.max(1, Math.sqrt(width * height / 160000));
+  const nx = Math.ceil(width / dx), nz = Math.ceil(height / dx);
+  const th = new Float32Array(nx * nz).fill(NaN), thp = new Float32Array(nx * nz).fill(NaN);
+  const tag = new Int8Array(nx * nz), id = new Int16Array(nx * nz), lay = new Int8Array(nx * nz).fill(-1);
+  for (let iz = 0; iz < nz; iz++) if ((iz + 0.5) * dx < base) for (let ix = 0; ix < nx; ix++) tag[iz * nx + ix] = 1;
+  const x0 = W / 2 + h / 2;
+  // where the slice sits along X: a quarter hatch from a track centre in 90 deg layers
+  const xPlane = -(x0 + 0.25 * h);
+  const angles = [];
+  for (let L = 0; L < nL; L++) {
+    // track lines only depend on orientation (bidirectional hatching), so use phi mod 180
+    const angDeg = (L * rot) % 360, phi = (angDeg % 180) * DEG; angles.push(angDeg);
+    const sn = Math.sin(phi), c = Math.cos(phi);
+    const top = base + (L + 1) * t;
+    // track centre lines: p . tHat = x0 + j h, with tHat = (-sin phi, cos phi)
+    const iz0 = Math.max(0, Math.floor((top - D) / dx)), iz1 = Math.min(nz - 1, Math.floor(top / dx));
+    // s along tHat for the slice point (xPlane, y): -sn*xPlane + c*y
+    const sMin = -sn * xPlane + Math.min(0, c * width), sMax = -sn * xPlane + Math.max(0, c * width);
+    const j0 = Math.floor((sMin - a - x0) / h), j1 = Math.ceil((sMax + a - x0) / h);
+    for (let j = j0; j <= j1; j++) {
+      const sc = x0 + j * h;
+      for (let iz = iz0; iz <= iz1; iz++) {
+        const z = (iz + 0.5) * dx; if (z > top) continue;
+        const dz = (top - z) / D;
+        for (let ix = 0; ix < nx; ix++) {
+          const y = (ix + 0.5) * dx;
+          const sr = (-sn * xPlane + c * y - sc) / a, asr = Math.abs(sr);
+          if (asr >= 1 || Math.pow(asr, nExp) + dz > 1) continue;
+          const gt = -Math.sign(sr) * nExp * Math.pow(asr, nExp - 1) / a, gz = 1 / D;
+          const k = iz * nx + ix;
+          th[k] = Math.atan2(gt, gz) / DEG;          // tilt from BD (sign along tHat)
+          thp[k] = Math.atan2(gt * c, gz) / DEG;     // seen in the slice (y component = gt cos phi)
+          tag[k] = 2; id[k] = (L * 64 + ((j % 64) + 64) % 64) + 1; lay[k] = L;
+        }
+      }
+    }
+  }
+  return { nx, nz, dx, th, thp, tag, id, lay, base, nL, nTr, x0, width, height, angles };
+}
+
+/* ---- orientation helpers (rotation matrix, columns = crystal axes in lab) ---- */
+function randomRot(rng) {
+  const u1 = rng(), u2 = rng() * 2 * Math.PI, u3 = rng() * 2 * Math.PI;
+  const a = Math.sqrt(1 - u1), b = Math.sqrt(u1);
+  return quatToRot(a * Math.sin(u2), a * Math.cos(u2), b * Math.sin(u3), b * Math.cos(u3));
+}
+function quatToRot(x, y, z, w) {
+  return [1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w),
+          2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w),
+          2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y)];
+}
+function mat3mul(A, B) {
+  const C = new Array(9);
+  for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++)
+    C[i * 3 + j] = A[i * 3] * B[j] + A[i * 3 + 1] * B[3 + j] + A[i * 3 + 2] * B[6 + j];
+  return C;
+}
+function smallRot(rng, sigDeg) {
+  let ax = [rng() - .5, rng() - .5, rng() - .5]; const n = Math.hypot(...ax) || 1;
+  // Box-Muller
+  const g = Math.sqrt(-2 * Math.log(rng() + 1e-12)) * Math.cos(2 * Math.PI * rng());
+  const ang = g * sigDeg * DEG, s = Math.sin(ang / 2);
+  return quatToRot(ax[0] / n * s, ax[1] / n * s, ax[2] / n * s, Math.cos(ang / 2));
+}
+// angle (deg) between lab direction d and the nearest <100> of R
+function misfit100(R, d) {
+  const c0 = Math.abs(R[0] * d[0] + R[3] * d[1] + R[6] * d[2]);
+  const c1 = Math.abs(R[1] * d[0] + R[4] * d[1] + R[7] * d[2]);
+  const c2 = Math.abs(R[2] * d[0] + R[5] * d[1] + R[8] * d[2]);
+  return Math.acos(Math.min(1, Math.max(c0, c1, c2))) / DEG;
+}
+// lab direction expressed in the crystal frame (R^T d)
+function toCrystal(R, d) {
+  return [R[0] * d[0] + R[3] * d[1] + R[6] * d[2], R[1] * d[0] + R[4] * d[1] + R[7] * d[2], R[2] * d[0] + R[5] * d[1] + R[8] * d[2]];
+}
+
+/* Probability that a new layer starts a stray (non-epitaxial) grain.
+   Phenomenological: rises with scan speed and with shallow remelting. */
+function strayProbability(v, D, t) {
+  return Math.min(0.6, 0.002 + 0.4 * clamp((v - 1.0) / 1.5, 0, 1) ** 2 + 0.25 * clamp((1.6 - D / t) / 1.0, 0, 1));
+}
+
+/* Competitive epitaxial growth along a line of sites (lab Y axis) through
+   the build height. Each layer: every site keeps its crystal or is overgrown
+   by a neighbour whose <100> fits the local heat-flow directions better. */
+function growTexture(cs, opts) {
+  const { h, rot, v, D, t, layers = 120, chains = 4, seed = 1 } = opts;
+  const rng = mulberry32(seed);
+  const perHatch = 16, nS = perHatch * 12, ds = h / perHatch;
+  const pN = strayProbability(v, D, t);
+  const { tau = 1, delta = 2, lam = 1, reach = 6, branchSig = 4 } = opts;
+  const maps = [];
+  const finals = [];
+  for (let c = 0; c < chains; c++) {
+    let cur = []; for (let i = 0; i < nS; i++) cur.push(randomRot(rng));
+    const map = c === 0 ? [] : null;
+    for (let n = 0; n < layers; n++) {
+      const phi = ((n * rot) % 360) * DEG;
+      const tx = -Math.sin(phi), ty = Math.cos(phi);
+      const aligned = Math.abs(Math.sin(phi)) < 1e-6;
+      const off = aligned ? 0 : rng() * h;
+      const reqDirs = cs.req.map(list => list.map(([thd, w]) => {
+        const a = thd * DEG; return [[Math.sin(a) * tx, Math.sin(a) * ty, Math.cos(a)], w];
+      }));
+      const fit = (R, b) => { let s = 0; for (const [d, w] of reqDirs[b]) s += w * misfit100(R, d); return s; };
+      const next = new Array(nS);
+      for (let i = 0; i < nS; i++) {
+        const y = i * ds;
+        const s = (((y * ty + off) % h) + h) % h; // ty = cos(phi): projection onto transverse
+        const b = Math.min(cs.NB - 1, Math.floor(s / h * cs.NB));
+        if (rng() < pN) { next[i] = randomRot(rng); continue; }
+        // candidates: this site's own crystal and neighbours within +-reach sites
+        let best = -1, bestW = 0, sumW = 0; const ws = [];
+        const fSelf = fit(cur[i], b);
+        for (let o = -reach; o <= reach; o++) {
+          const j = (i + o + nS) % nS;
+          const f = o === 0 ? fSelf : fit(cur[j], b);
+          const w = Math.exp(-(f - fSelf + (o === 0 ? -delta : 0)) / tau) * (o === 0 ? 1 : lam / Math.abs(o));
+          ws.push([j, w]); sumW += w;
+        }
+        let u = rng() * sumW, pick = i;
+        for (const [j, w] of ws) { u -= w; if (u <= 0) { pick = j; break; } }
+        next[i] = pick === i ? cur[i] : mat3mul(smallRot(rng, branchSig), cur[pick]);
+      }
+      cur = next;
+      if (map) map.push(cur);
+      if (n >= layers - 20) for (const R of cur) finals.push(R);
+    }
+    if (map) maps.push(map);
+  }
+  return { map: maps[0], finals, nS, ds, pN };
+}
+
+/* IPF projection of a lab direction into the [001]-[101]-[111] triangle */
+function ipfXY(cd) {
+  const a = cd.map(Math.abs).sort((p, q) => p - q); // a0<=a1<=a2
+  const vx = a[1], vy = a[0], vz = a[2];
+  return [vx / (1 + vz), vy / (1 + vz), vx, vy, vz];
+}
+function ipfColor(cd) {
+  const a = cd.map(Math.abs).sort((p, q) => p - q);
+  let r = a[2] - a[1], g = a[1] - a[0], b = a[0];
+  const m = Math.max(r, g, b) || 1; r /= m; g /= m; b /= m;
+  return [Math.round(255 * r ** 0.75), Math.round(255 * g ** 0.75), Math.round(255 * b ** 0.75)];
+}
+function angleTo(cd, fam) { // fam: [1,0,0],[1,1,0]/sqrt2,[1,1,1]/sqrt3 ; returns min angle deg
+  const a = cd.map(Math.abs).sort((p, q) => q - p); const n = Math.hypot(...a);
+  const f = fam.slice().sort((p, q) => q - p); const fn = Math.hypot(...f);
+  return Math.acos(Math.min(1, (a[0] * f[0] + a[1] * f[1] + a[2] * f[2]) / (n * fn))) / DEG;
+}
+function textureStats(Rs) {
+  const Z = [0, 0, 1]; let n100 = 0, n110 = 0, n111 = 0, inX = 0, v100 = 0, v110 = 0, v111 = 0;
+  for (const R of Rs) {
+    const cd = toCrystal(R, Z);
+    if (angleTo(cd, [1, 0, 0]) < 15) n100++;
+    if (angleTo(cd, [1, 1, 0]) < 15) n110++;
+    if (angleTo(cd, [1, 1, 1]) < 15) n111++;
+    if (misfit100(R, [1, 0, 0]) < 15) inX++;
+    const a1 = angleTo(cd, [1, 0, 0]), a2 = angleTo(cd, [1, 1, 0]), a3 = angleTo(cd, [1, 1, 1]);
+    if (a1 <= a2 && a1 <= a3) v100++; else if (a2 <= a3) v110++; else v111++;
+  }
+  const N = Rs.length || 1;
+  return { f100: n100 / N, f110: n110 / N, f111: n111 / N, fX: inX / N, s100: v100 / N, s110: v110 / N, s111: v111 / N };
+}
+let RANDOM_REF = null;
+function randomRef() {
+  if (RANDOM_REF) return RANDOM_REF;
+  const rng = mulberry32(99); const Rs = [];
+  for (let i = 0; i < 40000; i++) Rs.push(randomRot(rng));
+  RANDOM_REF = { stats: textureStats(Rs), Rs };
+  return RANDOM_REF;
+}
+if (typeof module !== 'undefined') module.exports = { MAT, meltPool, crossSection, crossSectionRotated, growTexture, textureStats, randomRef, toCrystal, ipfXY, ipfColor, misfit100, strayProbability };
+
+</script>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const S = { P: 200, v: 1000, h: 90, t: 30, d: 80, rot: 0, ref: 'Z', scale: 'true', seed: 1 };
+  let mp, cs, csr, grown = null, texTimer = null, geoQueued = false;
+  const dpr = () => Math.min(2, window.devicePixelRatio || 1);
+  const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  function rgbOf(name) {
+    const c = document.createElement('canvas').getContext('2d');
+    c.fillStyle = css(name); c.fillRect(0, 0, 1, 1);
+    const d = c.getImageData(0, 0, 1, 1).data; return [d[0], d[1], d[2]];
+  }
+  function fitCanvas(cv, hCss) {
+    const w = cv.clientWidth || cv.parentNode.clientWidth;
+    cv.style.height = hCss + 'px';
+    cv.width = Math.round(w * dpr()); cv.height = Math.round(hCss * dpr());
+    const g = cv.getContext('2d'); g.setTransform(dpr(), 0, 0, dpr(), 0, 0);
+    return { g, w, h: hCss };
+  }
+
+  /* ---------- tooltip ---------- */
+  const tip = $('tip');
+  function showTip(e, html) { tip.innerHTML = html; tip.hidden = false;
+    const x = Math.min(window.innerWidth - 270, e.clientX + 14), y = e.clientY + 14; tip.style.left = x + 'px'; tip.style.top = y + 'px'; }
+  function hideTip() { tip.hidden = true; }
+
+  /* ---------- controls ---------- */
+  const fmt = { P: v => v + ' W', v: v => v + ' mm/s', h: v => v + ' µm', t: v => v + ' µm', d: v => v + ' µm' };
+  function syncControls() {
+    for (const k of ['P', 'v', 'h', 't', 'd']) { $(k).value = S[k]; $(k + 'Out').textContent = fmt[k](S[k]); }
+    $('rot').value = S.rot; $('rotOut').textContent = S.rot + '°';
+    document.querySelectorAll('.seg button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.rot === S.rot)));
+  }
+  for (const k of ['P', 'v', 'h', 't', 'd']) {
+    $(k).addEventListener('input', () => { S[k] = +$(k).value; $(k + 'Out').textContent = fmt[k](S[k]); queueGeometry(); scheduleTexture(); });
+  }
+  function updateRotatedSection() { if (!mp) return; csr = crossSectionRotated(mp.W, mp.D, S.h, S.t, S.rot, { nExp: mp.nExp }); drawCross(); }
+  $('rot').addEventListener('input', () => { S.rot = +$('rot').value; syncControls(); updateRotatedSection(); drawScan(); scheduleTexture(); });
+  document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => { S.rot = +b.dataset.rot; syncControls(); updateRotatedSection(); drawScan(); scheduleTexture(0); }));
+  $('reseed').addEventListener('click', () => { S.seed = (S.seed * 7919 + 13) % 100003; scheduleTexture(0); });
+  document.querySelectorAll('#refTabs button').forEach(b => b.addEventListener('click', () => {
+    S.ref = b.dataset.ref; document.querySelectorAll('#refTabs button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); drawMap(); }));
+  document.querySelectorAll('#scaleTabs button').forEach(b => b.addEventListener('click', () => {
+    S.scale = b.dataset.scale; document.querySelectorAll('#scaleTabs button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); drawMap(); }));
+
+  function queueGeometry() { if (geoQueued) return; geoQueued = true; requestAnimationFrame(() => { geoQueued = false; updateGeometry(); }); }
+  function scheduleTexture(delay = 350) {
+    clearTimeout(texTimer); $('busy').hidden = false;
+    texTimer = setTimeout(() => requestAnimationFrame(() => setTimeout(runTexture, 0)), delay);
+  }
+
+  function updateGeometry() {
+    mp = meltPool(S.P, S.v / 1000, S.d);
+    cs = crossSection(mp.W, mp.D, S.h, S.t, { smooth: 3, nExp: mp.nExp });
+    csr = crossSectionRotated(mp.W, mp.D, S.h, S.t, S.rot, { nExp: mp.nExp });
+    drawCross(); drawZones(); drawScan(); readouts();
+  }
+
+  /* ---------- readouts & flags ---------- */
+  function readouts() {
+    const ved = S.P / (S.v * S.h * 1e-3 * S.t * 1e-3);
+    const overlap = 1 - S.h / mp.W, remelt = mp.D / S.t;
+    const pN = strayProbability(S.v / 1000, mp.D, S.t);
+    const items = [
+      ['Pool width W', mp.W.toFixed(0) + ' µm'], ['Pool depth D', mp.D.toFixed(0) + ' µm'],
+      ['D / W', mp.DW.toFixed(2)], ['Mode', mp.mode],
+      ['Track overlap', (overlap * 100).toFixed(0) + ' %'], ['D / t (remelt)', remelt.toFixed(2)],
+      ['Energy density', ved.toFixed(0) + ' J/mm³'], ['ΔH/h<sub>s</sub>', mp.NH.toFixed(1) + ' <span style="color:var(--ink-3)">/ ' + mp.NHkey.toFixed(1) + '</span>'],
+      ['Stray grains', (pN * 100).toFixed(1) + ' % / layer']
+    ];
+    $('readouts').innerHTML = items.map(([a, b]) => `<div><dt>${a}</dt><dd>${b}</dd></div>`).join('');
+    const f = [];
+    if (overlap < 0.05) f.push(['bad', 'Tracks do not overlap: lack of fusion between tracks']);
+    else if (overlap < 0.2) f.push(['warn', 'Low track overlap']);
+    if (remelt < 1.0) f.push(['bad', 'Pool shallower than the layer: lack of fusion between layers']);
+    else if (remelt < 1.4) f.push(['warn', 'Shallow remelting: weak epitaxy']);
+    if (overlap >= 0.05 && remelt >= 1.0 && cs.pore > 0.004) f.push(['warn', `Unmelted pockets at track cusps: ${(cs.pore * 100).toFixed(1)}% of area`]);
+    if (mp.mode === 'keyhole') f.push(['warn', 'Keyhole mode: risk of keyhole porosity']);
+    if (ved < 45) f.push(['warn', 'Low energy density for 316L']);
+    if (ved > 160) f.push(['warn', 'High energy density: overheating, spatter']);
+    if (!f.length) f.push(['ok', 'Inside a reasonable 316L process window']);
+    $('flags').innerHTML = f.map(([c, s]) => `<span class="flag ${c}">${s}</span>`).join('');
+  }
+
+  /* ---------- cross-section ---------- */
+  function thetaColor(th) { const a = th * Math.PI / 180; return ipfColor([0, Math.sin(a), Math.cos(a)]); }
+  let csView = null;
+  function drawCross() {
+    const cv = $('cs');
+    const W0 = cv.clientWidth || 600;
+    const aspect = (csr.nL * S.t + 30) / ((csr.nTr - 2) * S.h); const hh = Math.max(170, Math.min(420, W0 * aspect + 34));
+    const { g, w, h } = fitCanvas(cv, hh);
+    const bg = rgbOf('--panel'), sub = rgbOf('--substrate'), pore = rgbOf('--pore'), ink = rgbOf('--ink');
+    const img = new ImageData(csr.nx, csr.nz);
+    const topBuilt = csr.base + csr.nL * S.t;
+    for (let iz = 0; iz < csr.nz; iz++) {
+      const zUp = (iz + 0.5) * csr.dx;
+      for (let ix = 0; ix < csr.nx; ix++) {
+        const k = iz * csr.nx + ix, o = ((csr.nz - 1 - iz) * csr.nx + ix) * 4;
+        let c;
+        if (csr.tag[k] === 2) {
+          c = thetaColor(csr.th[k]); c = [c[0] * .72 + bg[0] * .28, c[1] * .72 + bg[1] * .28, c[2] * .72 + bg[2] * .28];
+          const r = ix + 1 < csr.nx ? csr.id[k + 1] : csr.id[k], u = iz + 1 < csr.nz ? csr.id[k + csr.nx] : csr.id[k];
+          if ((r && r !== csr.id[k]) || (u && u !== csr.id[k])) c = [ink[0] * .7 + c[0] * .3, ink[1] * .7 + c[1] * .3, ink[2] * .7 + c[2] * .3];
+        } else if (csr.tag[k] === 1) c = sub;
+        else if (zUp < topBuilt) c = pore;
+        else c = bg;
+        img.data[o] = c[0]; img.data[o + 1] = c[1]; img.data[o + 2] = c[2]; img.data[o + 3] = 255;
+      }
+    }
+    const off = document.createElement('canvas'); off.width = csr.nx; off.height = csr.nz; off.getContext('2d').putImageData(img, 0, 0);
+    // show the interior tracks only; the domain edges are unmelted powder
+    const cx0 = Math.floor((csr.x0 + 0.5 * S.h) / csr.dx), cx1 = Math.min(csr.nx, Math.ceil((csr.x0 + (csr.nTr - 1.5) * S.h) / csr.dx));
+    const cz0 = Math.max(0, csr.nz - Math.ceil((csr.base + csr.nL * S.t + 4) / csr.dx)), cz1 = csr.nz - Math.max(0, Math.floor((csr.base - 25) / csr.dx));
+    const cw = cx1 - cx0, chh = cz1 - cz0;
+    const pad = { l: 50, r: 8, t: 8, b: 26 };
+    const sc = Math.min((w - pad.l - pad.r) / cw, (h - pad.t - pad.b) / chh);
+    const dw = cw * sc, dh = chh * sc, ox = pad.l + (w - pad.l - pad.r - dw) / 2, oy = pad.t;
+    g.clearRect(0, 0, w, h); g.imageSmoothingEnabled = false; g.drawImage(off, cx0, cz0, cw, chh, ox, oy, dw, dh);
+    // growth ticks
+    const step = Math.max(6, Math.round(Math.min(mp.W, S.h) / 5 / csr.dx));
+    g.strokeStyle = css('--ink'); g.globalAlpha = .55; g.lineWidth = 1;
+    const len = step * sc * .42;
+    for (let iz = Math.floor(step / 2); iz < csr.nz; iz += step) for (let ix = cx0 + Math.floor(step / 2); ix < cx1; ix += step) {
+      const k = iz * csr.nx + ix; if (csr.tag[k] !== 2) continue;
+      const rz = csr.nz - 1 - iz; if (rz < cz0 || rz >= cz1) continue;
+      // tick = heat-flow direction projected into the slice (shorter when it points out of the slice)
+      const a = csr.thp[k] * Math.PI / 180, fr = Math.cos(csr.th[k] * Math.PI / 180) / Math.cos(a), l = len * Math.max(.25, Math.min(1, fr));
+      const cx = ox + (ix - cx0 + .5) * sc, cy = oy + (rz - cz0 + .5) * sc;
+      g.beginPath(); g.moveTo(cx - Math.sin(a) * l, cy + Math.cos(a) * l); g.lineTo(cx + Math.sin(a) * l, cy - Math.cos(a) * l); g.stroke();
+    }
+    g.globalAlpha = 1;
+    // scan angle of each layer, at its mid-height
+    g.font = '11px ' + css('--font-mono'); g.textAlign = 'right';
+    for (let L = 0; L < csr.nL; L++) {
+      const zMid = csr.base + (L + 0.5) * S.t, rz = csr.nz - zMid / csr.dx;
+      const y = oy + (rz - cz0) * sc + 4; if (y < oy || y > oy + dh) continue;
+      g.fillStyle = css('--laser'); g.fillText(csr.angles[L] + '°', ox - 8, y);
+    }
+    g.textAlign = 'left';
+    // scale bar & axes
+    const bar = 100 * sc / csr.dx; g.fillStyle = css('--ink'); g.font = '12px ' + css('--font-mono');
+    g.fillRect(ox, oy + dh + 10, bar, 2); g.fillText('100 µm', ox + bar + 6, oy + dh + 15);
+    g.textAlign = 'right'; g.fillStyle = css('--ink-2'); g.fillText(w < 560 ? 'TD → · BD ↑' : 'TD → · BD ↑ · layer-1 scan direction out of page', ox + dw, oy + dh + 15); g.textAlign = 'left';
+    csView = { ox, oy, sc, cx0, cz0, cw, chh };
+  }
+  $('cs').addEventListener('mousemove', e => {
+    if (!csView) return; const r = e.currentTarget.getBoundingClientRect();
+    const lx = Math.floor((e.clientX - r.left - csView.ox) / csView.sc), lz = Math.floor((e.clientY - r.top - csView.oy) / csView.sc);
+    if (lx < 0 || lx >= csView.cw || lz < 0 || lz >= csView.chh) return hideTip();
+    const ix = lx + csView.cx0, iz = csr.nz - 1 - (lz + csView.cz0);
+    const k = iz * csr.nx + ix;
+    if (csr.tag[k] === 2) { const th = csr.th[k], a = Math.abs(th), Lk = csr.lay[k];
+      const zone = a < 22.5 ? 'vertical-cell zone: a ⟨001⟩∥BD grain fits' : a < 67.5 ? 'inclined-cell zone: a ⟨011⟩∥BD grain fits' : 'horizontal-cell zone: a ⟨001⟩∥BD grain fits';
+      showTip(e, `Layer ${Lk + 1}, scanned at ${csr.angles[Lk]}°<br>Heat flow ${a.toFixed(0)}° from BD (${Math.abs(csr.thp[k]).toFixed(0)}° within this slice)<br>${zone}`); }
+    else if (csr.tag[k] === 1) showTip(e, 'Baseplate');
+    else showTip(e, (iz + .5) * csr.dx < csr.base + csr.nL * S.t ? 'Never melted: lack-of-fusion pore' : 'Powder / above the part');
+  });
+  $('cs').addEventListener('mouseleave', hideTip);
+
+  /* ---------- zones bar ---------- */
+  function drawZones() {
+    const cv = $('zones'); const { g, w, h } = fitCanvas(cv, 190); g.clearRect(0, 0, w, h);
+    const rows = [['Vertical cells', cs.fV, thetaColor(0), '⟨001⟩∥BD candidates'], ['±45° cells', cs.fI, thetaColor(45), '⟨011⟩∥BD candidates'], ['Horizontal cells', cs.fH, thetaColor(90), '⟨001⟩∥BD candidates'], ['Unmelted', cs.pore, rgbOf('--pore'), 'lack of fusion']];
+    const lx = 118, rx = w - 52, bw = Math.max(40, rx - lx);
+    g.font = '12px ' + css('--font-body');
+    rows.forEach(([lab, f, col, sub], i) => {
+      const y = 14 + i * 42;
+      g.fillStyle = css('--ink'); g.fillText(lab, 0, y + 9);
+      g.fillStyle = css('--ink-3'); g.font = '11px ' + css('--font-body'); g.fillText(sub, 0, y + 24); g.font = '12px ' + css('--font-body');
+      g.fillStyle = css('--line'); g.fillRect(lx, y, bw, 12);
+      g.fillStyle = `rgb(${col.join(',')})`; g.fillRect(lx, y, Math.max(0, bw * f), 12);
+      g.fillStyle = css('--ink'); g.font = '12px ' + css('--font-mono'); g.fillText((f * 100).toFixed(0) + '%', rx + 8, y + 10); g.font = '12px ' + css('--font-body');
+    });
+  }
+
+  /* ---------- scan strategy ---------- */
+  function drawScan() {
+    const cv = $('scan'); const n = 4, gap = 12, W0 = cv.clientWidth || 400;
+    const size0 = Math.min(156, (W0 - gap * (n - 1)) / n);
+    const { g, w, h } = fitCanvas(cv, Math.round(size0 + 34)); g.clearRect(0, 0, w, h);
+    const size = size0;
+    const x0 = (w - (size * n + gap * (n - 1))) / 2;
+    for (let L = 0; L < n; L++) {
+      const ox = x0 + L * (size + gap), oy = 6, ang = (L * S.rot) % 360, a = ang * Math.PI / 180;
+      g.save(); g.beginPath(); g.rect(ox, oy, size, size); g.clip();
+      g.fillStyle = css('--bg'); g.fillRect(ox, oy, size, size);
+      const cx = ox + size / 2, cy = oy + size / 2, dxs = Math.cos(a), dys = -Math.sin(a), nxs = -dys, nys = dxs;
+      const sp = Math.max(6, size / 9);
+      g.strokeStyle = css('--laser'); g.lineWidth = 1.4;
+      for (let k = -8, idx = 0; k <= 8; k++, idx++) {
+        const px = cx + nxs * k * sp, py = cy + nys * k * sp, dir = k % 2 === 0 ? 1 : -1;
+        g.beginPath(); g.moveTo(px - dxs * size, py - dys * size); g.lineTo(px + dxs * size, py + dys * size); g.stroke();
+        const hx = px + dxs * dir * size * .18, hy = py + dys * dir * size * .18;
+        g.beginPath(); g.moveTo(hx, hy); g.lineTo(hx - dxs * dir * 5 + nxs * 3, hy - dys * dir * 5 + nys * 3); g.lineTo(hx - dxs * dir * 5 - nxs * 3, hy - dys * dir * 5 - nys * 3); g.closePath(); g.fillStyle = css('--laser'); g.fill();
+      }
+      g.restore();
+      g.strokeStyle = css('--line'); g.strokeRect(ox + .5, oy + .5, size - 1, size - 1);
+      g.fillStyle = css('--ink'); g.font = '12px ' + css('--font-mono'); g.textAlign = 'center';
+      g.fillText(size < 110 ? `L${L + 1} · ${ang}°` : `layer ${L + 1} · ${ang}°`, ox + size / 2, oy + size + 18); g.textAlign = 'left';
+    }
+  }
+
+  /* ---------- texture run ---------- */
+  function runTexture() {
+    if (!cs) updateGeometry();
+    const res = growTexture(cs, { h: S.h, rot: S.rot, v: S.v / 1000, D: mp.D, t: S.t, seed: S.seed });
+    grown = res; grown.stats = textureStats(res.finals); grown.rot = S.rot;
+    computeDensities();
+    drawMap(true); drawIPF(); drawPF(); verdict();
+    $('busy').hidden = true;
+  }
+
+  /* ---------- EBSD map ---------- */
+  let mapAnim = 0;
+  function drawMap(animate) {
+    if (!grown) return;
+    const cv = $('map'); const ref = S.ref === 'Z' ? [0, 0, 1] : S.ref === 'X' ? [1, 0, 0] : [0, 1, 0];
+    const nS = grown.nS, L = grown.map.length, ds = grown.ds;
+    const rowH = S.scale === 'true' ? Math.max(1, Math.round(S.t / ds)) : 1;
+    const W0 = cv.clientWidth || 600; const px = W0 / nS;
+    let rows = S.scale === 'true' ? Math.min(L, Math.max(4, Math.floor(Math.min(320, W0 * .5) / (px * rowH)))) : L;
+    const hh = Math.max(120, Math.round(rows * rowH * px) + 22);
+    const { g, w, h } = fitCanvas(cv, hh);
+    const img = new ImageData(nS, rows * rowH);
+    const first = L - rows;
+    for (let r = 0; r < rows; r++) {
+      const layer = grown.map[first + r];
+      for (let i = 0; i < nS; i++) {
+        const c = ipfColor(toCrystal(layer[i], ref));
+        for (let q = 0; q < rowH; q++) { const o = (((rows - 1 - r) * rowH + q) * nS + i) * 4; img.data[o] = c[0]; img.data[o + 1] = c[1]; img.data[o + 2] = c[2]; img.data[o + 3] = 255; }
+      }
+    }
+    const off = document.createElement('canvas'); off.width = nS; off.height = rows * rowH; off.getContext('2d').putImageData(img, 0, 0);
+    const dh = h - 22;
+    cancelAnimationFrame(mapAnim);
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const t0 = performance.now(), dur = animate && !reduce && S.scale === 'all' ? 700 : 0;
+    const frame = now => {
+      const p = dur ? Math.min(1, (now - t0) / dur) : 1;
+      g.clearRect(0, 0, w, h); g.imageSmoothingEnabled = false;
+      const showH = Math.round(dh * p);
+      g.drawImage(off, 0, off.height * (1 - p), off.width, off.height * p, 0, dh - showH, w, showH);
+      g.fillStyle = css('--ink'); g.font = '12px ' + css('--font-mono');
+      const bar = 200 / (nS * ds) * w; g.fillRect(0, dh + 9, bar, 2); g.fillText('200 µm', bar + 6, dh + 15);
+      g.textAlign = 'right'; g.fillStyle = css('--ink-2');
+      g.fillText(w < 560 ? (S.scale === 'true' ? `top ${rows} layers` : `${L} layers, z ×${(S.t / ds).toFixed(0)} compressed`) : (S.scale === 'true' ? `top ${rows} layers · TD → · BD ↑` : `all ${L} layers, height compressed ×${(S.t / ds).toFixed(0)} · TD → · BD ↑`), w, dh + 15); g.textAlign = 'left';
+      if (p < 1) mapAnim = requestAnimationFrame(frame);
+    };
+    mapAnim = requestAnimationFrame(frame);
+    $('mapNote').textContent = `Cross-section perpendicular to the layer-1 scan direction (X), ${nS} sites across ${(nS * ds).toFixed(0)} µm, grown from a random baseplate. Colour shows which crystal direction lies along ${S.ref === 'Z' ? 'the build direction' : S.ref === 'X' ? 'X (the 0° scan direction)' : 'Y'}.`;
+    cv._view = { nS, rows, rowH, dh, w, first, ref };
+  }
+  $('map').addEventListener('mousemove', e => {
+    const v = e.currentTarget._view; if (!v || !grown) return; const r = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - r.left, y = e.clientY - r.top; if (y > v.dh) return hideTip();
+    const i = Math.floor(x / v.w * v.nS), row = v.rows - 1 - Math.floor(y / v.dh * v.rows);
+    const R = grown.map[v.first + row] && grown.map[v.first + row][i]; if (!R) return hideTip();
+    const bd = toCrystal(R, [0, 0, 1]);
+    showTip(e, `Layer ${v.first + row + 1}<br>BD is ${angleFam(bd)}<br>Nearest ⟨100⟩ to X: ${misfit100(R, [1, 0, 0]).toFixed(0)}° off`);
+  });
+  $('map').addEventListener('mouseleave', hideTip);
+  function angleFam(cd) {
+    const a = cd.map(Math.abs).sort((p, q) => q - p); const n = Math.hypot(...a);
+    const ang = f => { const fn = Math.hypot(...f); return Math.acos(Math.min(1, (a[0] * f[0] + a[1] * f[1] + a[2] * f[2]) / (n * fn))) * 180 / Math.PI; };
+    const c = [['⟨001⟩', ang([1, 0, 0])], ['⟨011⟩', ang([1, 1, 0])], ['⟨111⟩', ang([1, 1, 1])]].sort((p, q) => p[1] - q[1]);
+    return `${c[0][1].toFixed(0)}° from ${c[0][0]}`;
+  }
+
+  /* ---------- densities (PF / IPF) ---------- */
+  const PFN = 72, IPFN = 64, IPFX = 0.4142, IPFY = 0.3661;
+  let pfD = null, ipfD = null, ipfRef = null;
+  function blur(a, n, m, s) {
+    const r = Math.ceil(s * 2.5), k = []; let ks = 0; for (let i = -r; i <= r; i++) { const v = Math.exp(-i * i / (2 * s * s)); k.push(v); ks += v; } k.forEach((v, i) => k[i] = v / ks);
+    const t = new Float64Array(n * m), o = new Float64Array(n * m);
+    for (let y = 0; y < m; y++) for (let x = 0; x < n; x++) { let acc = 0; for (let i = -r; i <= r; i++) { const xx = x + i; if (xx >= 0 && xx < n) acc += a[y * n + xx] * k[i + r]; } t[y * n + x] = acc; }
+    for (let y = 0; y < m; y++) for (let x = 0; x < n; x++) { let acc = 0; for (let i = -r; i <= r; i++) { const yy = y + i; if (yy >= 0 && yy < m) acc += t[yy * n + x] * k[i + r]; } o[y * n + x] = acc; }
+    return o;
+  }
+  function ipfHist(Rs) {
+    const hgrid = new Float64Array(IPFN * IPFN);
+    for (const R of Rs) { const p = ipfXY(toCrystal(R, [0, 0, 1])); const x = Math.min(IPFN - 1, Math.floor(p[0] / IPFX * IPFN)), y = Math.min(IPFN - 1, Math.floor(p[1] / IPFX * IPFN)); hgrid[y * IPFN + x]++; }
+    return blur(hgrid, IPFN, IPFN, 1.6);
+  }
+  function computeDensities() {
+    const Rs = grown.finals;
+    // pole figure: {100} poles, upper hemisphere, stereographic
+    const hgrid = new Float64Array(PFN * PFN); let np = 0;
+    for (const R of Rs) for (let k = 0; k < 3; k++) {
+      let x = R[k], y = R[3 + k], z = R[6 + k]; if (z < 0) { x = -x; y = -y; z = -z; }
+      const X = x / (1 + z), Y = y / (1 + z);
+      const ix = Math.min(PFN - 1, Math.floor((X + 1) / 2 * PFN)), iy = Math.min(PFN - 1, Math.floor((1 - Y) / 2 * PFN));
+      hgrid[iy * PFN + ix]++; np++;
+    }
+    const exp = new Float64Array(PFN * PFN); const cell = (2 / PFN) ** 2;
+    for (let iy = 0; iy < PFN; iy++) for (let ix = 0; ix < PFN; ix++) {
+      const X = (ix + .5) / PFN * 2 - 1, Y = 1 - (iy + .5) / PFN * 2, r2 = X * X + Y * Y;
+      exp[iy * PFN + ix] = r2 <= 1 ? np * cell * 4 / (1 + r2) ** 2 / (2 * Math.PI) : 0;
+    }
+    const hb = blur(hgrid, PFN, PFN, 1.6), eb = blur(exp, PFN, PFN, 1.6);
+    pfD = new Float64Array(PFN * PFN); let pmax = 0;
+    for (let i = 0; i < pfD.length; i++) { const X = (i % PFN + .5) / PFN * 2 - 1, Y = 1 - (Math.floor(i / PFN) + .5) / PFN * 2; pfD[i] = X * X + Y * Y <= 1 && eb[i] > 0 ? hb[i] / eb[i] : -1; pmax = Math.max(pmax, pfD[i]); }
+    pfD.max = pmax;
+    if (!ipfRef) { const rr = randomRef(); ipfRef = { d: ipfHist(rr.Rs), n: rr.Rs.length }; }
+    const ih = ipfHist(Rs); ipfD = new Float64Array(IPFN * IPFN); let imax = 0;
+    for (let i = 0; i < ipfD.length; i++) {
+      const X = (i % IPFN + .5) / IPFN * IPFX, Y = (Math.floor(i / IPFN) + .5) / IPFN * IPFX;
+      const r2 = X * X + Y * Y, vx = 2 * X / (1 + r2), vy = 2 * Y / (1 + r2), vz = (1 - r2) / (1 + r2);
+      const inside = vy >= -1e-9 && vx >= vy - 1e-9 && vz >= vx - 1e-9;
+      ipfD[i] = inside && ipfRef.d[i] > 0 ? (ih[i] / Rs.length) / (ipfRef.d[i] / ipfRef.n) : -1;
+      if (inside) imax = Math.max(imax, ipfD[i]);
+    }
+    ipfD.max = imax;
+  }
+  function seqColor(v, vmax) {
+    const a = rgbOf('--seq0'), b = rgbOf('--seq1'); const t = Math.pow(Math.max(0, Math.min(1, v / vmax)), .6);
+    return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+  }
+  function densityImage(D, n, vmax, cA, cB) {
+    const img = new ImageData(n, n);
+    for (let i = 0; i < n * n; i++) { const o = i * 4; if (D[i] < 0) { img.data[o + 3] = 0; continue; }
+      const t = Math.pow(Math.max(0, Math.min(1, D[i] / vmax)), .6);
+      img.data[o] = cA[0] + (cB[0] - cA[0]) * t; img.data[o + 1] = cA[1] + (cB[1] - cA[1]) * t; img.data[o + 2] = cA[2] + (cB[2] - cA[2]) * t; img.data[o + 3] = 255; }
+    const off = document.createElement('canvas'); off.width = n; off.height = n; off.getContext('2d').putImageData(img, 0, 0); return off;
+  }
+  function legendBar(el, vmax) {
+    el.innerHTML = `<span>MRD</span><span style="display:inline-block;width:120px;height:10px;border-radius:2px;border:1px solid var(--line);background:linear-gradient(90deg,var(--seq0),var(--seq1))"></span><span class="mono">0 – ${vmax.toFixed(1)}</span><span>max ${vmax.toFixed(1)}</span>`;
+  }
+  function drawPF() {
+    const cv = $('pf'); const W0 = cv.clientWidth || 260; const size = Math.min(W0, 300);
+    const { g, w, h } = fitCanvas(cv, size); g.clearRect(0, 0, w, h);
+    const R = size / 2 - 22, cx = w / 2, cy = size / 2;
+    const vmax = Math.max(2, pfD.max);
+    const off = densityImage(pfD, PFN, vmax, rgbOf('--seq0'), rgbOf('--seq1'));
+    g.save(); g.beginPath(); g.arc(cx, cy, R, 0, Math.PI * 2); g.clip(); g.imageSmoothingEnabled = true; g.drawImage(off, cx - R, cy - R, 2 * R, 2 * R); g.restore();
+    g.strokeStyle = css('--ink-3'); g.lineWidth = 1; g.beginPath(); g.arc(cx, cy, R, 0, Math.PI * 2); g.stroke();
+    g.globalAlpha = .35; g.beginPath(); g.moveTo(cx - R, cy); g.lineTo(cx + R, cy); g.moveTo(cx, cy - R); g.lineTo(cx, cy + R); g.stroke(); g.globalAlpha = 1;
+    g.fillStyle = css('--ink'); g.font = '12px ' + css('--font-mono'); g.fillText('X', cx + R + 6, cy + 4); g.fillText('Y', cx - 4, cy - R - 8); g.fillText('BD ⊙', cx + 4, cy + 14);
+    legendBar($('pfLegend'), vmax);
+    cv._v = { cx, cy, R };
+  }
+  $('pf').addEventListener('mousemove', e => {
+    const v = e.currentTarget._v; if (!v || !pfD) return; const r = e.currentTarget.getBoundingClientRect();
+    const X = (e.clientX - r.left - v.cx) / v.R, Y = -(e.clientY - r.top - v.cy) / v.R; if (X * X + Y * Y > 1) return hideTip();
+    const ix = Math.min(PFN - 1, Math.floor((X + 1) / 2 * PFN)), iy = Math.min(PFN - 1, Math.floor((1 - Y) / 2 * PFN));
+    const rr = Math.hypot(X, Y), tilt = 2 * Math.atan(rr) * 180 / Math.PI, az = Math.atan2(Y, X) * 180 / Math.PI;
+    showTip(e, `{100} density ${Math.max(0, pfD[iy * PFN + ix]).toFixed(1)} MRD<br>${tilt.toFixed(0)}° from BD, azimuth ${az.toFixed(0)}° from X`);
+  });
+  $('pf').addEventListener('mouseleave', hideTip);
+  function drawIPF() {
+    const cv = $('ipf'); const W0 = cv.clientWidth || 260; const hh = Math.min(260, Math.max(180, W0 * .82));
+    const { g, w, h } = fitCanvas(cv, hh); g.clearRect(0, 0, w, h);
+    const padL = 30, padB = 30, sc = Math.min((w - padL - 40) / IPFX, (h - padB - 24) / IPFY);
+    const ox = padL, oy = h - padB;
+    const vmax = Math.max(2, ipfD.max);
+    const off = densityImage(ipfD, IPFN, vmax, rgbOf('--seq0'), rgbOf('--seq1'));
+    g.save(); g.translate(ox, oy); g.scale(1, -1); g.imageSmoothingEnabled = true; g.drawImage(off, 0, 0, IPFX * sc, IPFX * sc); g.restore();
+    // outline: 001-101 straight, 001-111 straight, 101-111 arc
+    g.strokeStyle = css('--ink-3'); g.lineWidth = 1.2; g.beginPath(); g.moveTo(ox, oy); g.lineTo(ox + IPFX * sc, oy);
+    for (let i = 0; i <= 30; i++) { const tt = i / 30; const v = [1, tt, 1]; const n = Math.hypot(...v); const X = v[0] / n / (1 + v[2] / n), Y = v[1] / n / (1 + v[2] / n); g.lineTo(ox + X * sc, oy - Y * sc); }
+    g.lineTo(ox, oy); g.stroke();
+    g.fillStyle = css('--ink'); g.font = '12px ' + css('--font-mono');
+    g.fillText('001', ox - 26, oy + 16); g.fillText('101', ox + IPFX * sc - 12, oy + 18); g.fillText('111', ox + IPFY * sc - 6, oy - IPFY * sc - 8);
+    legendBar($('ipfLegend'), vmax);
+    cv._v = { ox, oy, sc };
+  }
+  $('ipf').addEventListener('mousemove', e => {
+    const v = e.currentTarget._v; if (!v || !ipfD) return; const r = e.currentTarget.getBoundingClientRect();
+    const X = (e.clientX - r.left - v.ox) / v.sc, Y = (v.oy - (e.clientY - r.top)) / v.sc;
+    if (X < 0 || Y < 0 || X >= IPFX || Y >= IPFX) return hideTip();
+    const i = Math.floor(Y / IPFX * IPFN) * IPFN + Math.floor(X / IPFX * IPFN); if (ipfD[i] < 0) return hideTip();
+    showTip(e, `BD density ${ipfD[i].toFixed(1)} MRD`);
+  });
+  $('ipf').addEventListener('mouseleave', hideTip);
+
+  /* ---------- verdict ---------- */
+  function verdict() {
+    const st = grown.stats, ref = randomRef().stats, rot = grown.rot;
+    const fam = [['⟨100⟩', st.s100, ref.s100, [214, 60, 50]], ['⟨110⟩', st.s110, ref.s110, [40, 160, 70]], ['⟨111⟩', st.s111, ref.s111, [60, 90, 210]]];
+    const ratios = fam.map(f => f[1] / f[2]);
+    // major component = largest volume share among families enriched above random
+    let di = -1; fam.forEach((f, i) => { if (ratios[i] > 1.15 && (di < 0 || f[1] > fam[di][1])) di = i; });
+    const pmax = pfD.max; const locked = rot % 90 === 0;
+    const strength = di < 0 || pmax <= 3 ? 'Near-random' : pmax > 9 ? 'Strong' : pmax > 5 ? 'Moderate' : 'Weak';
+    const lamellar = rot === 0 && st.s100 > 0.25 && st.s110 > 0.35 && strength !== 'Near-random';
+    let head, sub; const notes = [];
+    if (strength === 'Near-random') { head = 'Near-random texture'; sub = 'No orientation clearly wins the growth competition.'; }
+    else if (lamellar) {
+      head = di === 1 ? 'Lamellar: ⟨110⟩ major + ⟨100⟩ minor ∥BD' : 'Lamellar: ⟨100⟩ major + ⟨110⟩ minor ∥BD';
+      sub = 'Crystallographic lamellar microstructure (Sun et al. 2019). Side-wall ±45° cells build ⟨110⟩∥BD grains, pool-centre vertical cells build ⟨100⟩∥BD lamellae, and both keep ⟨100⟩ along the scan direction.';
+    } else if (locked && di === 1) {
+      head = `${strength} ⟨110⟩∥BD, ⟨100⟩∥SD`;
+      sub = 'Goss-type {110}⟨001⟩, single-crystal-like. Grains feed the ±45° side-wall cells with two ⟨100⟩ axes and keep the third along the scan direction.';
+    } else if (locked && di === 0) {
+      head = `${strength} cube ⟨100⟩∥BD`;
+      sub = rot === 0 ? 'Cube-like {001}⟨100⟩ with ⟨100⟩ along BD, scan and transverse directions. Vertical and horizontal cells dominate what survives.' : 'Cube {001}⟨100⟩: only a crystal with ⟨100⟩ along both X and Y serves every layer.';
+    } else if (locked) { head = `${strength} ${fam[di][0]}∥BD`; sub = 'In-plane alignment is kept because the scan direction repeats.'; }
+    else { head = `${strength} ${fam[di][0]} fibre about BD`; sub = `With ${rot}° rotation the required in-plane direction keeps changing, so grains align only about BD.`; }
+    if (lamellar) notes.push('Look for red ⟨100⟩ stripes repeating every hatch spacing in the IPF-BD map, and switch to IPF-X: almost everything turns red.');
+    if (grown.pN > 0.08) notes.push(`About ${(grown.pN * 100).toFixed(0)}% of sites restart as stray grains each layer, which weakens and blurs the texture.`);
+    if (mp.mode === 'keyhole' && rot === 0) notes.push('Deep keyhole pools have steep walls. Horizontal and vertical cells both suit ⟨100⟩∥BD grains (cf. Ishimoto et al. 2020, slow-scan specimen).');
+    if (!locked) notes.push('Try 90° to see in-plane order return as a cube texture.');
+    notes.push(`{100} pole figure peak: ${pmax.toFixed(1)} MRD.`);
+    $('vHead').textContent = head; $('vSub').textContent = sub;
+    $('vNotes').innerHTML = notes.map(n => `<li>${n}</li>`).join('');
+    $('shares').innerHTML = '<div style="font-size:.78rem;color:var(--ink-3)">Share of grains nearest each family along BD (tick = random)</div>' + fam.map(([lab, s, r, c]) => `<div class="share"><span class="lab">${lab}</span><span class="track"><span class="fill" style="width:${(s * 100).toFixed(1)}%;background:rgb(${c.join(',')})"></span><span class="rnd" style="left:${(r * 100).toFixed(1)}%"></span></span><span class="val">${(s * 100).toFixed(0)}%</span></div>`).join('');
+  }
+
+  /* ---------- experiments ---------- */
+  const EXPS = [
+    { t: 'Lamellar ⟨110⟩ texture', p: { P: 200, v: 1000, h: 90, t: 30, d: 80, rot: 0 }, w: 'No rotation, conduction pools. Expect green ⟨110⟩∥BD grains with thin red ⟨100⟩ stripes at track centres. Switch the map to IPF-X: it turns red because ⟨100⟩ lies along the scan.' },
+    { t: 'Cube texture from 90°', p: { P: 200, v: 1000, h: 90, t: 30, d: 80, rot: 90 }, w: 'Same pools, 90° rotation. The ⟨110⟩ grains lose because they cannot keep ⟨100⟩ along both X and Y. Watch the pole figure collapse to four spots at X, Y and one at BD.' },
+    { t: 'Fibre texture from 67°', p: { P: 200, v: 1000, h: 90, t: 30, d: 80, rot: 67 }, w: 'The common industrial rotation. BD alignment survives, in-plane order is lost: the pole figure becomes rings instead of spots.' },
+    { t: 'Keyhole pools, no rotation', p: { P: 250, v: 400, h: 80, t: 40, d: 80, rot: 0 }, w: 'Slow scan, deep pools with steep walls. Horizontal and vertical cells win, so ⟨100⟩∥BD replaces ⟨110⟩ even without rotation (Ishimoto et al. 2020). Note the porosity warning.' },
+    { t: 'Tight hatch spacing', p: { P: 200, v: 1000, h: 45, t: 30, d: 80, rot: 0 }, w: 'High overlap: each new track remelts most of the previous side wall, so more vertical-cell material survives and the ⟨100⟩ share rises.' },
+    { t: 'Too fast, too thin', p: { P: 370, v: 2400, h: 80, t: 30, d: 80, rot: 0 }, w: 'Small pools and shallow remelting. Stray grains interrupt epitaxy, and the texture weakens toward random.' },
+    { t: 'Hatch too wide', p: { P: 200, v: 1000, h: 150, t: 30, d: 80, rot: 0 }, w: 'Tracks stop overlapping. Red gaps in the cross-section are lack-of-fusion pores; texture is not your main problem any more.' },
+  ];
+  $('experiments').innerHTML = EXPS.map((e, i) => `<button type="button" class="exp" data-i="${i}"><span class="t">${e.t}</span><span class="p">${e.p.P} W · ${e.p.v} mm/s · h ${e.p.h} µm · t ${e.p.t} µm · ${e.p.rot}°</span><span class="w">${e.w}</span></button>`).join('');
+  document.querySelectorAll('.exp').forEach(b => b.addEventListener('click', () => {
+    Object.assign(S, EXPS[+b.dataset.i].p); syncControls(); updateGeometry(); scheduleTexture(0);
+    document.querySelector('.bench').scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  }));
+
+  /* ---------- quiz ---------- */
+  const QUIZ = [
+    { q: 'Why do cells in LPBF 316L grow along ⟨100⟩ and not along the exact heat-flow direction?', o: ['⟨100⟩ is the easy-growth direction of cubic crystals', 'Because the laser is polarised', '⟨100⟩ planes are the close-packed planes'], a: 0, why: 'Cells and dendrites in cubic metals grow fastest along ⟨100⟩, so they follow the ⟨100⟩ of the parent grain that lies closest to the thermal gradient. Close-packed planes in fcc are {111}.' },
+    { q: 'With no scan rotation and conduction-mode pools, which direction ends up along the scan direction?', o: ['⟨111⟩', '⟨110⟩', '⟨100⟩'], a: 2, why: 'A grain that feeds both +45° and −45° side-wall cells uses two ⟨100⟩ axes in the transverse–build plane; its third ⟨100⟩ must lie along the scan direction. Along BD it shows ⟨110⟩.' },
+    { q: 'You switch from 0° to 90° rotation with the same pools. What happens to the dominant BD texture?', o: ['Stays ⟨110⟩', 'Moves toward ⟨100⟩ (cube)', 'Moves toward ⟨111⟩'], a: 1, why: 'The grain must now have ⟨100⟩ along X in odd layers and along Y in even layers. Only the cube orientation does both, which forces ⟨100⟩ along BD as well.' },
+    { q: 'Why does 67° rotation give a weaker texture than 0° or 90°?', o: ['It melts less powder', 'The in-plane requirement keeps changing, so only alignment about BD survives', 'It creates more δ-ferrite'], a: 1, why: '67° is not a multiple of 90°, so the scan direction does not repeat for many layers. No single in-plane orientation stays favoured, leaving a fibre texture.' },
+    { q: 'Without rotation, making the pool much deeper (keyhole) tends to give…', o: ['⟨100⟩∥BD', 'Stronger ⟨110⟩∥BD', 'Random texture always'], a: 0, why: 'Steep keyhole walls make side-wall cells nearly horizontal, and the pool bottom gives vertical cells. A cube grain serves both, as in Ishimoto et al. (2020).' },
+  ];
+  $('quiz').innerHTML = QUIZ.map((q, i) => `<div class="q" data-i="${i}"><strong>${i + 1}. ${q.q}</strong><div class="opts">${q.o.map((o, j) => `<button type="button" data-j="${j}">${o}</button>`).join('')}</div><p class="why" hidden>${q.why}</p></div>`).join('');
+  document.querySelectorAll('.q').forEach(el => el.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+    const q = QUIZ[+el.dataset.i], j = +b.dataset.j;
+    b.classList.add(j === q.a ? 'right' : 'wrong');
+    if (j === q.a) { el.querySelector('.why').hidden = false; }
+  })));
+
+  /* ---------- boot ---------- */
+  function redrawAll() { if (!cs) return; drawCross(); drawZones(); drawScan(); if (grown) { drawMap(); drawIPF(); drawPF(); } }
+  let rT; window.addEventListener('resize', () => { clearTimeout(rT); rT = setTimeout(redrawAll, 150); });
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redrawAll);
+  new MutationObserver(redrawAll).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  syncControls(); updateGeometry(); runTexture();
+})();
+</script>
+
+</body>
+</html>
