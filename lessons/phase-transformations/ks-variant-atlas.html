@@ -1,0 +1,404 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Kurdjumov–Sachs Variant Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap">
+<style>
+/* Layout: lab-notebook atlas. Header, then a 3D cell + detail panel, the close-packed plane and pole figure side by side, then the full variant table. */
+:root {
+  --bg: #f3f5f7; --panel: #ffffff; --ink: #18212b; --muted: #5b6875; --line: #d5dce3; --soft: #e8edf1;
+  --accent: #1d5fa8;
+  --g0: #0f8a7e; --g1: #c77a12; --g2: #7651c4; --g3: #c2415f;
+  --b0: #d0563a; --b1: #2f8f3a; --b2: #2a62c9;
+  --gamma: #9aa8b5; --gamma-fill: #c9d3dc;
+  --f-display: "Newsreader", Georgia, serif;
+  --f-body: "IBM Plex Sans", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #11161c; --panel: #182029; --ink: #e5ebf0; --muted: #93a1ae; --line: #2c3845; --soft: #202a35;
+  --accent: #6fa8ea;
+  --g0: #35c2b2; --g1: #eaa64a; --g2: #a98af0; --g3: #ef7390;
+  --b0: #f0805f; --b1: #6fcf78; --b2: #6f9bf2;
+  --gamma: #5e6d7b; --gamma-fill: #34414f; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #11161c; --panel: #182029; --ink: #e5ebf0; --muted: #93a1ae; --line: #2c3845; --soft: #202a35;
+  --accent: #6fa8ea;
+  --g0: #35c2b2; --g1: #eaa64a; --g2: #a98af0; --g3: #ef7390;
+  --b0: #f0805f; --b1: #6fcf78; --b2: #6f9bf2;
+  --gamma: #5e6d7b; --gamma-fill: #34414f; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 60px; display: grid; gap: 22px; }
+header h1 { font-family: var(--f-display); font-weight: 600; font-size: clamp(28px, 4.2vw, 42px); line-height: 1.1; margin: 0 0 8px; text-wrap: balance; }
+header .rel { font-family: var(--f-mono); font-size: 15px; color: var(--accent); margin: 0 0 12px; }
+header p { max-width: 70ch; margin: 0; color: var(--muted); }
+.count { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 14px; font-family: var(--f-mono); font-size: 13px; color: var(--muted); }
+.count b { color: var(--ink); font-weight: 500; }
+.eyebrow { font-size: 11.5px; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin: 0 0 8px; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; min-width: 0; }
+.grid2 { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 22px; }
+.grid2b { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 22px; }
+@media (max-width: 860px) { .grid2, .grid2b { grid-template-columns: minmax(0, 1fr); } }
+.eyebrow sub, thead sub, .eyebrow .mi { text-transform: none; }
+.bar { text-decoration: overline; text-decoration-thickness: 1px; }
+.mi { font-family: var(--f-mono); white-space: nowrap; }
+#three { width: 100%; height: 440px; border-radius: 8px; background: var(--soft); touch-action: none; cursor: grab; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 10px; }
+.toolbar .lab { font-size: 12.5px; color: var(--muted); margin-right: 4px; }
+button.chip { font: 500 12.5px var(--f-body); border: 1px solid var(--line); background: var(--panel); color: var(--ink); padding: 4px 10px; border-radius: 999px; cursor: pointer; }
+button.chip:hover { border-color: var(--accent); }
+button.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--panel); }
+button:focus-visible, input:focus-visible, tr:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.hint { font-size: 12.5px; color: var(--muted); margin: 8px 0 0; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--muted); margin-top: 8px; }
+.sw { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+/* detail */
+.vname { font-family: var(--f-display); font-size: 40px; font-weight: 600; line-height: 1; margin: 0; }
+.vrel { font-family: var(--f-mono); font-size: 14.5px; margin: 10px 0 14px; display: grid; gap: 3px; }
+.facts { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 13.5px; margin: 0; }
+.facts dt { color: var(--muted); }
+.facts dd { margin: 0; }
+.tag { display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
+.mat { font-family: var(--f-mono); font-size: 13px; display: inline-grid; grid-template-columns: repeat(3, auto); gap: 2px 14px; padding: 6px 12px; border-left: 1.5px solid var(--muted); border-right: 1.5px solid var(--muted); border-radius: 4px; margin-top: 4px; text-align: right; font-variant-numeric: tabular-nums; }
+.sibs { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5px; margin-top: 6px; }
+.sibs button { font: 500 12.5px var(--f-mono); padding: 6px 0; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; }
+.sibs button[aria-pressed="true"] { border-color: currentColor; box-shadow: inset 0 0 0 1px currentColor; }
+.sibs small { display: block; font-size: 10.5px; color: var(--muted); font-family: var(--f-body); font-weight: 400; }
+svg text { font-family: var(--f-mono); }
+.fig { width: 100%; height: auto; display: block; }
+/* table */
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; min-width: 640px; font-variant-numeric: tabular-nums; }
+th, td { padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--soft); }
+thead th { font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--line); }
+tr.grp td { background: var(--soft); font-weight: 600; font-size: 13px; }
+tbody tr.v { cursor: pointer; }
+tbody tr.v:hover td { background: var(--soft); }
+tbody tr.v.sel td { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+td.num { text-align: right; font-family: var(--f-mono); }
+.mis-0 { color: var(--muted); }
+.why { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
+.why div { font-size: 14px; }
+.why h3 { font-family: var(--f-display); font-size: 19px; font-weight: 600; margin: 0 0 4px; }
+.why p { margin: 0; color: var(--muted); }
+@media (max-width: 520px) { #three { height: 340px; } .wrap { padding-inline: 16px; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>The 24 Kurdjumov–Sachs variants</h1>
+    <p class="rel">{111}<sub>γ</sub> ∥ {011}<sub>α</sub> &nbsp;·&nbsp; ⟨<span class="bar">1</span>01⟩<sub>γ</sub> ∥ ⟨<span class="bar">1</span><span class="bar">1</span>1⟩<sub>α</sub></p>
+    <p>One austenite (fcc) grain can transform into 24 martensite (bcc) orientations that all satisfy the same KS relationship. Each one puts a close-packed {011}<sub>α</sub> plane on one of the four {111}<sub>γ</sub> planes and lines up a close-packed ⟨111⟩<sub>α</sub> row with a ⟨110⟩<sub>γ</sub> row inside it. Pick a variant anywhere on the page and every view follows.</p>
+    <div class="count"><span><b>4</b> {111}<sub>γ</sub> planes</span><span>×</span><span><b>3</b> ⟨110⟩<sub>γ</sub> in each</span><span>×</span><span><b>2</b> ⟨111⟩<sub>α</sub> in (011)<sub>α</sub></span><span>=</span><span><b>24</b> distinct rotations (smallest separation 10.53°)</span></div>
+  </header>
+
+  <section class="grid2">
+    <div class="panel">
+      <p class="eyebrow">Austenite unit cell with the martensite cell it becomes</p>
+      <div id="three" role="img" aria-label="3D view of the fcc unit cell, its four {111} planes and the bcc cell of the selected variants"></div>
+      <div class="toolbar" role="group" aria-label="Which variants to draw">
+        <span class="lab">Draw α cells for</span>
+        <button class="chip" data-show="sel" type="button" id="show-sel">Selected</button>
+        <button class="chip" data-show="cp" type="button" id="show-cp">Its plane (6)</button>
+        <button class="chip" data-show="bain" type="button" id="show-bain">Its Bain group (8)</button>
+        <button class="chip" data-show="all" type="button" id="show-all">All 24</button>
+      </div>
+      <p class="hint">Drag to rotate, scroll or pinch to zoom. Grey spheres are fcc atoms; the coloured wire cell is the bcc cell (a<sub>α</sub>/a<sub>γ</sub> = 0.80), centred on its {111}<sub>γ</sub> plane with its (011)<sub>α</sub> face shaded. The arrow is the shared close-packed direction. Tick rows in the table to build your own set.</p>
+      <div class="legend" id="legend3d"></div>
+    </div>
+    <div class="panel" id="detail"></div>
+  </section>
+
+  <section class="grid2b">
+    <div class="panel">
+      <p class="eyebrow">Looking down the habit {111}<sub>γ</sub> plane</p>
+      <svg id="plane" class="fig" viewBox="-230 -215 460 430" role="img" aria-label="Atoms of the close-packed fcc plane with the bcc (011) plane of the selected variant overlaid"></svg>
+      <p class="hint">Large grey discs: atoms of the {111}<sub>γ</sub> plane. Small dots: atoms of the (011)<sub>α</sub> plane of the selected variant. Along the arrow the rows match; away from it the α lattice fans out. Its six variants are the three ⟨110⟩<sub>γ</sub> rows, each taken two ways (mirror images, 60° apart as crystals).</p>
+    </div>
+    <div class="panel">
+      <p class="eyebrow">{100}<sub>α</sub> pole figure, projected on (001)<sub>γ</sub></p>
+      <svg id="pole" class="fig" viewBox="-230 -215 460 430" role="img" aria-label="Stereographic projection of the 72 {100} alpha poles of all 24 variants"></svg>
+      <div class="toolbar" role="group" aria-label="Colour poles by">
+        <span class="lab">Colour by</span>
+        <button class="chip" type="button" data-color="cp" id="color-cp">{111}<sub>γ</sub> plane</button>
+        <button class="chip" type="button" data-color="bain" id="color-bain">Bain group</button>
+      </div>
+      <p class="hint">Each variant gives three {100}<sub>α</sub> poles. They gather in three rings, one around each ⟨100⟩<sub>γ</sub> (squares): the Bain compression axis of that variant. Click a pole to select its variant.</p>
+    </div>
+  </section>
+
+  <section class="panel">
+    <p class="eyebrow">All 24 variants</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Draw</th><th>Variant</th><th>Plane ∥ (011)<sub>α</sub></th><th>Direction ∥</th><th>Direction α</th><th>Bain</th><th class="num">Misorientation to <span id="mishead">V1</span></th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <p class="hint">Misorientation is the smallest rotation between two variants after applying the 24 cubic symmetry operators. Inside one plane group: 60° (twin-related pairs such as V1/V2), 49.47°, and the 10.53° sub-block partner (V1/V4).</p>
+  </section>
+
+  <section class="panel why">
+    <div><h3>Packets</h3><p>The six variants sharing one {111}<sub>γ</sub> plane form a packet in lath martensite. They are the same habit plane, rotated in-plane by the three ⟨110⟩<sub>γ</sub> rows.</p></div>
+    <div><h3>Blocks and sub-blocks</h3><p>Within a packet, pairs 10.53° apart (V1/V4, V2/V5, V3/V6) share a Bain axis and form a block of two sub-blocks.</p></div>
+    <div><h3>Bain groups</h3><p>Every variant is close to one of the three Bain orientations, compressed along [100]<sub>γ</sub>, [010]<sub>γ</sub> or [001]<sub>γ</sub>. Each Bain group holds 8 variants, two from each plane.</p></div>
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+const DATA = {"variants":[{"id":1,"cp":0,"pg":[1,1,1],"dg":[-1,0,1],"da":[-1,-1,1],"bain":2,"R":[[0.741582,0.64983,0.166667],[-0.666667,0.741582,0.074915],[-0.074915,-0.166667,0.983163]]},{"id":2,"cp":0,"pg":[1,1,1],"dg":[-1,0,1],"da":[-1,1,-1],"bain":0,"R":[[0.074915,-0.166667,0.983163],[0.666667,0.741582,0.074915],[-0.741582,0.64983,0.166667]]},{"id":3,"cp":0,"pg":[1,1,1],"dg":[0,1,-1],"da":[-1,-1,1],"bain":1,"R":[[-0.666667,0.741582,0.074915],[-0.074915,-0.166667,0.983163],[0.741582,0.64983,0.166667]]},{"id":4,"cp":0,"pg":[1,1,1],"dg":[0,1,-1],"da":[-1,1,-1],"bain":2,"R":[[0.666667,0.741582,0.074915],[-0.741582,0.64983,0.166667],[0.074915,-0.166667,0.983163]]},{"id":5,"cp":0,"pg":[1,1,1],"dg":[1,-1,0],"da":[-1,-1,1],"bain":0,"R":[[-0.074915,-0.166667,0.983163],[0.741582,0.64983,0.166667],[-0.666667,0.741582,0.074915]]},{"id":6,"cp":0,"pg":[1,1,1],"dg":[1,-1,0],"da":[-1,1,-1],"bain":1,"R":[[-0.741582,0.64983,0.166667],[0.074915,-0.166667,0.983163],[0.666667,0.741582,0.074915]]},{"id":7,"cp":1,"pg":[1,-1,1],"dg":[1,0,-1],"da":[-1,-1,1],"bain":0,"R":[[-0.074915,-0.166667,0.983163],[0.666667,-0.741582,-0.074915],[0.741582,0.64983,0.166667]]},{"id":8,"cp":1,"pg":[1,-1,1],"dg":[1,0,-1],"da":[-1,1,-1],"bain":2,"R":[[-0.741582,0.64983,0.166667],[-0.666667,-0.741582,-0.074915],[0.074915,-0.166667,0.983163]]},{"id":9,"cp":1,"pg":[1,-1,1],"dg":[-1,-1,0],"da":[-1,-1,1],"bain":1,"R":[[0.741582,0.64983,0.166667],[0.074915,0.166667,-0.983163],[-0.666667,0.741582,0.074915]]},{"id":10,"cp":1,"pg":[1,-1,1],"dg":[-1,-1,0],"da":[-1,1,-1],"bain":0,"R":[[0.074915,-0.166667,0.983163],[0.741582,-0.64983,-0.166667],[0.666667,0.741582,0.074915]]},{"id":11,"cp":1,"pg":[1,-1,1],"dg":[0,1,1],"da":[-1,-1,1],"bain":2,"R":[[-0.666667,0.741582,0.074915],[-0.741582,-0.64983,-0.166667],[-0.074915,-0.166667,0.983163]]},{"id":12,"cp":1,"pg":[1,-1,1],"dg":[0,1,1],"da":[-1,1,-1],"bain":1,"R":[[0.666667,0.741582,0.074915],[-0.074915,0.166667,-0.983163],[-0.741582,0.64983,0.166667]]},{"id":13,"cp":2,"pg":[-1,1,1],"dg":[0,-1,1],"da":[-1,-1,1],"bain":2,"R":[[0.666667,-0.741582,-0.074915],[0.741582,0.64983,0.166667],[-0.074915,-0.166667,0.983163]]},{"id":14,"cp":2,"pg":[-1,1,1],"dg":[0,-1,1],"da":[-1,1,-1],"bain":1,"R":[[-0.666667,-0.741582,-0.074915],[0.074915,-0.166667,0.983163],[-0.741582,0.64983,0.166667]]},{"id":15,"cp":2,"pg":[-1,1,1],"dg":[-1,0,-1],"da":[-1,-1,1],"bain":0,"R":[[0.074915,0.166667,-0.983163],[-0.666667,0.741582,0.074915],[0.741582,0.64983,0.166667]]},{"id":16,"cp":2,"pg":[-1,1,1],"dg":[-1,0,-1],"da":[-1,1,-1],"bain":2,"R":[[0.741582,-0.64983,-0.166667],[0.666667,0.741582,0.074915],[0.074915,-0.166667,0.983163]]},{"id":17,"cp":2,"pg":[-1,1,1],"dg":[1,1,0],"da":[-1,-1,1],"bain":1,"R":[[-0.741582,-0.64983,-0.166667],[-0.074915,-0.166667,0.983163],[-0.666667,0.741582,0.074915]]},{"id":18,"cp":2,"pg":[-1,1,1],"dg":[1,1,0],"da":[-1,1,-1],"bain":0,"R":[[-0.074915,0.166667,-0.983163],[-0.741582,0.64983,0.166667],[0.666667,0.741582,0.074915]]},{"id":19,"cp":3,"pg":[1,1,-1],"dg":[-1,1,0],"da":[-1,-1,1],"bain":1,"R":[[0.741582,0.64983,0.166667],[-0.074915,-0.166667,0.983163],[0.666667,-0.741582,-0.074915]]},{"id":20,"cp":3,"pg":[1,1,-1],"dg":[-1,1,0],"da":[-1,1,-1],"bain":0,"R":[[0.074915,-0.166667,0.983163],[-0.741582,0.64983,0.166667],[-0.666667,-0.741582,-0.074915]]},{"id":21,"cp":3,"pg":[1,1,-1],"dg":[0,-1,-1],"da":[-1,-1,1],"bain":2,"R":[[-0.666667,0.741582,0.074915],[0.741582,0.64983,0.166667],[0.074915,0.166667,-0.983163]]},{"id":22,"cp":3,"pg":[1,1,-1],"dg":[0,-1,-1],"da":[-1,1,-1],"bain":1,"R":[[0.666667,0.741582,0.074915],[0.074915,-0.166667,0.983163],[0.741582,-0.64983,-0.166667]]},{"id":23,"cp":3,"pg":[1,1,-1],"dg":[1,0,1],"da":[-1,-1,1],"bain":0,"R":[[-0.074915,-0.166667,0.983163],[-0.666667,0.741582,0.074915],[-0.741582,-0.64983,-0.166667]]},{"id":24,"cp":3,"pg":[1,1,-1],"dg":[1,0,1],"da":[-1,1,-1],"bain":2,"R":[[-0.741582,0.64983,0.166667],[0.666667,0.741582,0.074915],[-0.074915,0.166667,-0.983163]]}],"mis":[[0.0,60.0,60.0,10.53,60.0,49.47,49.47,10.53,50.51,50.51,14.88,57.21,14.88,50.51,57.21,20.61,51.73,47.11,50.51,57.21,20.61,47.11,57.21,21.06],[60.0,0.0,49.47,60.0,10.53,60.0,10.53,49.47,57.21,14.88,50.51,50.51,57.21,50.51,21.06,57.21,47.11,20.61,50.51,14.88,47.11,51.73,20.61,57.21],[60.0,49.47,0.0,60.0,60.0,10.53,50.51,57.21,20.61,47.11,57.21,21.06,49.47,10.53,50.51,50.51,14.88,57.21,14.88,50.51,57.21,20.61,51.73,47.11],[10.53,60.0,60.0,0.0,49.47,60.0,50.51,14.88,47.11,51.73,20.61,57.21,10.53,49.47,57.21,14.88,50.51,50.51,57.21,50.51,21.06,57.21,47.11,20.61],[60.0,10.53,60.0,49.47,0.0,60.0,14.88,50.51,57.21,20.61,51.73,47.11,50.51,57.21,20.61,47.11,57.21,21.06,49.47,10.53,50.51,50.51,14.88,57.21],[49.47,60.0,10.53,60.0,60.0,0.0,57.21,50.51,21.06,57.21,47.11,20.61,50.51,14.88,47.11,51.73,20.61,57.21,10.53,49.47,57.21,14.88,50.51,50.51],[49.47,10.53,50.51,50.51,14.88,57.21,0.0,60.0,60.0,10.53,60.0,49.47,47.11,51.73,20.61,57.21,50.51,14.88,47.11,20.61,57.21,50.51,21.06,57.21],[10.53,49.47,57.21,14.88,50.51,50.51,60.0,0.0,49.47,60.0,10.53,60.0,20.61,47.11,57.21,21.06,50.51,57.21,51.73,47.11,14.88,50.51,57.21,20.61],[50.51,57.21,20.61,47.11,57.21,21.06,60.0,49.47,0.0,60.0,60.0,10.53,57.21,14.88,50.51,50.51,10.53,49.47,20.61,57.21,50.51,14.88,47.11,51.73],[50.51,14.88,47.11,51.73,20.61,57.21,10.53,60.0,60.0,0.0,49.47,60.0,50.51,50.51,14.88,57.21,49.47,10.53,57.21,21.06,50.51,57.21,20.61,47.11],[14.88,50.51,57.21,20.61,51.73,47.11,60.0,10.53,60.0,49.47,0.0,60.0,21.06,57.21,47.11,20.61,57.21,50.51,50.51,50.51,10.53,49.47,57.21,14.88],[57.21,50.51,21.06,57.21,47.11,20.61,49.47,60.0,10.53,60.0,60.0,0.0,57.21,20.61,51.73,47.11,14.88,50.51,14.88,57.21,49.47,10.53,50.51,50.51],[14.88,57.21,49.47,10.53,50.51,50.51,47.11,20.61,57.21,50.51,21.06,57.21,0.0,60.0,60.0,10.53,60.0,49.47,47.11,51.73,20.61,57.21,50.51,14.88],[50.51,50.51,10.53,49.47,57.21,14.88,51.73,47.11,14.88,50.51,57.21,20.61,60.0,0.0,49.47,60.0,10.53,60.0,20.61,47.11,57.21,21.06,50.51,57.21],[57.21,21.06,50.51,57.21,20.61,47.11,20.61,57.21,50.51,14.88,47.11,51.73,60.0,49.47,0.0,60.0,60.0,10.53,57.21,14.88,50.51,50.51,10.53,49.47],[20.61,57.21,50.51,14.88,47.11,51.73,57.21,21.06,50.51,57.21,20.61,47.11,10.53,60.0,60.0,0.0,49.47,60.0,50.51,50.51,14.88,57.21,49.47,10.53],[51.73,47.11,14.88,50.51,57.21,20.61,50.51,50.51,10.53,49.47,57.21,14.88,60.0,10.53,60.0,49.47,0.0,60.0,21.06,57.21,47.11,20.61,57.21,50.51],[47.11,20.61,57.21,50.51,21.06,57.21,14.88,57.21,49.47,10.53,50.51,50.51,49.47,60.0,10.53,60.0,60.0,0.0,57.21,20.61,51.73,47.11,14.88,50.51],[50.51,50.51,14.88,57.21,49.47,10.53,47.11,51.73,20.61,57.21,50.51,14.88,47.11,20.61,57.21,50.51,21.06,57.21,0.0,60.0,60.0,10.53,60.0,49.47],[57.21,14.88,50.51,50.51,10.53,49.47,20.61,47.11,57.21,21.06,50.51,57.21,51.73,47.11,14.88,50.51,57.21,20.61,60.0,0.0,49.47,60.0,10.53,60.0],[20.61,47.11,57.21,21.06,50.51,57.21,57.21,14.88,50.51,50.51,10.53,49.47,20.61,57.21,50.51,14.88,47.11,51.73,60.0,49.47,0.0,60.0,60.0,10.53],[47.11,51.73,20.61,57.21,50.51,14.88,50.51,50.51,14.88,57.21,49.47,10.53,57.21,21.06,50.51,57.21,20.61,47.11,10.53,60.0,60.0,0.0,49.47,60.0],[57.21,20.61,51.73,47.11,14.88,50.51,21.06,57.21,47.11,20.61,57.21,50.51,50.51,50.51,10.53,49.47,57.21,14.88,60.0,10.53,60.0,49.47,0.0,60.0],[21.06,57.21,47.11,20.61,57.21,50.51,57.21,20.61,51.73,47.11,14.88,50.51,14.88,57.21,49.47,10.53,50.51,50.51,49.47,60.0,10.53,60.0,60.0,0.0]]};
+const V = DATA.variants, MIS = DATA.mis;
+const BAIN_NAME = { 2: "B1", 0: "B2", 1: "B3" };
+const BAIN_AXIS = { 2: "[001]", 0: "[100]", 1: "[010]" };
+const state = { sel: 0, show: "sel", color: "cp", custom: null };
+try { const s = JSON.parse(localStorage.getItem("ks-state") || "null"); if (s) Object.assign(state, s, { custom: s.custom ? new Set(s.custom) : null }); } catch (e) {}
+function save() { try { localStorage.setItem("ks-state", JSON.stringify({ sel: state.sel, show: state.show, color: state.color, custom: state.custom ? [...state.custom] : null })); } catch (e) {} }
+
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const cpColor = g => css("--g" + g);
+const bainColor = b => css("--b" + b);
+const colorOf = v => state.color === "cp" ? cpColor(v.cp) : bainColor(v.bain);
+
+function mi(vec, open, close) {
+  return '<span class="mi">' + open + vec.map(x => x < 0 ? '<span class="bar">' + (-x) + '</span>' : x).join("") + close + "</span>";
+}
+const planeStr = v => mi(v.pg, "(", ")") + "<sub>γ</sub>";
+const dgStr = v => mi(v.dg, "[", "]") + "<sub>γ</sub>";
+const daStr = v => mi(v.da, "[", "]") + "<sub>α</sub>";
+
+function shownSet() {
+  const s = V[state.sel];
+  if (state.custom) return state.custom;
+  if (state.show === "sel") return new Set([state.sel]);
+  if (state.show === "cp") return new Set(V.filter(v => v.cp === s.cp).map(v => v.id - 1));
+  if (state.show === "bain") return new Set(V.filter(v => v.bain === s.bain).map(v => v.id - 1));
+  return new Set(V.map(v => v.id - 1));
+}
+
+// ---------- linear algebra helpers
+const mul = (R, a) => [0, 1, 2].map(i => R[i][0] * a[0] + R[i][1] * a[1] + R[i][2] * a[2]);
+const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const norm = a => { const l = Math.hypot(...a); return a.map(x => x / l); };
+const RATIO = 0.80; // a_alpha / a_gamma for Fe
+
+// ---------- detail panel
+function renderDetail() {
+  const v = V[state.sel];
+  const sibs = V.filter(w => w.cp === v.cp);
+  const R = v.R;
+  const c = cpColor(v.cp);
+  document.getElementById("detail").innerHTML = `
+    <p class="eyebrow">Selected variant</p>
+    <p class="vname" style="color:${c}">V${v.id}</p>
+    <div class="vrel"><span>${planeStr(v)} ∥ (011)<sub>α</sub></span><span>${dgStr(v)} ∥ ${daStr(v)}</span></div>
+    <dl class="facts">
+      <dt>Plane group</dt><dd><span class="tag"><span class="sw" style="background:${c}"></span>${mi(v.pg, "(", ")")}<sub>γ</sub> packet</span></dd>
+      <dt>Bain group</dt><dd><span class="tag"><span class="sw" style="background:${bainColor(v.bain)}"></span>${BAIN_NAME[v.bain]}, compressed along ${BAIN_AXIS[v.bain]}<sub>γ</sub></span></dd>
+      <dt>From V1</dt><dd class="mi">${MIS[0][state.sel].toFixed(2)}°</dd>
+      <dt>Matrix</dt><dd><div class="mat" aria-label="rotation matrix, columns are the alpha cube axes in austenite coordinates">${R.map(r => r.map(x => (x >= 0 ? "" : "−") + Math.abs(x).toFixed(3)).map(s => "<span>" + s + "</span>").join("")).join("")}</div>
+        <div class="hint" style="margin-top:4px">Columns are [100]<sub>α</sub>, [010]<sub>α</sub>, [001]<sub>α</sub> written in γ axes.</div></dd>
+    </dl>
+    <p class="eyebrow" style="margin-top:16px">Same plane, other variants</p>
+    <div class="sibs">${sibs.map(w => `<button type="button" data-v="${w.id - 1}" aria-pressed="${w.id - 1 === state.sel}" style="color:${w.id - 1 === state.sel ? c : "inherit"}">V${w.id}<small>${MIS[state.sel][w.id - 1].toFixed(1)}°</small></button>`).join("")}</div>`;
+  document.querySelectorAll("#detail .sibs button").forEach(b => b.onclick = () => select(+b.dataset.v));
+}
+
+// ---------- table
+function renderTable() {
+  const shown = shownSet();
+  let h = "";
+  for (let g = 0; g < 4; g++) {
+    const first = V.find(v => v.cp === g);
+    h += `<tr class="grp"><td colspan="7"><span class="sw" style="background:${cpColor(g)}"></span>${mi(first.pg, "(", ")")}<sub>γ</sub> plane group</td></tr>`;
+    V.filter(v => v.cp === g).forEach(v => {
+      const i = v.id - 1, m = MIS[state.sel][i];
+      h += `<tr class="v${i === state.sel ? " sel" : ""}" data-v="${i}" tabindex="0">
+        <td><input type="checkbox" id="chk-${i}" aria-label="Draw V${v.id}" ${shown.has(i) ? "checked" : ""}></td>
+        <td><b>V${v.id}</b></td><td>${planeStr(v)}</td><td>${dgStr(v)}</td><td>${daStr(v)}</td>
+        <td><span class="sw" style="background:${bainColor(v.bain)}"></span>${BAIN_NAME[v.bain]}</td>
+        <td class="num ${m === 0 ? "mis-0" : ""}">${m.toFixed(2)}°</td></tr>`;
+    });
+  }
+  document.getElementById("tbody").innerHTML = h;
+  document.getElementById("mishead").textContent = "V" + (state.sel + 1);
+  document.querySelectorAll("#tbody tr.v").forEach(tr => {
+    const i = +tr.dataset.v;
+    tr.onclick = e => { if (e.target.tagName !== "INPUT") select(i); };
+    tr.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(i); } };
+    tr.querySelector("input").onchange = e => {
+      const s = new Set(shownSet());
+      e.target.checked ? s.add(i) : s.delete(i);
+      state.custom = s; save(); renderAllButTable();
+    };
+  });
+}
+
+// ---------- close-packed plane view (2D)
+function renderPlane() {
+  const v = V[state.sel];
+  const svg = document.getElementById("plane");
+  const n = norm(v.pg);
+  const firstDir = V.find(w => w.cp === v.cp).dg;
+  const ex = norm(firstDir), ey = cross(n, ex);
+  const S = 58, RMAX = 3.3;
+  const pr = p => [dot(p, ex) * S, -dot(p, ey) * S];
+  let g = "", a = "";
+  const L = 10;
+  for (let i = -L; i <= L; i++) for (let j = -L; j <= L; j++) for (let k = -L; k <= L; k++) {
+    if (((i + j + k) % 2 + 2) % 2 === 0 && v.pg[0] * i + v.pg[1] * j + v.pg[2] * k === 0) {
+      const p = [i / 2, j / 2, k / 2];
+      if (Math.hypot(...p) <= RMAX) { const [x, y] = pr(p); g += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="16" fill="var(--gamma-fill)" stroke="var(--gamma)" stroke-width="1"/>`; }
+    }
+    const allSame = ((i % 2) + 2) % 2 === ((j % 2) + 2) % 2 && ((j % 2) + 2) % 2 === ((k % 2) + 2) % 2;
+    if (allSame && j + k === 0) {
+      const p = mul(v.R, [i / 2 * RATIO, j / 2 * RATIO, k / 2 * RATIO]);
+      if (Math.hypot(...p) <= RMAX) { const [x, y] = pr(p); a += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5.5" fill="${cpColor(v.cp)}"/>`; }
+    }
+  }
+  // the three <110> rows of this plane, and the parallel one
+  let rows = "";
+  const dirs = [...new Set(V.filter(w => w.cp === v.cp).map(w => w.dg.join(",")))].map(s => s.split(",").map(Number));
+  dirs.forEach(d => {
+    const u = norm(d); const [x, y] = pr(u.map(t => t * RMAX * 1.12));
+    const on = d.join() === v.dg.join();
+    rows += `<line x1="${-x}" y1="${-y}" x2="${x}" y2="${y}" stroke="${on ? "var(--ink)" : "var(--gamma)"}" stroke-width="${on ? 1.2 : 0.8}" stroke-dasharray="${on ? "" : "4 4"}"/>`;
+  });
+  const u = norm(v.dg); const [ax, ay] = pr(u.map(t => t * RMAX * 1.12));
+  const ang = Math.atan2(ay, ax);
+  const head = `<path d="M${ax},${ay} l${(-12 * Math.cos(ang - 0.4)).toFixed(1)},${(-12 * Math.sin(ang - 0.4)).toFixed(1)} M${ax},${ay} l${(-12 * Math.cos(ang + 0.4)).toFixed(1)},${(-12 * Math.sin(ang + 0.4)).toFixed(1)}" stroke="var(--ink)" stroke-width="1.6" fill="none"/>`;
+    const neg = x => x < 0 ? "-" + (-x) : "" + x;
+  const lbl = `<text x="-220" y="208" font-size="12" fill="var(--ink)">→ [${v.dg.map(neg).join(" ")}]γ ∥ [${v.da.map(neg).join(" ")}]α</text>`;
+  svg.innerHTML = `<defs><clipPath id="cpc"><circle r="${RMAX * S + 6}"/></clipPath></defs>
+    <circle r="${RMAX * S + 6}" fill="none" stroke="var(--line)"/>
+    <g clip-path="url(#cpc)">${g}${rows}${a}</g>${head}${lbl}
+    <text x="-220" y="-196" font-size="12" fill="var(--muted)">view ∥ [${v.pg.map(neg).join(" ")}]γ, V${v.id}</text>`;
+}
+
+// ---------- pole figure
+function stereo(p) { let q = norm(p); if (q[2] < 0) q = q.map(t => -t); return [q[0] / (1 + q[2]), q[1] / (1 + q[2])]; }
+function renderPole() {
+  const svg = document.getElementById("pole");
+  const S = 190, shown = shownSet();
+  let h = `<circle r="${S}" fill="var(--soft)" stroke="var(--muted)" stroke-width="1"/>
+    <line x1="${-S}" y1="0" x2="${S}" y2="0" stroke="var(--line)"/><line x1="0" y1="${-S}" x2="0" y2="${S}" stroke="var(--line)"/>`;
+  // gamma reference poles
+  const sq = (x, y) => `<rect x="${x - 6}" y="${y - 6}" width="12" height="12" fill="none" stroke="var(--ink)" stroke-width="1.4"/>`;
+  h += sq(0, 0) + sq(S, 0) + sq(-S, 0) + sq(0, S) + sq(0, -S);
+  [[1, 1, 1], [-1, 1, 1], [1, -1, 1], [-1, -1, 1]].forEach(p => { const [x, y] = stereo(p); h += `<path d="M${x * S},${-y * S - 7} l6,10 h-12z" fill="none" stroke="var(--muted)" stroke-width="1.2"/>`; });
+  h += `<text x="${S + 8}" y="4" font-size="11" fill="var(--muted)">[100]γ</text><text x="6" y="${-S - 6}" font-size="11" fill="var(--muted)">[010]γ</text>`;
+  h += `<text x="-222" y="-196" font-size="11" fill="var(--muted)">□ {100}γ  △ {111}γ</text>`;
+  const order = [...V.keys()].sort((a, b) => (shown.has(a) - shown.has(b)) || ((a === state.sel) - (b === state.sel)));
+  order.forEach(i => {
+    const v = V[i], on = shown.has(i), sel = i === state.sel, col = colorOf(v);
+    for (let c = 0; c < 3; c++) {
+      const [x, y] = stereo([v.R[0][c], v.R[1][c], v.R[2][c]]);
+      const X = x * S, Y = -y * S;
+      h += `<circle class="pp" data-v="${i}" cx="${X.toFixed(1)}" cy="${Y.toFixed(1)}" r="${sel ? 7 : 4.6}" fill="${col}" fill-opacity="${on ? 1 : 0.18}" stroke="${sel ? "var(--ink)" : "none"}" stroke-width="1.6" style="cursor:pointer"><title>V${v.id}</title></circle>`;
+      if (sel) h += `<text x="${(X + 9).toFixed(1)}" y="${(Y - 8).toFixed(1)}" font-size="11.5" font-weight="500" fill="var(--ink)">V${v.id}</text>`;
+    }
+  });
+  svg.innerHTML = h;
+  svg.querySelectorAll(".pp").forEach(c => c.onclick = () => select(+c.dataset.v));
+}
+
+// ---------- 3D
+let renderer, scene, camera, controls, root;
+const PLANE_TRI = { "1,1,1": [[1, 0, 0], [0, 1, 0], [0, 0, 1]], "1,-1,1": [[1, 0, 0], [0, 0, 1], [1, 1, 1]], "-1,1,1": [[0, 1, 0], [0, 0, 1], [1, 1, 1]], "1,1,-1": [[1, 0, 0], [0, 1, 0], [1, 1, 1]] };
+function init3D() {
+  const el = document.getElementById("three");
+  if (!window.THREE) { el.innerHTML = '<p class="hint" style="padding:16px">The 3D view needs three.js, which did not load.</p>'; return; }
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+  el.appendChild(renderer.domElement);
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+  camera.up.set(0, 0, 1);
+  camera.position.set(2.6, -3.1, 1.9);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+  const dl = new THREE.DirectionalLight(0xffffff, 0.6); dl.position.set(3, -2, 4); scene.add(dl);
+  if (THREE.OrbitControls) { controls = new THREE.OrbitControls(camera, renderer.domElement); controls.enableDamping = true; controls.target.set(0, 0, 0); }
+  camera.lookAt(0, 0, 0);
+  const resize = () => { const w = el.clientWidth, h = el.clientHeight; renderer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); };
+  new ResizeObserver(resize).observe(el); resize();
+  const loop = () => { requestAnimationFrame(loop); controls && controls.update(); renderer.render(scene, camera); }; loop();
+}
+function col3(c) { return new THREE.Color(c || "#888"); }
+function label(text, color) {
+  const cv = document.createElement("canvas"); cv.width = 256; cv.height = 64;
+  const x = cv.getContext("2d"); x.font = "500 34px IBM Plex Mono, monospace"; x.fillStyle = color; x.textBaseline = "middle"; x.fillText(text, 6, 32);
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(cv), depthTest: false, transparent: true }));
+  sp.scale.set(0.5, 0.125, 1); return sp;
+}
+function render3D() {
+  if (!scene) return;
+  if (root) scene.remove(root);
+  root = new THREE.Group(); scene.add(root);
+  const off = new THREE.Vector3(-0.5, -0.5, -0.5);
+  const P = a => new THREE.Vector3(a[0], a[1], a[2]).add(off);
+  const lines = (pts, color, opacity = 1) => { const g = new THREE.BufferGeometry().setFromPoints(pts); root.add(new THREE.LineSegments(g, new THREE.LineBasicMaterial({ color: col3(color), transparent: opacity < 1, opacity }))); };
+  // fcc cube
+  const cub = []; const C = [[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0], [0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1]];
+  [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]].forEach(([a, b]) => cub.push(P(C[a]), P(C[b])));
+  lines(cub, css("--muted"));
+  const atomMat = new THREE.MeshLambertMaterial({ color: col3(css("--gamma")) });
+  const sph = new THREE.SphereGeometry(0.055, 16, 12);
+  [...C, [.5, .5, 0], [.5, .5, 1], [.5, 0, .5], [.5, 1, .5], [0, .5, .5], [1, .5, .5]].forEach(p => { const m = new THREE.Mesh(sph, atomMat); m.position.copy(P(p)); root.add(m); });
+  // axes labels
+  [["a1 [100]γ", [1.12, 0, 0]], ["a2 [010]γ", [0, 1.12, 0]], ["a3 [001]γ", [0, 0, 1.1]]].forEach(([t, p]) => { const s = label(t, css("--muted")); s.position.copy(P(p)); root.add(s); });
+  // {111} planes
+  const v = V[state.sel]; const shown = shownSet();
+  const cps = new Set([...shown].map(i => V[i].cp)); cps.add(v.cp);
+  for (let g = 0; g < 4; g++) {
+    const pg = V.find(w => w.cp === g).pg; const tri = PLANE_TRI[pg.join(",")].map(P);
+    const geo = new THREE.BufferGeometry().setFromPoints(tri); geo.setIndex([0, 1, 2]); geo.computeVertexNormals();
+    const active = cps.has(g);
+    root.add(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: col3(cpColor(g)), transparent: true, opacity: g === v.cp ? 0.30 : active ? 0.16 : 0.05, side: THREE.DoubleSide, depthWrite: false })));
+    lines([tri[0], tri[1], tri[1], tri[2], tri[2], tri[0]], cpColor(g), g === v.cp ? 1 : active ? 0.6 : 0.2);
+  }
+  // alpha cells
+  [...shown].sort((a, b) => (a === state.sel) - (b === state.sel)).forEach(i => {
+    const w = V[i], sel = i === state.sel, color = colorOf(w);
+    const tri = PLANE_TRI[w.pg.join(",")];
+    const ctr = P([0, 1, 2].map(k => (tri[0][k] + tri[1][k] + tri[2][k]) / 3));
+    const T = a => { const r = mul(w.R, a.map(t => t * RATIO)); return new THREE.Vector3(r[0], r[1], r[2]).add(ctr); };
+    const corners = C.map(c => c.map(t => t - 0.5));
+    const seg = [];
+    [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]].forEach(([a, b]) => seg.push(T(corners[a]), T(corners[b])));
+    lines(seg, color, sel ? 1 : 0.45);
+    if (sel) {
+      const am = new THREE.MeshLambertMaterial({ color: col3(color) });
+      const s2 = new THREE.SphereGeometry(0.04, 14, 10);
+      [...corners, [0, 0, 0]].forEach(c => { const m = new THREE.Mesh(s2, am); m.position.copy(T(c)); root.add(m); });
+      const q = [[-.5, .5, -.5], [.5, .5, -.5], [.5, -.5, .5], [-.5, -.5, .5]].map(T);
+      const qg = new THREE.BufferGeometry().setFromPoints(q); qg.setIndex([0, 1, 2, 0, 2, 3]);
+      root.add(new THREE.Mesh(qg, new THREE.MeshBasicMaterial({ color: col3(color), transparent: true, opacity: 0.28, side: THREE.DoubleSide, depthWrite: false })));
+    }
+    const d = norm(w.dg), len = sel ? 0.75 : 0.45;
+    const start = ctr.clone().sub(new THREE.Vector3(...d).multiplyScalar(len / 2));
+    root.add(new THREE.ArrowHelper(new THREE.Vector3(...d), start, len, col3(sel ? css("--ink") : color), sel ? 0.1 : 0.07, sel ? 0.05 : 0.035));
+    if (sel) { const s = label("V" + w.id, css("--ink")); s.position.copy(T([0.5, 0.5, 0.5]).add(new THREE.Vector3(0, 0, 0.1))); root.add(s); }
+  });
+  document.getElementById("legend3d").innerHTML = state.color === "cp"
+    ? [0, 1, 2, 3].map(g => `<span><span class="sw" style="background:${cpColor(g)}"></span>${mi(V.find(w => w.cp === g).pg, "(", ")")}<sub>γ</sub></span>`).join("")
+    : [2, 0, 1].map(b => `<span><span class="sw" style="background:${bainColor(b)}"></span>${BAIN_NAME[b]} ${BAIN_AXIS[b]}<sub>γ</sub></span>`).join("");
+}
+
+// ---------- wiring
+function syncButtons() {
+  document.querySelectorAll("[data-show]").forEach(b => b.setAttribute("aria-pressed", !state.custom && b.dataset.show === state.show));
+  document.querySelectorAll("[data-color]").forEach(b => b.setAttribute("aria-pressed", b.dataset.color === state.color));
+}
+function renderAllButTable() { syncButtons(); renderDetail(); renderPlane(); renderPole(); render3D(); }
+function renderAll() { renderAllButTable(); renderTable(); }
+function select(i) { state.sel = i; save(); renderAll(); }
+document.querySelectorAll("[data-show]").forEach(b => b.onclick = () => { state.show = b.dataset.show; state.custom = null; save(); renderAll(); });
+document.querySelectorAll("[data-color]").forEach(b => b.onclick = () => { state.color = b.dataset.color; save(); renderAll(); });
+init3D(); renderAll();
+const mq = matchMedia("(prefers-color-scheme: dark)"); mq.addEventListener && mq.addEventListener("change", renderAll);
+new MutationObserver(renderAll).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+</script>
+
+</body></html>

@@ -1,0 +1,876 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>body{margin:0}</style></head><body>
+<title>Planar to Widmanstätten Ferrite</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: the same lab notebook on etched-steel grey as the earlier lessons; one shared alloy panel drives every instrument below it */
+:root{
+  --bg:#eef1f3; --panel:#f8fafb; --ink:#17212b; --muted:#56636f; --rule:#cfd6dc;
+  --ferrite:#2f6fb3; --carbon:#d0701e; --tip:#c2257a; --mn:#1f8a5b; --gamma:#c9d1cc; --mart:#8d979f;
+  --display:"Spectral",Georgia,serif; --body:"Source Sans 3","Segoe UI",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12171c; --panel:#1a2128; --ink:#e3e8ec; --muted:#9aa6b1; --rule:#2d3740;
+  --ferrite:#6aa6e8; --carbon:#f09a4e; --tip:#ee5fa8; --mn:#4cc38a; --gamma:#2a3430; --mart:#56616b; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12171c; --panel:#1a2128; --ink:#e3e8ec; --muted:#9aa6b1; --rule:#2d3740;
+  --ferrite:#6aa6e8; --carbon:#f09a4e; --tip:#ee5fa8; --mn:#4cc38a; --gamma:#2a3430; --mart:#56616b; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--body)}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:16px;padding-block:28px 64px}
+h1,h2,h3{font-family:var(--display);font-weight:600;text-wrap:balance;margin:0}
+h1{font-size:clamp(28px,4.4vw,42px);line-height:1.1}
+h2{font-size:clamp(22px,3vw,28px);margin-top:8px}
+h3{font-size:18px}
+p{margin:0;max-width:68ch}
+.lede{color:var(--muted);font-size:17px;margin-top:10px}
+.eyebrow{font:500 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+section{display:grid;gap:14px;padding-block:34px;border-top:1px solid var(--rule)}
+header{display:grid;gap:6px;padding-bottom:26px}
+.links{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:10px;font-size:15px}
+a{color:var(--ferrite)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:820px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:14px;display:grid;gap:10px;min-width:0}
+canvas{display:block;width:100%;max-width:100%;touch-action:pan-y;border-radius:4px}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 18px}
+.ctl{display:grid;gap:2px;font-size:14px}
+.ctl label{display:flex;justify-content:space-between;gap:8px}
+.ctl output{font:500 13px var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+input[type=range]{width:100%;accent-color:var(--ferrite)}
+select,button{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--rule);border-radius:4px;padding:5px 10px}
+button{cursor:pointer}
+button:hover{border-color:var(--ferrite)}
+button[aria-pressed="true"]{border-color:var(--ferrite);background:var(--panel);font-weight:600}
+:focus-visible{outline:2px solid var(--ferrite);outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.key{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted)}
+.key span::before{content:"";display:inline-block;width:14px;height:4px;border-radius:2px;margin-right:6px;vertical-align:middle;background:var(--c)}
+dl.read{display:grid;grid-template-columns:auto auto;gap:4px 14px;margin:0;font-size:14px}
+dl.read dt{color:var(--muted)}
+dl.read dd{margin:0;font:500 13px var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+.note{font-size:14px;color:var(--muted)}
+.callout{border-left:3px solid var(--tip);padding:4px 0 4px 12px;font-size:15px;max-width:none}
+.callout.c{border-left-color:var(--carbon)}
+.defs{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.defs div{display:grid;gap:4px;align-content:start}
+.defs b{font-family:var(--display);font-size:17px}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;background:var(--c)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;font-size:14px;width:100%}
+th,td{padding:6px 10px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font:500 12px var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+code,.m{font:13px var(--mono)}
+.eq{font:14px var(--mono);background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:8px 12px;overflow-x:auto;max-width:100%;white-space:nowrap}
+.alloybar{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:14px;display:grid;gap:10px}
+.alloybar .controls{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px 18px;font-size:13px}
+.stats div{display:grid;gap:0}
+.stats span{color:var(--muted)}
+.stats b{font:500 14px var(--mono);font-variant-numeric:tabular-nums}
+.warn{color:var(--tip);font-size:14px}
+.tag{display:inline-block;font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--rule);border-radius:3px;padding:1px 6px;color:var(--muted);vertical-align:middle}
+.explain-head{display:grid;gap:4px}
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.pair > div{display:grid;gap:6px;align-content:start}
+ul.tight{margin:0;padding-left:20px;display:grid;gap:4px;max-width:72ch}
+.outcome{font-size:15px;font-weight:600}
+.svgwrap svg{width:100%;height:auto;display:block}
+.sv-gamma{fill:var(--gamma)} .sv-ferr{fill:var(--ferrite)} .sv-gb{stroke:var(--ink);stroke-width:1.4;fill:none}
+.sv-txt{fill:var(--muted);font:12px var(--body)}
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+@media (max-width:760px){.three{grid-template-columns:minmax(0,1fr)}}
+.three figure{margin:0;display:grid;gap:6px}
+.three figcaption{font-size:14px}
+.three figcaption b{font-family:var(--display);font-size:16px;display:block}
+ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var(--muted);max-width:90ch}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Ferrite morphology · Fe–C and Fe–C–Mn · competing explanations</div>
+  <h1>From a planar ferrite film to Widmanstätten sideplates</h1>
+  <p class="lede">The same steel can grow ferrite as a smooth film along a prior-austenite grain boundary, or as sharp sideplates that shoot into the grain. Intermediate shapes are rarely seen, and there is no agreed explanation for which path a given boundary takes. This lesson builds the length scales first, then lays out four explanations side by side without choosing between them.</p>
+  <div class="links">
+    <a href="martensite-traces.html">Martensite Traces in 3D</a>
+    <a href="ks-variant-atlas.html">KS Variant Atlas</a>
+    <a href="pole-figures.html">Reading Pole Figures</a>
+  </div>
+</header>
+
+<section id="products">
+  <div class="eyebrow">1 · Three products at one boundary</div>
+  <h2>Classify by shape and by what the ferrite is rooted on</h2>
+  <div class="three svgwrap">
+    <figure>
+      <svg viewBox="0 0 240 150" role="img" aria-label="Grain-boundary allotriomorph: a ferrite film along the boundary">
+        <rect class="sv-gamma" x="0" y="0" width="240" height="150"/>
+        <path class="sv-ferr" d="M10 75 C40 58 90 60 120 62 C160 60 205 62 230 75 C205 88 160 92 120 90 C80 92 40 90 10 75Z"/>
+        <path class="sv-gb" d="M0 75 H240" stroke-dasharray="4 3"/>
+        <text class="sv-txt" x="8" y="20">γ₁</text><text class="sv-txt" x="8" y="140">γ₂</text>
+      </svg>
+      <figcaption><b>Grain-boundary allotriomorph</b>A film along the prior-austenite boundary that thickens slowly into both grains. Usually treated as diffusional and reconstructive.</figcaption>
+    </figure>
+    <figure>
+      <svg viewBox="0 0 240 150" role="img" aria-label="Primary sideplates growing directly from the bare grain boundary">
+        <rect class="sv-gamma" x="0" y="0" width="240" height="150"/>
+        <path class="sv-gb" d="M0 110 H240"/>
+        <g class="sv-ferr">
+          <path d="M60 110 L92 18 L98 20 L72 110Z"/><path d="M95 110 L127 22 L133 24 L107 110Z"/><path d="M130 110 L160 30 L166 32 L142 110Z"/><path d="M165 110 L192 44 L197 46 L176 110Z"/>
+        </g>
+        <text class="sv-txt" x="8" y="20">γ₁</text><text class="sv-txt" x="8" y="140">γ₂</text>
+      </svg>
+      <figcaption><b>Primary sideplate</b>Widmanstätten ferrite rooted directly at the bare prior-austenite boundary, often as an inclined cluster.</figcaption>
+    </figure>
+    <figure>
+      <svg viewBox="0 0 240 150" role="img" aria-label="Secondary sideplates growing from a pre-existing allotriomorph">
+        <rect class="sv-gamma" x="0" y="0" width="240" height="150"/>
+        <path class="sv-ferr" d="M5 112 C40 98 200 98 235 112 C200 124 40 124 5 112Z"/>
+        <path class="sv-gb" d="M0 112 H240" stroke-dasharray="4 3"/>
+        <g class="sv-ferr">
+          <path d="M40 103 L44 14 L50 14 L54 102Z"/><path d="M75 101 L79 20 L85 20 L89 101Z"/><path d="M110 101 L114 16 L120 16 L124 101Z"/><path d="M145 101 L149 24 L155 24 L159 101Z"/><path d="M180 102 L184 30 L190 30 L194 103Z"/>
+        </g>
+        <text class="sv-txt" x="8" y="20">γ₁</text><text class="sv-txt" x="8" y="140">γ₂</text>
+      </svg>
+      <figcaption><b>Secondary sideplate</b>Widmanstätten ferrite rooted in a pre-existing allotriomorph, forming a comb. Most of the mechanism debate concerns this case.</figcaption>
+    </figure>
+  </div>
+  <div class="defs">
+    <div><b>W<sub>s</sub>, the Widmanstätten-start temperature</b><p>The temperature below which sideplates become detectable. It is the best documented descriptor, but it shifts with prior-austenite grain size and with the detection criterion, and it says nothing about whether the plates are primary or secondary.</p></div>
+    <div><b>Why “transition” needs care</b><p>A colony attached to an allotriomorph does not prove that one ferrite crystal changed shape. It could be continuous growth, new plates nucleated on the film, or plates that grew separately and later touched. “Local morphology selection” is the neutral name for the problem.</p></div>
+    <div><b>Plate-like is not one thing</b><p>Widmanstätten and bainitic ferrite cannot be told apart from shape or surface relief alone. Thermal path, carbides, carbon partitioning and crystallography are needed, and unresolved cases are best labelled ambiguous plate-like ferrite.</p></div>
+  </div>
+</section>
+
+<section id="alloy">
+  <div class="eyebrow">Shared alloy and temperature · drives every instrument below</div>
+  <div class="alloybar">
+    <div class="controls">
+      <div class="ctl"><label for="alloySel">Alloy (wt%)</label>
+        <select id="alloySel">
+          <option value="0.10,0">Fe–0.10C</option>
+          <option value="0.25,0">Fe–0.25C</option>
+          <option value="0.40,0">Fe–0.40C</option>
+          <option value="0.10,1.5" selected>Fe–0.10C–1.5Mn</option>
+          <option value="0.25,1.5">Fe–0.25C–1.5Mn</option>
+        </select></div>
+      <div class="ctl"><label for="T">Isothermal hold temperature <output id="Tv"></output></label><input id="T" type="range" min="640" max="860" step="5" value="725"></div>
+    </div>
+    <div class="stats">
+      <div><span>Ae3 of this alloy</span><b id="sAe3"></b></div>
+      <div><span>C in austenite at interface, C<sub>1</sub><sup>γ</sup></span><b id="sCg"></b></div>
+      <div><span>C in ferrite, C<sub>1</sub><sup>α</sup></span><b id="sCa"></b></div>
+      <div><span>Carbon diffusivity in γ, D</span><b id="sD"></b></div>
+      <div><span>Driving force, ΔG₀</span><b id="sG"></b></div>
+      <div><span>Capillary length, ρ<sub>c</sub></span><b id="sRc"></b></div>
+    </div>
+    <p class="note" id="alloyNote">These are deliberately simple estimates so the shapes of the curves are right. The γ/(α+γ) line runs straight from 912 °C to the eutectoid and is extrapolated below it; Mn only lowers it by about 30 °C per wt% (no Mn partitioning, close to paraequilibrium). D is Ågren’s carbon diffusivity in austenite. ΔG₀ uses the dilute (Raoult) form from the Bréchet note, and ρ<sub>c</sub> = σV<sub>m</sub>/ΔG₀ with σ = 0.2 J m⁻².</p>
+    <p class="warn" id="alloyWarn" hidden>This temperature is above Ae3 for this alloy. No ferrite forms, so lower the temperature.</p>
+  </div>
+</section>
+
+<section id="scales">
+  <div class="eyebrow">2 · The length scales, drawn to scale</div>
+  <h2>A film’s carbon field grows with its thickness. A tip’s field stays the size of the tip.</h2>
+  <p>Ferrite holds almost no carbon, so every bit of ferrite that grows pushes carbon into the austenite ahead of it. Growth is limited by how fast that carbon diffuses away. The two geometries handle this very differently, and the slider below lets you watch the gap open up.</p>
+  <div class="grid2">
+    <div class="panel">
+      <canvas id="cScale" aria-label="To-scale view of an allotriomorph film and a sideplate growing from it, with carbon fields"></canvas>
+      <div class="key">
+        <span style="--c:var(--ferrite)">ferrite</span>
+        <span style="--c:var(--carbon)">carbon piled up in austenite</span>
+        <span style="--c:var(--tip)">sideplate tip, radius ρ</span>
+        <span style="--c:var(--ink)">prior-austenite grain boundary</span>
+      </div>
+      <div class="controls">
+        <div class="ctl"><label for="tt">Time at temperature <output id="ttv"></output></label><input id="tt" type="range" min="-2" max="1.5" step="0.01" value="0"></div>
+        <div class="ctl"><label for="rf">Tip radius ρ as a multiple of ρ<sub>c</sub> <output id="rfv"></output></label><input id="rf" type="range" min="1.1" max="10" step="0.1" value="2"></div>
+      </div>
+      <p class="note">The film is drawn growing from the boundary into one grain, and the plate is drawn starting from the film at the same moment. Real sideplates start later; this just compares the two growth laws side by side. The circle at the lower right magnifies the tip so you can see ρ and its carbon field.</p>
+    </div>
+    <div class="panel">
+      <h3>Carbon profile ahead of the film</h3>
+      <canvas id="cProf" aria-label="Carbon concentration profile across the planar ferrite/austenite interface"></canvas>
+      <dl class="read">
+        <dt>Film thickness W</dt><dd id="rW"></dd>
+        <dt>Diffusion-field width ahead of film δ</dt><dd id="rDel"></dd>
+        <dt>Film velocity dW/dt</dt><dd id="rVp"></dd>
+        <dt>Tip radius ρ</dt><dd id="rRho"></dd>
+        <dt>Tip velocity (constant)</dt><dd id="rVt"></dd>
+        <dt>Plate length L</dt><dd id="rL"></dd>
+        <dt>Plate thickness near its root</dt><dd id="rH"></dd>
+        <dt>Diffusion length ahead of tip, D/V</dt><dd id="rDV"></dd>
+        <dt>Tip Péclet number, Vρ/2D</dt><dd id="rPe"></dd>
+      </dl>
+      <h3>Front velocity against time</h3>
+      <canvas id="cVel" aria-label="Log-log plot of film velocity and tip velocity against time"></canvas>
+    </div>
+  </div>
+  <div class="pair">
+    <div><h3>Planar film (allotriomorph)</h3>
+      <div class="eq">V = (D/W)·(C₁<sup>γ</sup>−C₁₀)² / [(C₁₀−C₁<sup>α</sup>)(C₁<sup>γ</sup>−C₁<sup>α</sup>)]</div>
+      <p>This is the Zener-type relation in the Bréchet note. The carbon field width δ is proportional to W, so the gradient that drains carbon gets shallower as the film thickens. Integrating gives parabolic growth, W ∝ √(Dt), and a velocity that falls as 1/√t.</p></div>
+    <div><h3>Sideplate tip (needle)</h3>
+      <div class="eq">V ≈ (D/2ρ)·(C₁<sup>γ</sup>−C₁₀)/(C₁₀−C₁<sup>α</sup>)·(1 − ρ<sub>c</sub>/ρ)</div>
+      <p>This is the Zener–Hillert estimate for plate lengthening. Carbon escapes sideways around a sharp tip, so the field ahead of it is only about the size of ρ and does not grow with time. Lengthening is linear in time. Curvature costs driving force, which is the (1 − ρ<sub>c</sub>/ρ) term, and the velocity peaks at ρ = 2ρ<sub>c</sub>.</p></div>
+  </div>
+  <p class="callout c">Move the time slider from 0.01 s to 30 s. The film’s field δ grows in step with W, from tens of nanometres to microns, while the tip field D/V stays at tens of nanometres. Any explanation of the transition has to deal with this mismatch, and the Bréchet note in section 6 builds directly on it.</p>
+</section>
+
+<section id="drag">
+  <div class="eyebrow">3 · Key concept: solute drag by Mn</div>
+  <h2>Mn sits in the moving interface and pulls back on it, most strongly at intermediate speeds</h2>
+  <div class="grid2">
+    <div class="panel">
+      <canvas id="cDrag" aria-label="Mn concentration profile across a moving ferrite/austenite interface"></canvas>
+      <div class="controls">
+        <div class="ctl"><label for="dv">Interface velocity relative to the drag peak, V/V<sub>p</sub> <output id="dvv"></output></label><input id="dv" type="range" min="-2" max="2" step="0.01" value="0"></div>
+      </div>
+      <div class="key"><span style="--c:var(--mn)">Mn concentration</span><span style="--c:var(--ferrite)">ferrite side</span><span style="--c:var(--gamma)">austenite side</span></div>
+    </div>
+    <div class="panel">
+      <h3>Drag pressure P(V) (Cahn-type)</h3>
+      <canvas id="cDragP" aria-label="Non-monotonic solute drag pressure against velocity"></canvas>
+      <p class="note" id="dragNote"></p>
+    </div>
+  </div>
+  <div class="defs">
+    <div><b>Why the curve has a peak</b><p>When the interface is slow, Mn segregated to it keeps up and the profile stays almost symmetric, so the net pull is small. At intermediate speed the Mn cloud lags behind and pulls hard. When the interface is fast, Mn cannot follow at all and the drag falls away. Cahn described this for grain boundaries and Purdy and Bréchet applied it to ferrite growth.</p></div>
+    <div><b>Paraequilibrium and NPLE</b><p>In Fe–C–Mn, carbon diffuses about a million times faster than Mn. If Mn does not redistribute at all, the interface is at paraequilibrium. Local equilibrium with negligible partitioning (NPLE) keeps a tiny Mn spike in front of the interface. The fast branch of the drag curve tends toward paraequilibrium.</p></div>
+    <div><b>Force balance</b><p>Purdy and Bréchet find the interface velocity where chemical driving force equals drag plus intrinsic friction, ΔG/V<sub>m</sub> = P(V) + V/M. Hillert later showed that a complete balance also needs the dissipation in the solute spike in the parent austenite, which their comparison left out.</p></div>
+  </div>
+</section>
+
+<section id="explA">
+  <div class="explain-head">
+    <div class="eyebrow">4 · Explanation A <span class="tag">continuous growth</span></div>
+    <h2>Interface instability: bumps on the film outgrow the flat parts</h2>
+  </div>
+  <p>Townsend and Kirkaldy studied Fe–C and treated secondary sideplates as growth from an existing ferrite/austenite interface. A bump that sticks out sees a steeper carbon gradient, so it drains carbon faster and grows faster. Curvature (capillarity) pushes back, hardest on short wavelengths. The Mullins–Sekerka analysis gives a fastest-growing wavelength, and Sekerka noted that their sideplate spacings were close to it.</p>
+  <div class="grid2">
+    <div class="panel">
+      <canvas id="cInst" aria-label="Animated perturbation on the ferrite/austenite interface"></canvas>
+      <div class="controls">
+        <div class="ctl"><label for="iW">Film thickness W, which sets its velocity <output id="iWv"></output></label><input id="iW" type="range" min="-1" max="1.3" step="0.01" value="0"></div>
+        <div class="ctl"><label for="iL">Perturbation wavelength λ <output id="iLv"></output></label><input id="iL" type="range" min="-1.3" max="1.3" step="0.01" value="0.2"></div>
+      </div>
+      <div class="row"><button id="iFast">Set λ to the fastest-growing wavelength</button><button id="iReset">Restart growth</button></div>
+    </div>
+    <div class="panel">
+      <h3>Amplification rate against wavelength</h3>
+      <canvas id="cDisp" aria-label="Dispersion curve: growth rate of a perturbation against its wavelength"></canvas>
+      <dl class="read">
+        <dt>Film velocity V</dt><dd id="iV"></dd>
+        <dt>Carbon diffusion length 2D/V</dt><dd id="iLd"></dd>
+        <dt>Marginal wavelength λ<sub>s</sub></dt><dd id="iLs"></dd>
+        <dt>Fastest-growing wavelength λ<sub>max</sub> = √3 λ<sub>s</sub></dt><dd id="iLm"></dd>
+        <dt>Your λ</dt><dd id="iSt"></dd>
+      </dl>
+      <p class="note">Sketch form: σ(λ) = V(2π/λ)[1 − (λ<sub>s</sub>/λ)²] with λ<sub>s</sub> = 2π√(d₀·2D/V), using ρ<sub>c</sub> as the capillary length d₀. Anisotropy, facets and interface kinetics are left out.</p>
+    </div>
+  </div>
+  <div class="pair">
+    <div><h3>What supports it</h3><ul class="tight">
+      <li>Sideplate group spacing in Fe–C was reasonably consistent with the predicted spacing of interface protuberances (Townsend and Kirkaldy; Sekerka).</li>
+      <li>Interface history matters. Ferrite/austenite interfaces equilibrated for a long time near A3 developed fewer instabilities than fresh ones.</li>
+      <li>Phase-field models (Loginova, Yamanaka, Yan) start from a perturbed allotriomorph and grow plates from it, but only when interfacial-energy anisotropy is high.</li>
+    </ul></div>
+    <div><h3>What it leaves open</h3><ul class="tight">
+      <li>It explains amplification, not how the first sideplate began.</li>
+      <li>It cannot produce primary sideplates, which grow from a bare grain boundary with no film to perturb.</li>
+      <li>Intermediate wavy shapes are rarely seen, which is awkward for a continuous process.</li>
+      <li>A continuous protrusion should keep the orientation of the film. That needs crystallographic checking.</li>
+    </ul></div>
+  </div>
+</section>
+
+<section id="explB">
+  <div class="explain-head">
+    <div class="eyebrow">5 · Explanation B <span class="tag">discrete events</span></div>
+    <h2>Sympathetic nucleation: new plates nucleate on ferrite that is already there</h2>
+  </div>
+  <p>In Aaronson’s description, a new crystal of the same phase nucleates on an existing ferrite/austenite interface. The new plate usually differs from its substrate by a small misorientation, separated by a low-angle boundary. Plates can nucleate edge-to-face on an allotriomorph or a grain boundary, and face-to-face on the broad face of an existing plate. Step through a colony below, then switch the view.</p>
+  <div class="grid2">
+    <div class="panel">
+      <canvas id="cSym" aria-label="Stages of a sideplate colony forming, shown as an optical view or an orientation map"></canvas>
+      <div class="controls">
+        <div class="ctl"><label for="sSt">Stage <output id="sStv"></output></label><input id="sSt" type="range" min="1" max="5" step="1" value="5"></div>
+      </div>
+      <div class="row" role="group" aria-label="View">
+        <button id="vOpt" aria-pressed="false">Optical micrograph view</button>
+        <button id="vOri" aria-pressed="true">Orientation map view</button>
+      </div>
+      <div class="row" role="group" aria-label="Mechanism drawn">
+        <button id="mSym" aria-pressed="true">Draw as sympathetic nucleation</button>
+        <button id="mCon" aria-pressed="false">Draw as continuous protrusion</button>
+      </div>
+    </div>
+    <div class="panel">
+      <h3 id="sTitle"></h3>
+      <p id="sText"></p>
+      <p class="callout" id="sView"></p>
+    </div>
+  </div>
+  <div class="pair">
+    <div><h3>What supports it</h3><ul class="tight">
+      <li>Phelan and Dippenaar watched sideplates develop from stepped or faceted allotriomorphs by in situ confocal microscopy, then found low-angle misorientation between allotriomorph and colony by EBSD.</li>
+      <li>Phelan et al. recorded stepwise changes in growth direction and orientation with low-angle sub-boundaries.</li>
+      <li>Cheng et al. saw edge-to-face nucleation from boundaries and allotriomorphs, and face-to-face nucleation on plate broad faces, in Fe–C–Mn.</li>
+      <li>Cao’s 3D FIB/SEM-EBSD found small-angle boundaries between sideplates, and a small orientation change near the allotriomorph/sideplate contact.</li>
+      <li>Garzon (Fe–Ni–C, internal report): sideplates formed faster from allotriomorph-preconditioned austenite, and the colonies looked more like repeated nucleation and coalescence than one travelling instability. This rests on optical metallography only, without crystallography.</li>
+    </ul></div>
+    <div><h3>What it leaves open</h3><ul class="tight">
+      <li>It names where plates start, but not what makes a site on the film favourable at one moment and not another.</li>
+      <li>It needs a nucleation criterion that existing growth models do not supply.</li>
+      <li>Coalescence and impingement can erase the evidence, so a final micrograph cannot prove it.</li>
+      <li>It does not by itself explain the narrow temperature window or the sharpness of W<sub>s</sub>.</li>
+    </ul></div>
+  </div>
+</section>
+
+<section id="explC">
+  <div class="explain-head">
+    <div class="eyebrow">6 · Explanation C <span class="tag">growth-branch change</span> <span class="tag">discussion note, unpublished</span></div>
+    <h2>Kinetic branches: as the film thickens, its growth solution can be lost</h2>
+  </div>
+  <p>The Bréchet note starts from the Purdy–Bréchet force balance. For a trial velocity V, carbon diffusion sets the interface carbon content and so the driving force ΔG(V). The operating velocity is where ΔG(V) meets the resistance P(V) + V/M. The film’s curve depends on W, while the needle’s depends on ρ<sub>c</sub>. As W grows, the film’s curve retreats to low velocities. With strong solute drag there is a velocity gap in the middle that no stable solution can sit in. This is a hypothesis about ferrite that already exists, and the note does not claim it is quantitative.</p>
+  <div class="grid2">
+    <div class="panel">
+      <canvas id="cBr" aria-label="Driving force curves for plate and needle against resistance curve, on a log velocity axis"></canvas>
+      <div class="key">
+        <span style="--c:var(--ferrite)">plate (film) ΔG(V) at thickness W</span>
+        <span style="--c:var(--tip)">needle ΔG(V)</span>
+        <span style="--c:var(--ink)">resistance P(V) + V/M</span>
+        <span style="--c:var(--mn)">solute-drag part P(V)</span>
+      </div>
+      <div class="controls">
+        <div class="ctl"><label for="bW">Film thickness W <output id="bWv"></output></label><input id="bW" type="range" min="-2.3" max="1.3" step="0.01" value="-1.2"></div>
+        <div class="ctl"><label for="bP">Peak solute-drag pressure <output id="bPv"></output></label><input id="bP" type="range" min="0" max="80" step="1" value="30"></div>
+        <div class="ctl"><label for="bVp">Velocity of the drag peak V<sub>p</sub> <output id="bVpv"></output></label><input id="bVp" type="range" min="-1.5" max="1.5" step="0.01" value="-0.5"></div>
+        <div class="ctl"><label for="bM">Intrinsic friction 1/M <output id="bMv"></output></label><input id="bM" type="range" min="-2.7" max="-0.7" step="0.01" value="-1.3"></div>
+      </div>
+      <p class="note">Changing the alloy resets the drag peak to 30 J mol⁻¹ for 1.5Mn and to zero for Fe–C.</p>
+    </div>
+    <div class="panel">
+      <h3>Reading the intersections</h3>
+      <p class="outcome" id="bOut"></p>
+      <p id="bOutText"></p>
+      <dl class="read">
+        <dt>Slow branch ends, V₁</dt><dd id="bV1"></dd>
+        <dt>Fast branch begins, V₂</dt><dd id="bV2"></dd>
+        <dt>Plate operating velocity</dt><dd id="bVpl"></dd>
+        <dt>Needle operating velocity</dt><dd id="bVnd"></dd>
+        <dt>Critical thickness W*</dt><dd id="bWs"></dd>
+      </dl>
+      <h3>Outcome along the film’s thickening</h3>
+      <canvas id="cStrip" aria-label="Strip showing the predicted regime as a function of film thickness"></canvas>
+      <div class="key" id="stripKey"></div>
+    </div>
+  </div>
+  <div class="pair">
+    <div><h3>The note’s three outcomes</h3><ul class="tight">
+      <li><b>Weak drag</b>, where intrinsic mobility dominates: at W* the plate gives way to the needle, plate → needle, with no stasis.</li>
+      <li><b>Strong drag, needle reachable</b>: the plate drops to the slow branch while a needle runs on the fast branch, plate → needle + plate.</li>
+      <li><b>Strong drag, needle not reachable</b>: growth stalls, plate → stasis.</li>
+    </ul>
+    <p class="note">The needle curve here uses the note’s prefactor 2D/ρ<sub>c</sub> and halves ΔG for the capillary cost at ρ = 2ρ<sub>c</sub>. The note does not derive this prefactor or W*, so treat the numbers as an illustration of the construction rather than predictions.</p></div>
+    <div><h3>What it leaves open</h3><ul class="tight">
+      <li>Losing the plate solution does not prove that a needle must follow. The work needed to create a tip is not included.</li>
+      <li>It does not say whether the needle grows continuously out of the film or nucleates sympathetically. Hillert notes that a jump to a separated fast branch needs a fluctuation or dynamic nucleation.</li>
+      <li>The [V₁, V₂] gap is labelled unstable in the sketch, but no dynamic stability analysis has been done.</li>
+      <li>It applies to ferrite that already exists, so it does not address primary sideplates.</li>
+      <li>W is used both as the film thickness and as the diffusion-field width. Those need to be checked against the measured carbon field.</li>
+    </ul></div>
+  </div>
+</section>
+
+<section id="explD">
+  <div class="explain-head">
+    <div class="eyebrow">7 · Explanation D <span class="tag">model-supplied selection</span></div>
+    <h2>Models that pick a winner, once the starting condition is given</h2>
+  </div>
+  <p>Most modelling work does not begin at a fresh grain boundary. Each model supplies a perturbation, a parent plate, two geometries or a strain state, and then asks whether plate-like growth can be sustained. The table lists what each one supplies and what does the selecting.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Approach</th><th>Supplied at the start</th><th>What selects the plate</th><th>Main result</th></tr></thead>
+    <tbody>
+      <tr><td>Kinetic competition, Gibbs energy balance (Yang et al. 2016)</td><td>Two idealised shapes: quasi-spherical (equiaxed) and plate-like ferrite</td><td>Whichever lowers total Gibbs energy fastest early on. Plate lengthening uses modified Zener–Hillert, and thickening includes solute drag and interface dissipation.</td><td>In Fe–C–Mn: plate-like at 500 and 600 °C, equiaxed at 650 °C. Mn drag affects lengthening, thickening and isotropic growth differently.</td></tr>
+      <tr><td>Phase field from a perturbed allotriomorph (Loginova, Yamanaka, Yan)</td><td>A ferrite layer with an imposed perturbation, binary Fe–C</td><td>High interfacial-energy anisotropy. Below a critical value the bump decays back to planar growth.</td><td>Convex parts become plate tips. Carbon build-up suppresses broad-face growth, and soft impingement kills some tips.</td></tr>
+      <tr><td>Parent and offspring plates (Bhattacharya et al.)</td><td>A parent plate already grown from a perturbation</td><td>Curvature-driven carbon flow from the parent tip toward the film, leaving concave valleys with local supersaturation</td><td>Valley edges grow into offspring plates, a cascading secondary colony. A later version adds finite interface mobility.</td></tr>
+      <tr><td>Chemo-elastic and strain-coupled phase field (Cottura, Kubendran Amos, Lin)</td><td>Transformation eigenstrain, Bain variants, multicomponent diffusion</td><td>Elastically favourable directions, plus self-accommodation between plates</td><td>Elasticity alone can sustain plate growth, and plastic relaxation changes ρ and the lengthening rate. Mutually accommodating plate pairs grow where a single plate is blocked. In Fe–N–C, strong plates need anisotropy, strain and multicomponent diffusion together.</td></tr>
+    </tbody>
+  </table></div>
+  <p class="callout">The shared gap is that every model supplies its own starting condition. The experimental question is where those conditions actually exist in a real microstructure, and whether those are the sites that form sideplates.</p>
+</section>
+
+<section id="compare">
+  <div class="eyebrow">8 · Putting the explanations side by side</div>
+  <h2>They answer different parts of the problem, and each needs different evidence</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th>A · Instability</th><th>B · Sympathetic nucleation</th><th>C · Kinetic branch</th><th>D · Model selection</th></tr></thead>
+    <tbody>
+      <tr><td>Starts from</td><td>Existing film interface</td><td>Existing ferrite, or a grain boundary</td><td>Existing film of thickness W</td><td>Whatever the model supplies</td></tr>
+      <tr><td>Controlling quantity</td><td>Wavelength against diffusion length and capillarity</td><td>Nucleation sites: ledges, facets, plate faces</td><td>W against ρ<sub>c</sub>, solute drag, mobility</td><td>Anisotropy, strain, early energy rate</td></tr>
+      <tr><td>Primary sideplates?</td><td>No</td><td>Yes (edge-to-face at a grain boundary)</td><td>No</td><td>Partly (Yang compares shapes from the start)</td></tr>
+      <tr><td>Crystallography expected</td><td>Continuous with the film</td><td>New orientation, low-angle boundary</td><td>Not specified</td><td>Not specified</td></tr>
+      <tr><td>Evidence it needs</td><td>Protrusion growth, spacing, orientation continuity</td><td>Event order, substrate identity, misorientation</td><td>Thickening before the change, a threshold that shifts with T and Mn</td><td>Measured local composition and growth rates</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>The planned heat-treatment paths and what each explanation looks for</h3>
+  <div class="grid2">
+    <div class="panel">
+      <canvas id="cPath" aria-label="Temperature against time for four heat-treatment paths"></canvas>
+      <div class="row" role="group" aria-label="Heat-treatment path">
+        <button id="p1" aria-pressed="true">1 · Direct to T₂</button>
+        <button id="p2" aria-pressed="false">2 · Short T₁, then T₂</button>
+        <button id="p3" aria-pressed="false">3 · Long T₁, then T₂</button>
+        <button id="p4" aria-pressed="false">4 · T₁, brief T₂, back to T₁</button>
+      </div>
+    </div>
+    <div class="panel">
+      <h3 id="pTitle"></h3>
+      <p id="pText"></p>
+      <dl class="read" id="pReads" style="grid-template-columns:auto 1fr"></dl>
+    </div>
+  </div>
+</section>
+
+<section id="glossary">
+  <div class="eyebrow">9 · Other key concepts</div>
+  <div class="defs">
+    <div><b>Reconstructive and displacive</b><p>Allotriomorphs are usually treated as diffusional and reconstructive. Widmanstätten and bainitic ferrite are diffusional-displacive: carbon diffuses, but the iron lattice changes by a coordinated shear with a surface relief and a habit plane.</p></div>
+    <div><b>Capillary length ρ<sub>c</sub></b><p>The tip radius at which interface curvature uses up the whole driving force. Below ρ<sub>c</sub> a tip cannot grow. It is roughly σV<sub>m</sub>/ΔG, so it shrinks as undercooling rises.</p></div>
+    <div><b>Péclet number</b><p>Vρ/2D compares the tip size with its diffusion length. A value near one means the carbon field ahead of the tip is about as big as the tip itself.</p></div>
+    <div><b>Ledges and disconnections</b><p>Partly coherent ferrite/austenite boundaries advance by steps sweeping across them. They describe how a broad face moves and how a plate and allotriomorph may join, but they do not locate the starting site.</p></div>
+    <div><b>Soft impingement</b><p>Carbon fields of neighbouring ferrite overlap before the crystals touch. The austenite between them is already enriched, which slows both and can suppress candidate tips.</p></div>
+    <div><b>Hard impingement and coalescence</b><p>Neighbouring plates meet. Where their orientations are close, the boundary between them can vanish, so separate events look like one crystal.</p></div>
+    <div><b>Interfacial-energy anisotropy</b><p>The ferrite/austenite energy depends on boundary orientation, low for coherent broad faces near the orientation relationship and high elsewhere. Phase-field models need it high to make plates.</p></div>
+    <div><b>Grain size and W<sub>s</sub></b><p>Krahe, Kinsman and Aaronson showed the apparent W<sub>s</sub> rises with prior-austenite grain size. Selection depends on local boundary conditions, not only chemistry and temperature.</p></div>
+    <div><b>Wrinkled ferrite</b><p>A non-planar ferrite interface reported in Fe–C–Mo. Purdy and Bréchet compared their predicted unstable conditions with it. Mo is a strong drag element, which is why an Fe–C–Mo alloy would test the stasis branch directly.</p></div>
+  </div>
+</section>
+
+<section id="sources">
+  <div class="eyebrow">Sources</div>
+  <ol class="refs">
+    <li>Research planning document, “Local Ferrite Morphology Selection during Austenite Decomposition”. Basis for sections 1, 4, 5, 7 and 8.</li>
+    <li>Discussion note on the morphological transition in γ→α transformations, attributed to Y. Bréchet (handwritten, unpublished, 7 pages). Basis for section 6.</li>
+    <li>C. M. Garzón, M. Véron, Y. Bréchet, internal report on Widmanstätten ferrite in Fe–Ni–C, and the 2009 ALEMI presentation. Not peer reviewed.</li>
+    <li>M. Militzer, C. Hutchinson, H. Zurob, G. Miyamoto, Int. Mater. Rev. 68 (2023) 725. <a href="https://doi.org/10.1080/09506608.2022.2126257">doi</a></li>
+    <li>R. D. Townsend, J. S. Kirkaldy, Trans. ASM 61 (1968) 605.</li>
+    <li>G. R. Purdy, Y. J. M. Bréchet, Acta Metall. Mater. 43 (1995) 3763.</li>
+    <li>M. Hillert, Acta Mater. 47 (1999) 4481. <a href="https://doi.org/10.1016/S1359-6454(99)00336-5">doi</a></li>
+    <li>W. W. Mullins, R. F. Sekerka, J. Appl. Phys. 34 (1963) 323. <a href="https://doi.org/10.1063/1.1702607">doi</a></li>
+    <li>H. I. Aaronson et al., Mater. Sci. Eng. B 32 (1995) 107, sympathetic nucleation overview.</li>
+    <li>D. Phelan, R. Dippenaar, Metall. Mater. Trans. A 35 (2004) 3701. <a href="https://doi.org/10.1007/s11661-004-0276-4">doi</a></li>
+    <li>D. Phelan, N. Stanford, R. Dippenaar, Mater. Sci. Eng. A 407 (2005) 127. <a href="https://doi.org/10.1016/j.msea.2005.07.015">doi</a></li>
+    <li>L. Cheng, K. M. Wu, X. L. Wan, R. Wei, Mater. Charact. 87 (2014) 86. <a href="https://doi.org/10.1016/j.matchar.2013.11.002">doi</a></li>
+    <li>S. Cao et al., Metals 12 (2022) 523. <a href="https://doi.org/10.3390/met12030523">doi</a></li>
+    <li>Z. Yang et al., Acta Mater. 105 (2016) 317. <a href="https://doi.org/10.1016/j.actamat.2015.12.040">doi</a></li>
+    <li>I. Loginova, J. Ågren, G. Amberg, Acta Mater. 52 (2004) 4055. <a href="https://doi.org/10.1016/j.actamat.2004.05.033">doi</a></li>
+    <li>A. Bhattacharya, K. Ankit, B. Nestler, Acta Mater. 123 (2017) 317. <a href="https://doi.org/10.1016/j.actamat.2016.10.035">doi</a></li>
+    <li>M. Cottura et al., Acta Mater. 72 (2014) 200. <a href="https://doi.org/10.1016/j.actamat.2014.03.045">doi</a></li>
+    <li>P. R. Krahe, K. R. Kinsman, H. I. Aaronson, Acta Metall. 20 (1972) 1109. <a href="https://doi.org/10.1016/0001-6160(72)90175-7">doi</a></li>
+  </ol>
+  <p class="note">Numbers in the instruments come from simple textbook estimates chosen to show the right trends. They are not calibrated against these alloys and should not be quoted as predictions.</p>
+</section>
+</div>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function fit(c,aspect,minH){const w=c.clientWidth||300;let h=Math.round(w*aspect);if(minH)h=Math.max(h,minH);const r=window.devicePixelRatio||1;c.width=w*r;c.height=h*r;c.style.height=h+'px';const x=c.getContext('2d');x.setTransform(r,0,0,r,0,0);return {x,w,h}}
+function hexA(hex,a){hex=hex.replace('#','');if(hex.length===3)hex=hex.split('').map(c=>c+c).join('');const n=parseInt(hex,16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`}
+function fmtLen(um){if(um>=1000)return (um/1000).toPrecision(3)+' mm';if(um>=1)return um.toPrecision(3)+' µm';return (um*1000).toPrecision(3)+' nm'}
+function fmtV(v){if(v>=1000)return (v/1000).toPrecision(3)+' mm/s';if(v>=0.01)return v.toPrecision(3)+' µm/s';return (v*1000).toPrecision(3)+' nm/s'}
+function fmtT(t){return t<1?(t*1000).toPrecision(3)+' ms':t.toPrecision(3)+' s'}
+const R=8.314, VM=7.1e-6, SIG=0.2;
+
+/* ---------- shared thermodynamics ---------- */
+function wtToX(w,mn){const nC=w/12.011,nMn=mn/54.938,nFe=(100-w-mn)/55.845;return nC/(nC+nMn+nFe)}
+let TH={};
+function thermo(){
+  const [c0,mn]=$('alloySel').value.split(',').map(Number);const T=+$('T').value,Tk=T+273.15;
+  const top=912-30*mn;
+  const cg=0.77*(top-T)/185, ca=0.02*Math.min(1,Math.max(0.05,(top-T)/185));
+  const ae3=top-185*c0/0.77;
+  const x0=wtToX(c0,mn), xg=wtToX(Math.max(cg,c0),mn);
+  const y=x0/(1-x0);
+  const D=4.53e-7*(1+y*(1-y)*8339.9/Tk)*Math.exp(-(1/Tk-2.221e-4)*(17767-y*26436))*1e12; // µm²/s
+  const ok=cg>c0+0.005;
+  const k=ok?(cg-c0)**2/((c0-ca)*(cg-ca)):0;
+  const dG0=ok?R*Tk/2*(xg-x0)**2/xg:0;
+  const rhoc=ok?SIG*VM/dG0*1e6:NaN; // µm
+  const Om=ok?(cg-c0)/(c0-ca):0;
+  TH={c0,mn,T,Tk,cg,ca,ae3,D,k,dG0,rhoc,Om,ok,xg};
+  $('Tv').textContent=T+' °C';
+  $('sAe3').textContent=ae3.toFixed(0)+' °C';
+  $('sCg').textContent=ok?cg.toFixed(3)+' wt%':'–';
+  $('sCa').textContent=ca.toFixed(3)+' wt%';
+  $('sD').textContent=D.toPrecision(3)+' µm²/s';
+  $('sG').textContent=ok?dG0.toFixed(0)+' J/mol':'–';
+  $('sRc').textContent=ok?fmtLen(rhoc):'–';
+  $('alloyWarn').hidden=ok;
+}
+/* interface carbon C* for a planar/needle front of length scale Wl at velocity V (Zener form of the note) */
+function dGofV(V,Wl){const {c0,ca,cg,D,Tk,xg,mn}=TH;const b=c0-ca;const Q=V*Wl*b/D;const a=(Q+Math.sqrt(Q*Q+4*Q*b))/2;const cs=c0+a;if(cs>=cg)return 0;const xs=wtToX(cs,mn);return R*Tk/2*(xg-xs)**2/xg}
+
+/* ---------- Section 2: length scales ---------- */
+function scales(){
+  const t=10**+$('tt').value, rf=+$('rf').value;
+  $('ttv').textContent=fmtT(t);$('rfv').textContent=rf.toFixed(1)+'×';
+  const {D,k,rhoc,Om,c0,ca,cg,ok}=TH;
+  const W=ok?Math.sqrt(2*D*k*t):0, Vp=ok?D*k/W:0, del=ok?W*(c0-ca)/(cg-c0):0;
+  const rho=rf*rhoc, Vt=ok?D/(2*rho)*Om*(1-1/rf):0, L=Vt*t, h=Math.sqrt(2*rho*L), dv=D/Vt;
+  const S={t,W,Vp,del,rho,Vt,L,h,dv};
+  $('rW').textContent=ok?fmtLen(W):'–';$('rDel').textContent=ok?fmtLen(del):'–';$('rVp').textContent=ok?fmtV(Vp):'–';
+  $('rRho').textContent=ok?fmtLen(rho):'–';$('rVt').textContent=ok?fmtV(Vt):'–';$('rL').textContent=ok?fmtLen(L):'–';
+  $('rH').textContent=ok?fmtLen(2*h):'–';$('rDV').textContent=ok?fmtLen(dv):'–';$('rPe').textContent=ok?(Vt*rho/(2*D)).toFixed(2):'–';
+  drawScale(S);drawProf(S);drawVel(S);
+}
+function scaleBar(x,X0,Y0,pxPerUm,maxPx,ink){
+  const nice=[0.001,0.002,0.005,0.01,0.02,0.05,0.1,0.2,0.5,1,2,5,10,20,50,100,200,500,1000,2000,5000];
+  let len=nice[0];for(const n of nice){if(n*pxPerUm<=maxPx)len=n}
+  x.strokeStyle=ink;x.lineWidth=2;x.beginPath();x.moveTo(X0,Y0);x.lineTo(X0+len*pxPerUm,Y0);x.stroke();
+  x.fillStyle=ink;x.font='12px '+css('--mono');x.textAlign='left';x.fillText(fmtLen(len),X0,Y0-6);
+}
+function drawScale(S){
+  const c=$('cScale');const {x,w,h}=fit(c,0.62,260);
+  const C={g:css('--gamma'),f:css('--ferrite'),c:css('--carbon'),t:css('--tip'),ink:css('--ink'),mu:css('--muted'),p:css('--panel')};
+  x.fillStyle=C.g;x.fillRect(0,0,w,h);
+  if(!TH.ok){x.fillStyle=C.mu;x.font='14px '+css('--body');x.fillText('Above Ae3: no ferrite',16,30);return}
+  const gbX=28, span=Math.max(S.W+S.L*1.12,(S.W+S.del)*1.4,2);
+  const s=(w-gbX-14)/span; // px per µm
+  const yc=h*0.42;
+  // carbon field ahead of film (linear profile)
+  const x1=gbX+S.W*s, x2=gbX+(S.W+S.del)*s;
+  const gr=x.createLinearGradient(x1,0,Math.max(x2,x1+1),0);gr.addColorStop(0,hexA(C.c,0.55));gr.addColorStop(1,hexA(C.c,0));
+  x.fillStyle=gr;x.fillRect(x1,0,Math.max(x2-x1,1),h);
+  // film
+  x.fillStyle=C.f;x.fillRect(gbX,0,Math.max(S.W*s,1),h);
+  // plate (parabolic, true scale) from film surface
+  const L=S.L*s;
+  if(L>0.5){
+    x.fillStyle=hexA(C.c,0.5);x.beginPath();x.arc(x1+L,yc,Math.max(3,S.dv*s*1.2),0,7);x.fill();
+    x.fillStyle=C.f;x.beginPath();x.moveTo(x1,yc);
+    for(let i=0;i<=60;i++){const u=i/60,xx=x1+u*L,hh=Math.sqrt(2*S.rho*(S.L*(1-u)))*s;x.lineTo(xx,yc-hh)}
+    for(let i=60;i>=0;i--){const u=i/60,xx=x1+u*L,hh=Math.sqrt(2*S.rho*(S.L*(1-u)))*s;x.lineTo(xx,yc+hh)}
+    x.closePath();x.fill();
+    x.strokeStyle=C.t;x.lineWidth=2;x.beginPath();x.arc(x1+L,yc,3.5,0,7);x.stroke();
+  }
+  // grain boundary
+  x.strokeStyle=C.ink;x.lineWidth=1.5;x.setLineDash([5,4]);x.beginPath();x.moveTo(gbX,0);x.lineTo(gbX,h);x.stroke();x.setLineDash([]);
+  x.fillStyle=C.mu;x.font='12px '+css('--body');x.textAlign='left';x.fillText('γ₁',8,16);x.fillText('γ₂',gbX+8+S.W*s,16);
+  // dimension labels
+  const dim=(xa,xb,y,txt,col)=>{x.strokeStyle=col;x.fillStyle=col;x.lineWidth=1.2;x.beginPath();x.moveTo(xa,y);x.lineTo(xb,y);x.stroke();
+    [xa,xb].forEach(v=>{x.beginPath();x.moveTo(v,y-4);x.lineTo(v,y+4);x.stroke()});x.font='12px '+css('--mono');x.textAlign='center';x.fillText(txt,(xa+xb)/2,y-6)};
+  dim(gbX,x1,h-48,'W',C.ink);dim(x1,x2,h-28,'δ',C.c);
+  if(L>12)dim(x1,x1+L,yc-Math.max(14,Math.sqrt(2*S.rho*S.L)*s+10),'L',C.t);
+  scaleBar(x,gbX+8,h-8,s,w*0.3,C.ink);
+  // tip inset
+  const R0=Math.min(w,h)*0.2, cx=w-R0-10, cy=h-R0-10;
+  const win=8*Math.max(S.rho,S.dv); const zs=2*R0/win;
+  x.save();x.beginPath();x.arc(cx,cy,R0,0,7);x.clip();
+  x.fillStyle=C.g;x.fillRect(cx-R0,cy-R0,2*R0,2*R0);
+  // carbon halo via confocal-parabola distance
+  const tipX=cx+R0*0.25; const step=3;
+  for(let py=-R0;py<R0;py+=step)for(let px=-R0;px<R0;px+=step){
+    const X=(cx+px-tipX)/zs+S.rho/2, Y=py/zs; // focus at origin, tip at rho/2
+    const r=Math.hypot(X,Y); const sd=(r+X)/2-S.rho/2;
+    if(sd>0){const a=0.6*Math.exp(-sd/S.dv);if(a>0.02){x.fillStyle=hexA(C.c,a);x.fillRect(cx+px,cy+py,step,step)}}
+  }
+  x.fillStyle=C.f;x.beginPath();
+  for(let i=-40;i<=40;i++){const Y=i/40*R0/zs*1.05;const X=S.rho/2-Y*Y/(2*S.rho);const px=tipX+(X-S.rho/2)*zs;const py=cy+Y*zs;i===-40?x.moveTo(px,py):x.lineTo(px,py)}
+  x.lineTo(cx-R0,cy+R0);x.lineTo(cx-R0,cy-R0);x.closePath();x.fill();
+  // rho circle
+  x.strokeStyle=C.t;x.lineWidth=1.5;x.setLineDash([3,3]);x.beginPath();x.arc(tipX-S.rho*zs,cy,S.rho*zs,0,7);x.stroke();x.setLineDash([]);
+  x.restore();
+  x.strokeStyle=C.ink;x.lineWidth=1;x.beginPath();x.arc(cx,cy,R0,0,7);x.stroke();
+  x.fillStyle=C.ink;x.font='11px '+css('--mono');x.textAlign='center';x.fillText('tip ×'+(zs/s).toPrecision(2),cx,cy-R0-4);
+  x.textAlign='right';x.fillStyle=C.t;x.fillText('ρ '+fmtLen(S.rho),cx-R0-6,cy+R0-18);x.fillStyle=C.c;x.fillText('D/V '+fmtLen(S.dv),cx-R0-6,cy+R0-4);
+}
+function drawProf(S){
+  const c=$('cProf');const {x,w,h}=fit(c,0.5,160);
+  const C={f:css('--ferrite'),c:css('--carbon'),ink:css('--ink'),mu:css('--muted'),r:css('--rule')};
+  x.clearRect(0,0,w,h);if(!TH.ok)return;
+  const {c0,ca,cg}=TH;const L=36,Rr=12,T=14,B=26;
+  const span=(S.W+S.del)*1.6, sx=v=>L+(v/span)*(w-L-Rr), cmax=cg*1.12, sy=v=>T+(1-v/cmax)*(h-T-B);
+  x.fillStyle=hexA(C.f,0.18);x.fillRect(sx(0),T,sx(S.W)-sx(0),h-T-B);
+  x.strokeStyle=C.r;x.lineWidth=1;[c0,cg].forEach(v=>{x.beginPath();x.moveTo(L,sy(v));x.lineTo(w-Rr,sy(v));x.stroke()});
+  x.strokeStyle=C.c;x.lineWidth=2.5;x.beginPath();x.moveTo(sx(0),sy(ca));x.lineTo(sx(S.W),sy(ca));x.lineTo(sx(S.W),sy(cg));x.lineTo(sx(S.W+S.del),sy(c0));x.lineTo(w-Rr,sy(c0));x.stroke();
+  x.fillStyle=C.mu;x.font='11px '+css('--mono');x.textAlign='right';
+  x.fillText('C₁γ',L-4,sy(cg)+4);x.fillText('C₁₀',L-4,sy(c0)+4);x.fillText('C₁α',L-4,sy(ca)+4);
+  x.textAlign='center';x.fillStyle=C.f;x.fillText('ferrite',(sx(0)+sx(S.W))/2,h-10);x.fillStyle=C.c;x.fillText('δ',(sx(S.W)+sx(S.W+S.del))/2,h-10);
+  x.fillStyle=C.mu;x.fillText('austenite',(sx(S.W+S.del)+w)/2,h-10);
+}
+function drawVel(S){
+  const c=$('cVel');const {x,w,h}=fit(c,0.5,160);
+  const C={f:css('--ferrite'),t:css('--tip'),ink:css('--ink'),mu:css('--muted'),r:css('--rule')};
+  x.clearRect(0,0,w,h);if(!TH.ok)return;
+  const {D,k}=TH;const L=44,Rr=10,T=10,B=24;
+  const t0=-2,t1=1.5;const vp=t=>Math.sqrt(D*k/(2*t));
+  const vals=[vp(10**t0),vp(10**t1),S.Vt];const lo=Math.floor(Math.log10(Math.min(...vals))),hi=Math.ceil(Math.log10(Math.max(...vals)));
+  const sx=lt=>L+(lt-t0)/(t1-t0)*(w-L-Rr), sy=lv=>T+(hi-lv)/(hi-lo)*(h-T-B);
+  x.strokeStyle=C.r;x.lineWidth=1;x.fillStyle=C.mu;x.font='11px '+css('--mono');
+  for(let e=lo;e<=hi;e++){x.beginPath();x.moveTo(L,sy(e));x.lineTo(w-Rr,sy(e));x.stroke();x.textAlign='right';x.fillText('10'+sup(e),L-4,sy(e)+4)}
+  for(let e=-2;e<=1;e++){x.textAlign='center';x.fillText(fmtT(10**e),sx(e),h-8)}
+  x.strokeStyle=C.f;x.lineWidth=2;x.beginPath();x.moveTo(sx(t0),sy(Math.log10(vp(10**t0))));x.lineTo(sx(t1),sy(Math.log10(vp(10**t1))));x.stroke();
+  x.strokeStyle=C.t;x.beginPath();x.moveTo(sx(t0),sy(Math.log10(S.Vt)));x.lineTo(sx(t1),sy(Math.log10(S.Vt)));x.stroke();
+  const lt=Math.log10(S.t);x.fillStyle=C.f;x.beginPath();x.arc(sx(lt),sy(Math.log10(S.Vp)),4,0,7);x.fill();x.fillStyle=C.t;x.beginPath();x.arc(sx(lt),sy(Math.log10(S.Vt)),4,0,7);x.fill();
+  x.fillStyle=C.mu;x.textAlign='left';x.fillText('µm/s',L+4,h-B-6);
+  x.fillStyle=C.t;x.fillText('tip',w-Rr-26,sy(Math.log10(S.Vt))-6);x.fillStyle=C.f;x.textAlign='right';x.fillText('film ∝ t^-1/2',w-Rr-4,sy(Math.log10(vp(10**t1)))-8);
+}
+function sup(e){const m={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};return String(e).split('').map(ch=>m[ch]).join('')}
+
+/* ---------- Section 3: solute drag ---------- */
+function drag(){
+  const lu=+$('dv').value,u=10**lu;$('dvv').textContent=u<1?u.toPrecision(2):u.toPrecision(3);
+  const C={f:css('--ferrite'),g:css('--gamma'),mn:css('--mn'),ink:css('--ink'),mu:css('--muted'),r:css('--rule')};
+  {const c=$('cDrag');const {x,w,h}=fit(c,0.5,170);
+    const xi=w*0.5;x.fillStyle=hexA(C.f,0.16);x.fillRect(0,0,xi,h);x.fillStyle=C.g;x.fillRect(xi,0,w-xi,h);
+    x.strokeStyle=C.ink;x.lineWidth=1.2;x.setLineDash([4,3]);x.beginPath();x.moveTo(xi,0);x.lineTo(xi,h);x.stroke();x.setLineDash([]);
+    const base=h*0.78, amp=h*0.62/(1+0.25*u*u)**0.5, lag=Math.min(u,6)*w*0.035, wid=w*0.03*(1+0.4*Math.min(u,4));
+    x.strokeStyle=C.mn;x.lineWidth=2.5;x.beginPath();
+    for(let i=0;i<=w;i+=2){const d=i-xi+lag;let y=base-amp*Math.exp(-(d*d)/(2*wid*wid));
+      if(i>xi){y-=0.0} x.lineTo(i,y)}
+    x.stroke();
+    x.fillStyle=C.ink;x.font='12px '+css('--body');x.textAlign='left';x.fillText('ferrite',10,18);x.textAlign='right';x.fillText('austenite',w-10,18);
+    x.textAlign='center';x.fillText('interface → moving right',xi,h-8);
+    x.fillStyle=C.mu;x.textAlign='left';x.fillText('bulk Mn',10,base-6);
+  }
+  {const c=$('cDragP');const {x,w,h}=fit(c,0.55,160);x.clearRect(0,0,w,h);
+    const L=30,Rr=10,T=12,B=24,sx=l=>L+(l+2)/4*(w-L-Rr),sy=p=>T+(1-p)*(h-T-B);
+    x.strokeStyle=C.r;x.beginPath();x.moveTo(L,sy(0));x.lineTo(w-Rr,sy(0));x.moveTo(L,T);x.lineTo(L,sy(0));x.stroke();
+    x.strokeStyle=C.mn;x.lineWidth=2.5;x.beginPath();for(let i=0;i<=100;i++){const l=-2+4*i/100,uu=10**l,p=2*uu/(1+uu*uu);x.lineTo(sx(l),sy(p))}x.stroke();
+    const p=2*u/(1+u*u);x.fillStyle=C.mn;x.beginPath();x.arc(sx(lu),sy(p),5,0,7);x.fill();
+    x.fillStyle=C.mu;x.font='11px '+css('--mono');x.textAlign='center';['0.01','0.1','1','10','100'].forEach((t,i)=>x.fillText(t,sx(i-2),h-8));x.textAlign='left';x.fillText('P/Pmax',L+4,T+4);
+    $('dragNote').textContent=u<0.4?'Slow: the Mn cloud keeps pace with the interface and stays nearly symmetric, so the drag is weak but rising.':u<2.5?'Near the peak: the cloud lags behind the interface and pulls back hard. This is where the slow branch ends.':'Fast: Mn can no longer follow, the cloud thins out and the drag falls. The interface approaches paraequilibrium.';
+  }
+}
+
+/* ---------- Section 4: instability ---------- */
+let instT=0,instRAF=0,instLast=0;
+function instState(){
+  const {D,k,rhoc,ok}=TH;const W=10**+$('iW').value;const V=ok?D*k/W:0;const ld=2*D/V;const ls=2*Math.PI*Math.sqrt(rhoc*ld);const lm=Math.sqrt(3)*ls;
+  const lam=lm*10**+$('iL').value;const sig=l=>V*(2*Math.PI/l)*(1-(ls/l)**2);
+  return {W,V,ld,ls,lm,lam,sig,smax:sig(lm)};
+}
+function inst(){
+  const s=instState();
+  $('iWv').textContent=fmtLen(s.W);$('iLv').textContent=TH.ok?fmtLen(s.lam):'–';
+  $('iV').textContent=TH.ok?fmtV(s.V):'–';$('iLd').textContent=TH.ok?fmtLen(s.ld):'–';$('iLs').textContent=TH.ok?fmtLen(s.ls):'–';$('iLm').textContent=TH.ok?fmtLen(s.lm):'–';
+  const r=s.sig(s.lam)/s.smax;$('iSt').textContent=!TH.ok?'–':r>0?'grows, at '+(r*100).toFixed(0)+'% of the fastest rate':'decays (capillarity wins)';
+  drawDisp(s);drawInst(s);
+}
+function drawDisp(s){
+  const c=$('cDisp');const {x,w,h}=fit(c,0.55,160);x.clearRect(0,0,w,h);if(!TH.ok)return;
+  const C={f:css('--ferrite'),t:css('--tip'),ink:css('--ink'),mu:css('--muted'),r:css('--rule')};
+  const L=28,Rr=10,T=12,B=24;const l0=Math.log10(s.lm)-1.3,l1=Math.log10(s.lm)+1.3;
+  const sx=l=>L+(l-l0)/(l1-l0)*(w-L-Rr), sy=r=>T+(1-(r+1)/2)*(h-T-B);
+  x.strokeStyle=C.r;x.lineWidth=1;x.beginPath();x.moveTo(L,sy(0));x.lineTo(w-Rr,sy(0));x.stroke();
+  x.fillStyle=hexA(C.t,0.08);x.fillRect(sx(Math.log10(s.ls)),T,w-Rr-sx(Math.log10(s.ls)),sy(-1)-T);
+  x.strokeStyle=C.f;x.lineWidth=2.5;x.beginPath();for(let i=0;i<=120;i++){const l=l0+(l1-l0)*i/120;const r=Math.max(-1,s.sig(10**l)/s.smax);x.lineTo(sx(l),sy(r))}x.stroke();
+  x.strokeStyle=C.mu;x.setLineDash([3,3]);x.beginPath();x.moveTo(sx(Math.log10(s.lm)),T);x.lineTo(sx(Math.log10(s.lm)),sy(-1));x.stroke();x.setLineDash([]);
+  const lr=Math.log10(s.lam),rr=Math.max(-1,s.sig(s.lam)/s.smax);x.fillStyle=C.t;x.beginPath();x.arc(sx(lr),sy(rr),5,0,7);x.fill();
+  x.fillStyle=C.mu;x.font='11px '+css('--mono');x.textAlign='center';x.fillText('λmax',sx(Math.log10(s.lm)),sy(-1)-4);x.fillText('λs',sx(Math.log10(s.ls)),sy(0)+14);
+  x.fillText('wavelength (log) →',w/2,h-6);x.textAlign='left';x.fillText('σ/σmax',L+4,sy(1)+10);x.fillText('unstable',sx(Math.log10(s.ls))+6,sy(-0.8));
+}
+function drawInst(s){
+  const c=$('cInst');const {x,w,h}=fit(c,0.5,200);
+  const C={f:css('--ferrite'),g:css('--gamma'),c:css('--carbon'),ink:css('--ink'),mu:css('--muted')};
+  x.fillStyle=C.g;x.fillRect(0,0,w,h);if(!TH.ok)return;
+  const view=4*s.lm, ppu=w/view; const r=s.sig(s.lam)/s.smax;
+  const A=Math.min(h*0.32,h*0.01*Math.exp(r*instT*1.2));
+  const base=h*0.62, band=Math.min(h*0.45,Math.max(18,s.ld*ppu*0.5));
+  const yAt=px=>base-A*Math.cos(2*Math.PI*(px/ppu)/s.lam);
+  // carbon shading: draw stacked layers from interface outward
+  for(let i=10;i>=1;i--){x.fillStyle=hexA(C.c,0.05);x.beginPath();
+    for(let px=0;px<=w;px+=2){const y=yAt(px);const tip=A>0?(base-y)/A:0;x.lineTo(px,y-band*i/10*(1-0.35*Math.max(0,tip)))}
+    for(let px=w;px>=0;px-=2)x.lineTo(px,yAt(px));x.closePath();x.fill()}
+  x.fillStyle=C.f;x.beginPath();x.moveTo(0,h);for(let px=0;px<=w;px+=2)x.lineTo(px,yAt(px));x.lineTo(w,h);x.closePath();x.fill();
+  x.fillStyle=C.ink;x.font='12px '+css('--body');x.textAlign='left';x.fillText('austenite',10,18);x.fillStyle=css('--panel');x.fillText('ferrite film',10,h-10);
+  x.fillStyle=C.ink;x.textAlign='right';x.font='11px '+css('--mono');x.fillText('view width '+fmtLen(view),w-10,18);
+}
+function instLoop(ts){
+  if(!instLast)instLast=ts;const dt=(ts-instLast)/1000;instLast=ts;instT=Math.min(instT+dt,4);
+  const s=instState();drawInst(s);if(instT<4)instRAF=requestAnimationFrame(instLoop);else instRAF=0;
+}
+function instRestart(){instT=reduce?3:0;instLast=0;if(!reduce&&!instRAF)instRAF=requestAnimationFrame(instLoop);inst()}
+
+/* ---------- Section 5: sympathetic nucleation ---------- */
+let symView='ori',symMech='sym';
+const STEPS={
+ 1:['Allotriomorph forms on the boundary','A grain-boundary ferrite film grows along the prior-austenite boundary. Its austenite-facing side is stepped and faceted.'],
+ 2:['Edge-to-face nucleation on the allotriomorph','New plates nucleate at the film/austenite interface and grow into γ₁. In the sympathetic reading each is a new crystal, a few degrees from the film, joined by a low-angle boundary.'],
+ 3:['A primary sideplate at the bare boundary','Further along, a plate nucleates directly on the prior-austenite boundary where no film exists. No continuous-growth explanation can produce this one.'],
+ 4:['Face-to-face nucleation on a plate','A new plate nucleates on the broad face of an existing plate and grows parallel to it, as Cheng et al. observed in Fe–C–Mn.'],
+ 5:['Lengthening, thickening and impingement','Plates lengthen and thicken until neighbours touch. Where orientations are close, the boundary between them becomes hard or impossible to see.']
+};
+function plate(x0,y0,ang,len,hw){const pts=[];const dx=Math.sin(ang),dy=-Math.cos(ang);const nx=-dy,ny=dx;
+  for(let i=0;i<=20;i++){const u=i/20;const ww=hw*Math.min(1,Math.sqrt((1-u)*4));pts.push([x0+dx*len*u+nx*ww,y0+dy*len*u+ny*ww])}
+  for(let i=20;i>=0;i--){const u=i/20;const ww=hw*Math.min(1,Math.sqrt((1-u)*4));pts.push([x0+dx*len*u-nx*ww,y0+dy*len*u-ny*ww])}
+  return pts}
+function sym(){
+  const st=+$('sSt').value;$('sStv').textContent=st+' of 5';
+  $('sTitle').textContent=STEPS[st][0];$('sText').textContent=STEPS[st][1];
+  const same=symMech==='con';
+  $('sView').textContent=symView==='opt'?
+    'Optical view: every ferrite crystal etches alike and the quenched austenite appears as darker martensite. The sympathetic and continuous drawings give the same picture, so a micrograph like this cannot tell them apart.':
+    (same?'Orientation view, continuous reading: the secondary plates keep the film’s orientation, with no boundary at their roots. The primary plate still differs because it comes from the other side of the boundary.':'Orientation view, sympathetic reading: each plate is a slightly different colour (a few degrees), and its root is a low-angle boundary (dashed). This is what in situ EBSD or post-mortem EBSD looks for.');
+  const c=$('cSym');const {x,w,h}=fit(c,0.62,240);
+  const C={g:css('--gamma'),m:css('--mart'),ink:css('--ink'),mu:css('--muted'),p:css('--panel'),f:css('--ferrite')};
+  const sc=w/100; const P=(px,py)=>[px*sc,py*h/62];
+  x.fillStyle=symView==='opt'?C.m:C.g;x.fillRect(0,0,w,h);
+  const gbY=46;
+  const g=(st>=5)?1.5:1;
+  // shapes: [polygon points (in 100x62 units), hue, isPrimary, rootSegment]
+  const shapes=[];
+  const gba={pts:(()=>{const a=[];const L0=6,L1=Math.min(64,6+58*(st>=1?1:0));for(let i=0;i<=30;i++){const u=i/30,xx=L0+(L1-L0)*u;a.push([xx,gbY-5.5*Math.sin(Math.PI*u)**0.6-(i%6<3&&u>0.1&&u<0.9?0.6:0)])}for(let i=30;i>=0;i--){const u=i/30,xx=L0+(L1-L0)*u;a.push([xx,gbY+4*Math.sin(Math.PI*u)**0.6])}return a})(),hue:210};
+  shapes.push(gba);
+  const lenS=[0,0,9,18,24,30][st], lenP=[0,0,0,10,20,28][st];
+  const tops=x0=>gbY-5.5*Math.sin(Math.PI*(x0-6)/58)**0.6+0.8;
+  if(st>=2){[[16,0.08,218],[30,0.05,203],[44,0.1,214]].forEach(([x0,a,hu],i)=>{const L=lenS*(i===1?1.1:1);shapes.push({pts:plate(x0,tops(x0),a,L,1.5*g),hue:same?210:hu,root:[x0,tops(x0)],ang:a})})}
+  if(st>=3){shapes.push({pts:plate(82,gbY,-0.35,lenP,1.5*g),hue:150,root:[82,gbY],primary:true})}
+  if(st>=4){const x0=30+3.6*g, y0=tops(30)-6;shapes.push({pts:plate(x0,y0,0.05,Math.max(4,lenS*0.75),1.4*g),hue:same?210:196,root:[x0,y0],face:true})}
+  // draw
+  const path=pts=>{x.beginPath();pts.forEach((p,i)=>{const [a,b]=P(p[0],p[1]);i?x.lineTo(a,b):x.moveTo(a,b)});x.closePath()};
+  if(symView==='opt'){
+    x.strokeStyle=C.ink;x.lineWidth=2.4;shapes.forEach(s=>{path(s.pts);x.stroke()});
+    x.fillStyle='#e9ecee';shapes.forEach(s=>{path(s.pts);x.fill()});
+  } else {
+    shapes.forEach(s=>{x.fillStyle=`hsl(${s.hue} 55% 55%)`;path(s.pts);x.fill();x.strokeStyle=C.ink;x.lineWidth=0.8;x.stroke()});
+    if(!same){x.strokeStyle=C.ink;x.lineWidth=1.6;x.setLineDash([3,2]);shapes.forEach(s=>{if(!s.root||s.primary)return;const [a,b]=P(s.root[0],s.root[1]);x.beginPath();x.moveTo(a-1.8*g*sc,b);x.lineTo(a+1.8*g*sc,b);x.stroke()});x.setLineDash([])}
+  }
+  // grain boundary
+  x.strokeStyle=C.ink;x.lineWidth=1.3;x.setLineDash([5,4]);x.beginPath();x.moveTo(0,gbY*h/62);x.lineTo(w,gbY*h/62);x.stroke();x.setLineDash([]);
+  x.fillStyle=symView==='opt'?'#f3f5f6':C.ink;x.font='12px '+css('--body');x.textAlign='left';x.fillText('γ₁',8,16);x.fillText('γ₂',8,h-10);
+  if(st>=3){x.textAlign='center';const [a,b]=P(88,gbY+8);x.fillText('primary',a,b)}
+  if(st>=2){x.textAlign='center';const [a,b]=P(35,gbY+9);x.fillText('allotriomorph',a,b)}
+}
+
+/* ---------- Section 6: kinetic branches ---------- */
+function brParams(){return {W:10**+$('bW').value,Pm:+$('bP').value,Vp:10**+$('bVp').value,iM:10**+$('bM').value}}
+const VLO=-3,VHI=4.5;
+function resist(V,p){const u=V/p.Vp;return 2*p.Pm*u/(1+u*u)+V*p.iM}
+function turning(p){ // local max/min of R on log grid
+  let V1=null,V2=null;let prev=resist(10**VLO,p),dPrev=null;
+  for(let i=1;i<=600;i++){const V=10**(VLO+(VHI-VLO)*i/600);const r=resist(V,p);const d=r-prev;
+    if(dPrev!==null){if(dPrev>0&&d<=0&&V1===null)V1=10**(VLO+(VHI-VLO)*(i-1)/600);if(dPrev<0&&d>=0&&V1!==null&&V2===null)V2=10**(VLO+(VHI-VLO)*(i-1)/600)}
+    prev=r;dPrev=d}
+  return {V1,V2}}
+function crossings(fn,p){const out=[];let pv=null;
+  for(let i=0;i<=900;i++){const V=10**(VLO+(VHI-VLO)*i/900);const f=fn(V)-resist(V,p);if(pv!==null&&pv.f>0&&f<=0){const t=pv.f/(pv.f-f);out.push(10**(Math.log10(pv.V)+t*(Math.log10(V)-Math.log10(pv.V))))}pv={V,f}}
+  return out}
+const plateG=(V,W)=>dGofV(V,W);
+const needleG=V=>0.5*dGofV(V,TH.rhoc/2);
+function classify(W,p,tp){
+  const pl=crossings(V=>plateG(V,W),p), nd=crossings(needleG,p);
+  if(tp.V1===null){const vp=pl[0]||0,vn=nd[0]||0;return {code:vn>vp?'needle':'plate',vp,vn,pl,nd}}
+  const fast=v=>v>=tp.V2, slow=v=>v<=tp.V1;
+  const pf=pl.find(fast),ps=pl.find(slow),nf=nd.find(fast);
+  if(pf)return {code:'pfast',vp:pf,vn:nf||nd[0]||0,pl,nd};
+  if(nf)return {code:'needle+',vp:ps||0,vn:nf,pl,nd};
+  return {code:'stasis',vp:ps||0,vn:0,pl,nd};
+}
+const REG={plate:['plate keeps up','--ferrite'],needle:['needle outruns plate','--tip'],pfast:['plate on fast branch','--ferrite'],'needle+':['needle + slow plate','--tip'],stasis:['stasis','--muted']};
+function branch(){
+  const p=brParams();
+  $('bWv').textContent=fmtLen(p.W);$('bPv').textContent=p.Pm+' J/mol';$('bVpv').textContent=fmtV(p.Vp);$('bMv').textContent=p.iM.toPrecision(2)+' J/mol per µm/s';
+  const c=$('cBr');const {x,w,h}=fit(c,0.66,260);
+  const C={f:css('--ferrite'),t:css('--tip'),ink:css('--ink'),mu:css('--muted'),r:css('--rule'),mn:css('--mn'),c:css('--carbon')};
+  x.clearRect(0,0,w,h);
+  if(!TH.ok){x.fillStyle=C.mu;x.font='14px '+css('--body');x.fillText('Above Ae3: no ferrite',16,30);['bOut','bOutText','bV1','bV2','bVpl','bVnd','bWs'].forEach(i=>$(i).textContent='–');return}
+  const tp=turning(p);
+  const L=40,Rr=12,T=14,B=28;const gmax=Math.max(TH.dG0,(tp.V1?resist(tp.V1,p):0))*1.12;
+  const sx=V=>L+(Math.log10(V)-VLO)/(VHI-VLO)*(w-L-Rr), sy=g=>T+(1-g/gmax)*(h-T-B);
+  if(tp.V1!==null){x.fillStyle=hexA(C.c,0.1);x.fillRect(sx(tp.V1),T,sx(tp.V2)-sx(tp.V1),h-T-B);x.fillStyle=C.c;x.font='11px '+css('--mono');x.textAlign='center';x.fillText('forbidden',(sx(tp.V1)+sx(tp.V2))/2,T+10)}
+  x.strokeStyle=C.r;x.lineWidth=1;x.fillStyle=C.mu;x.font='11px '+css('--mono');
+  for(let e=-3;e<=4;e++){x.beginPath();x.moveTo(sx(10**e),T);x.lineTo(sx(10**e),h-B);x.stroke();x.textAlign='center';x.fillText('10'+sup(e),sx(10**e),h-B+14)}
+  x.textAlign='right';const gs=gmax>60?20:10;for(let g=0;g<=gmax;g+=gs){x.fillText(g,L-4,sy(g)+4)}
+  x.textAlign='center';x.fillText('V (µm/s)',w/2,h-4);x.save();x.translate(11,h/2);x.rotate(-Math.PI/2);x.fillText('J/mol',0,0);x.restore();
+  const curve=(fn,col,lw,dash)=>{x.strokeStyle=col;x.lineWidth=lw;x.setLineDash(dash||[]);x.beginPath();for(let i=0;i<=300;i++){const V=10**(VLO+(VHI-VLO)*i/300);const g=fn(V);x.lineTo(sx(V),sy(Math.min(g,gmax*1.05)))}x.stroke();x.setLineDash([])};
+  curve(V=>{const u=V/p.Vp;return 2*p.Pm*u/(1+u*u)},C.mn,1.5,[4,3]);
+  curve(V=>resist(V,p),C.ink,2.2);
+  curve(V=>plateG(V,p.W),C.f,2.5);
+  curve(needleG,C.t,2.5);
+  const cl=classify(p.W,p,tp);
+  const dot=(V,fn,col)=>{if(!V)return;x.fillStyle=col;x.strokeStyle=css('--panel');x.lineWidth=2;x.beginPath();x.arc(sx(V),sy(fn(V)),6,0,7);x.fill();x.stroke()};
+  dot(cl.vp,V=>resist(V,p),C.f);dot(cl.vn,V=>resist(V,p),C.t);
+  $('bV1').textContent=tp.V1?fmtV(tp.V1):'none (monotonic)';$('bV2').textContent=tp.V2?fmtV(tp.V2):'none';
+  $('bVpl').textContent=cl.vp?fmtV(cl.vp):'no stable solution';$('bVnd').textContent=cl.vn?fmtV(cl.vn):'not reachable on fast branch';
+  // strip over W
+  const s=$('cStrip');const S=fit(s,0.16,52);const sw=S.w,sh=S.h,y=S.x;y.clearRect(0,0,sw,sh);
+  const w0=-2.3,w1=1.3;const N=110;let Wstar=null,prevCode=null;const seen=new Set();
+  for(let i=0;i<N;i++){const lw=w0+(w1-w0)*(i+0.5)/N;const cc=classify(10**lw,p,tp).code;seen.add(cc);
+    if(prevCode&&cc!==prevCode&&Wstar===null)Wstar=10**lw;prevCode=cc;
+    y.fillStyle=hexA(css(REG[cc][1]),cc==='stasis'?0.35:0.75);y.fillRect(i*sw/N,6,sw/N+1,sh-26)}
+  const mx=(+$('bW').value-w0)/(w1-w0)*sw;y.strokeStyle=css('--ink');y.lineWidth=2;y.beginPath();y.moveTo(mx,0);y.lineTo(mx,sh-18);y.stroke();
+  y.fillStyle=css('--muted');y.font='11px '+css('--mono');[-2,-1,0,1].forEach(e=>{const xx=(e-w0)/(w1-w0)*sw;y.textAlign='center';y.fillText(fmtLen(10**e),xx,sh-4)});
+  $('stripKey').innerHTML=[...seen].map(k=>`<span style="--c:var(${REG[k][1]})">${REG[k][0]}</span>`).join('');
+  $('bWs').textContent=Wstar?'≈ '+fmtLen(Wstar):'no change in this range';
+  const msgs={
+    plate:['Weak drag: plate still competitive','The resistance rises monotonically, so there is no forbidden range. The plate solution slows smoothly as W grows. Here its velocity is still at or above the needle’s.'],
+    needle:['Weak drag: plate → needle, no stasis','With no forbidden range the plate slows continuously, and past W* the needle solution is faster. This is the note’s weak-drag case.'],
+    pfast:['Strong drag: plate still on the fast branch','The plate curve still crosses the resistance above V₂. Thicken the film and watch this intersection disappear.'],
+    'needle+':['Strong drag: plate → needle + plate, no stasis','The plate has lost its fast-branch solution and can only creep along the slow branch, if at all. The needle curve, tied to ρc rather than W, still crosses on the fast branch.'],
+    stasis:['Strong drag: plate → stasis','Neither the plate nor the needle has a stable fast-branch solution. Growth is confined to the slow branch or stops. Raising friction or temperature pushes toward this case.']};
+  $('bOut').textContent=msgs[cl.code][0];$('bOutText').textContent=msgs[cl.code][1];
+}
+
+/* ---------- Section 8: paths ---------- */
+const PATHS={
+ p1:{t:'Direct path: austenitise, then hold at T₂',d:'Records the competition among allotriomorphs, primary sideplates and any secondary sideplates that form after ferrite first appears at T₂. It does not isolate primary sideplates unless event order is resolved.',
+   r:[['A','Any secondary plates should come from fresh film with a spacing near λmax.'],['B','Primary plates should appear at bare boundaries, and secondary plates with a new low-angle orientation.'],['C','Secondary plates should appear only after local film thickness passes W*.'],['D','Yang-type competition predicts the plate or equiaxed choice from T and Mn alone.']],
+   seg:[[0,0.1,'A'],[0.1,0.15,'T2'],[0.15,1,'T2']]},
+ p2:{t:'Fresh-allotriomorph path: short T₁ hold, then T₂',d:'A short upper hold makes new grain-boundary allotriomorphs. The lower hold then tests whether secondary sideplates form from them.',
+   r:[['A','Fresh interfaces should be less stable than equilibrated ones (Townsend and Kirkaldy).'],['B','Garzon saw faster sideplate formation from preconditioned austenite, read as easier nucleation on ferrite/austenite interfaces.'],['C','Film thickness from T₁ sets the starting W, so the branch change should depend on it.'],['D','Phase-field models need an imposed perturbation, so the question is whether the film supplies one.']],
+   seg:[[0,0.1,'A'],[0.1,0.3,'T1'],[0.3,1,'T2']]},
+ p3:{t:'Longer-preconditioned path: long T₁ hold, then T₂',d:'Tests whether the preconditioned ferrite/austenite state changes secondary-sideplate formation. Coverage, thickness, carbon enrichment, substitutional partitioning and austenite geometry all change too, so they must be measured as covariates.',
+   r:[['A','Long-equilibrated interfaces were more resistant to instability.'],['B','Fewer ledges or facets would mean fewer nucleation sites. Garzon tried to vary Ni partitioning this way but did not measure it.'],['C','Thicker films with more Mn at the interface should sit deeper on the slow branch, and may stall.'],['D','No clear prediction, since the models do not include interface history.']],
+   seg:[[0,0.1,'A'],[0.1,0.6,'T1'],[0.6,1,'T2']]},
+ p4:{t:'Temperature cycle: T₁, a brief T₂ excursion, back to T₁',d:'Once tip growth is seen at T₂, return to T₁ and ask whether the tip keeps lengthening, blunts, stops while the broad face thickens, or stops while film growth takes over. A plate cannot turn back into an allotriomorph, but the active growth front can switch. This needs controls with matched times at T₁ and T₂, and calibrated thermal lag.',
+   r:[['A','Not directly tested.'],['B','A newly appearing orientation after the cycle means a separate nucleation event.'],['C','This is the note’s critical test. Continued advance of the same crystal supports persistence of the tip branch, and blunting or arrest shows it was lost.'],['D','Early-time competition would re-select at T₁, favouring the equiaxed or film geometry.']],
+   seg:[[0,0.1,'A'],[0.1,0.4,'T1'],[0.4,0.52,'T2'],[0.52,1,'T1']]}
+};
+let pathSel='p1';
+function paths(){
+  const P=PATHS[pathSel];$('pTitle').textContent=P.t;$('pText').textContent=P.d;
+  const names={A:'A · Instability',B:'B · Sympathetic',C:'C · Kinetic branch',D:'D · Model selection'};
+  $('pReads').innerHTML=P.r.map(([k,v])=>`<dt>${names[k]}</dt><dd style="font:14px var(--body);text-align:left">${v}</dd>`).join('');
+  ['p1','p2','p3','p4'].forEach(id=>$(id).setAttribute('aria-pressed',id===pathSel));
+  const c=$('cPath');const {x,w,h}=fit(c,0.5,190);x.clearRect(0,0,w,h);
+  const C={ink:css('--ink'),mu:css('--muted'),r:css('--rule'),f:css('--ferrite'),t:css('--tip'),c:css('--carbon')};
+  const L=46,Rr=12,T=14,B=24;const lev={A:0.08,T1:0.48,T2:0.78};const sx=u=>L+u*(w-L-Rr),sy=v=>T+v*(h-T-B);
+  x.strokeStyle=C.r;x.setLineDash([3,3]);x.lineWidth=1;Object.entries(lev).forEach(([k,v])=>{x.beginPath();x.moveTo(L,sy(v));x.lineTo(w-Rr,sy(v));x.stroke()});x.setLineDash([]);
+  x.fillStyle=C.mu;x.font='12px '+css('--mono');x.textAlign='right';x.fillText('γ',L-6,sy(lev.A)+4);x.fillText('T₁',L-6,sy(lev.T1)+4);x.fillText('T₂',L-6,sy(lev.T2)+4);
+  x.textAlign='center';x.fillText('time →',w/2,h-6);
+  x.strokeStyle=C.ink;x.lineWidth=2.5;x.beginPath();let first=true;
+  P.seg.forEach(([a,b,l])=>{const y=sy(lev[l]);if(first){x.moveTo(sx(a),y);first=false}else x.lineTo(sx(a)+4,y);x.lineTo(sx(b),y)});x.stroke();
+  x.fillStyle=C.mu;x.font='11px '+css('--body');x.textAlign='center';
+  P.seg.forEach(([a,b,l])=>{const lab={A:'austenitise',T1:'films form',T2:'sideplates'}[l];x.fillText(lab,(sx(a)+sx(b))/2,sy(lev[l])-8)});
+  x.textAlign='left';x.fillText('quench',sx(1)-40,h-B+2);
+}
+
+/* ---------- wiring ---------- */
+function all(){thermo();scales();drag();inst();sym();branch();paths()}
+$('alloySel').addEventListener('input',()=>{const mn=+$('alloySel').value.split(',')[1];$('bP').value=mn>0?30:0;all()});
+$('T').addEventListener('input',all);
+['tt','rf'].forEach(i=>$(i).addEventListener('input',scales));
+$('dv').addEventListener('input',drag);
+$('iW').addEventListener('input',()=>{inst();instRestart()});$('iL').addEventListener('input',()=>{inst();instRestart()});
+$('iFast').addEventListener('click',()=>{$('iL').value=0;instRestart()});$('iReset').addEventListener('click',instRestart);
+$('sSt').addEventListener('input',sym);
+$('vOpt').addEventListener('click',()=>{symView='opt';$('vOpt').setAttribute('aria-pressed','true');$('vOri').setAttribute('aria-pressed','false');sym()});
+$('vOri').addEventListener('click',()=>{symView='ori';$('vOri').setAttribute('aria-pressed','true');$('vOpt').setAttribute('aria-pressed','false');sym()});
+$('mSym').addEventListener('click',()=>{symMech='sym';$('mSym').setAttribute('aria-pressed','true');$('mCon').setAttribute('aria-pressed','false');sym()});
+$('mCon').addEventListener('click',()=>{symMech='con';$('mCon').setAttribute('aria-pressed','true');$('mSym').setAttribute('aria-pressed','false');sym()});
+['bW','bP','bVp','bM'].forEach(i=>$(i).addEventListener('input',branch));
+['p1','p2','p3','p4'].forEach(id=>$(id).addEventListener('click',()=>{pathSel=id;paths()}));
+let rt=0;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(all,120)});
+const mq=window.matchMedia('(prefers-color-scheme: dark)');mq.addEventListener&&mq.addEventListener('change',all);
+new MutationObserver(all).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+all();instRestart();
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(all);
+})();
+</script>
+</body></html>
