@@ -6,15 +6,15 @@
 /* Same lab-notebook palette as the other phase-transformation lessons */
 :root{
   --bg:#eef1f3; --panel:#f8fafb; --ink:#17212b; --muted:#56636f; --rule:#cfd6dc; --grid:#e2e7eb;
-  --ferrite:#2f6fb3; --carbon:#d0701e; --tip:#c2257a; --mn:#1f8a5b; --stable:#8d979f; --window:#dfe5ea;
+  --accent:#a8650a; --honey:#d29a12; --amber:#e07b12; --rust:#b4480e; --stable:#8d979f; --window:#f5e6bd;
   --display:"Spectral",Georgia,serif; --body:"Source Sans 3","Segoe UI",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#12171c; --panel:#1a2128; --ink:#e3e8ec; --muted:#9aa6b1; --rule:#2d3740; --grid:#222b33;
-  --ferrite:#6aa6e8; --carbon:#f09a4e; --tip:#ee5fa8; --mn:#4cc38a; --stable:#6c7782; --window:#232c34; color-scheme:dark}}
+  --accent:#f2b84b; --honey:#f5c542; --amber:#f39a3c; --rust:#ff7a3d; --stable:#6c7782; --window:#3a3221; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#12171c; --panel:#1a2128; --ink:#e3e8ec; --muted:#9aa6b1; --rule:#2d3740; --grid:#222b33;
-  --ferrite:#6aa6e8; --carbon:#f09a4e; --tip:#ee5fa8; --mn:#4cc38a; --stable:#6c7782; --window:#232c34; color-scheme:dark}
+  --accent:#f2b84b; --honey:#f5c542; --amber:#f39a3c; --rust:#ff7a3d; --stable:#6c7782; --window:#3a3221; color-scheme:dark}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 var(--body)}
 .wrap{max-width:1120px;margin:0 auto;padding-inline:16px;padding-block:28px 64px}
@@ -27,24 +27,25 @@ p{margin:0;max-width:72ch}
 section{display:grid;gap:14px;padding-block:34px;border-top:1px solid var(--rule)}
 header{display:grid;gap:6px;padding-bottom:26px}
 .links{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:10px;font-size:15px}
-a{color:var(--ferrite)}
+a{color:var(--accent)}
 .grid2{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(0,1fr);gap:18px;align-items:start}
 @media (max-width:860px){.grid2{grid-template-columns:minmax(0,1fr)}}
 .panel{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:14px;display:grid;gap:10px;min-width:0}
 canvas{display:block;width:100%;max-width:100%;border-radius:4px;touch-action:none;cursor:crosshair}
-canvas:focus-visible{outline:2px solid var(--ferrite);outline-offset:2px}
+canvas:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .row .lab{font-size:13px;color:var(--muted);margin-right:2px}
 button{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--rule);border-radius:4px;padding:5px 10px;cursor:pointer}
-button:hover{border-color:var(--ferrite)}
-button[aria-pressed="true"]{border-color:var(--ferrite);background:var(--panel);font-weight:600;box-shadow:inset 0 -2px 0 var(--ferrite)}
-:focus-visible{outline:2px solid var(--ferrite);outline-offset:2px}
+button:hover{border-color:var(--accent)}
+button[aria-pressed="true"]{border-color:var(--accent);background:var(--panel);font-weight:600;box-shadow:inset 0 -2px 0 var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .checks{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:14px}
 .checks label{display:flex;gap:6px;align-items:center;cursor:pointer}
 .ctl{display:grid;gap:2px;font-size:14px}
 .ctl label{display:flex;justify-content:space-between;gap:8px}
 .ctl output{font:500 13px var(--mono);font-variant-numeric:tabular-nums}
-input[type=range]{width:100%;accent-color:var(--ferrite)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+input[type=checkbox]{accent-color:var(--accent)}
 dl.read{display:grid;grid-template-columns:auto auto;gap:3px 14px;margin:0;font-size:14px}
 dl.read dt{color:var(--muted)}
 dl.read dd{margin:0;font:500 13px var(--mono);font-variant-numeric:tabular-nums;text-align:right}
@@ -65,7 +66,8 @@ td.n{font:13px var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
 .defs{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
 .defs div{display:grid;gap:4px;align-content:start}
 .defs b{font-family:var(--display);font-size:17px}
-.callout{border-left:3px solid var(--carbon);padding:4px 0 4px 12px;font-size:15px;max-width:none}
+.sw{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;background:var(--c);vertical-align:baseline}
+.callout{border-left:3px solid var(--honey);padding:4px 0 4px 12px;font-size:15px;max-width:none}
 ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var(--muted);max-width:90ch}
 </style></head><body>
 <div class="wrap">
@@ -200,7 +202,7 @@ const A1=INV.meta[0][1], wEut=INV.meta[0][4], wAlpha=INV.meta[0][2], WCEM=6.6894
 const ae3Line=D.meta[1][3], acmLine=D.meta[3][2];   // γ side of α+γ and of γ+Fe3C
 const T0w=D.t0.map(r=>r[0]),T0v=D.t0.map(r=>r[1]),T0p=D.t0.map(r=>r[2]);
 const NAMES={"α":"α ferrite (BCC)","γ":"γ austenite (FCC)","δ":"δ ferrite (BCC)","L":"liquid","Fe₃C":"cementite Fe₃C","graphite":"graphite"};
-const PCOL={"α":"--ferrite","δ":"--ferrite","γ":"--mn","L":"--tip","Fe₃C":"--carbon","graphite":"--stable"};
+const PCOL={"α":"--ink","δ":"--ink","γ":"--honey","L":"--rust","Fe₃C":"--amber","graphite":"--stable"};
 
 function isotherm(fields,T){
   const out=[];for(const [lp,rp,la,ra] of fields){const wl=wAt(la,T),wr=wAt(ra,T);if(!isNaN(wl)&&!isNaN(wr))out.push({lp,rp,wl,wr})}
@@ -247,7 +249,7 @@ function drawFec(){
   const {X,Y}=axes(x,w,h,V,M,'carbon (wt%)','temperature (°C)');G1={X,Y,M,w,h,V};
   x.save();x.beginPath();x.rect(M.l,M.t,w-M.l-M.r,h-M.t-M.b);x.clip();
   if($('oWin').checked){x.fillStyle=css('--window');x.fillRect(X(0.1),Y(750),X(0.5)-X(0.1),Y(500)-Y(750))}
-  const ink=css('--ink'),st=css('--stable'),blue=css('--ferrite');
+  const ink=css('--ink'),st=css('--stable'),blue=css('--amber');
   // stable lines
   if($('oStab').checked||sys==='stable'){x.strokeStyle=st;x.lineWidth=sys==='stable'?2:1.2;x.setLineDash(sys==='stable'?[]:[5,3]);
     D.stable.forEach(f=>{[f[2],f[3]].forEach(a=>{if(a[1]<99)poly(x,a,X,Y)})});
@@ -265,18 +267,18 @@ function drawFec(){
   if($('oT0').checked){x.strokeStyle=blue;x.lineWidth=1.6;x.setLineDash([8,3,2,3]);x.beginPath();D.t0.forEach((r,i)=>{i?x.lineTo(X(r[0]),Y(r[1])):x.moveTo(X(r[0]),Y(r[1]))});x.stroke();
     x.setLineDash([2,3]);x.beginPath();D.t0.forEach((r,i)=>{i?x.lineTo(X(r[0]),Y(r[2])):x.moveTo(X(r[0]),Y(r[2]))});x.stroke();x.setLineDash([])}
   // cooling-summary steel
-  const wc=+$('wc').value;x.strokeStyle=css('--carbon');x.lineWidth=1.5;x.setLineDash([3,3]);seg(x,X,Y,wc,V.y[0],wc,V.y[1]);x.setLineDash([]);
+  const wc=+$('wc').value;x.strokeStyle=css('--honey');x.lineWidth=1.8;x.setLineDash([3,3]);seg(x,X,Y,wc,V.y[0],wc,V.y[1]);x.setLineDash([]);
   // labels
   LABELS[view].forEach(([a,b,t,big])=>label(x,X(a),Y(b),t,big));
   if(view!=='delta')label(x,X(view==='full'?1.6:0.30),Y(A1)+(view==='full'?-9:13),`A1 ${A1.toFixed(1)} °C`,false);
   if(view==='steel'){label(x,X(0.29),Y(830),'Ae3',false);label(x,X(1.0),Y(840),'Acm',false);
     if($('oT0').checked){label(x,X(0.95),Y(lin(T0w,T0v,0.95)),'T0',false);label(x,X(0.70),Y(lin(T0w,T0p,0.70)),'T0′',false)}}
   // cursor
-  const px=X(cur.w),py=Y(cur.T);x.strokeStyle=css('--tip');x.lineWidth=1;x.beginPath();x.moveTo(px,M.t);x.lineTo(px,h-M.b);x.moveTo(M.l,py);x.lineTo(w-M.r,py);x.stroke();
+  const px=X(cur.w),py=Y(cur.T);x.strokeStyle=css('--rust');x.lineWidth=1;x.beginPath();x.moveTo(px,M.t);x.lineTo(px,h-M.b);x.moveTo(M.l,py);x.lineTo(w-M.r,py);x.stroke();
   const r=phasesAt(sys,cur.T,cur.w);
-  if(r.two){x.strokeStyle=css('--tip');x.lineWidth=2.5;seg(x,X,Y,r.two.wl,cur.T,Math.min(r.two.wr,V.x[1]+1),cur.T);
-    x.fillStyle=css('--tip');[r.two.wl,r.two.wr].forEach(v=>{if(v<=V.x[1]){x.beginPath();x.arc(X(v),py,3.5,0,7);x.fill()}})}
-  x.fillStyle=css('--tip');x.beginPath();x.arc(px,py,4.5,0,7);x.fill();
+  if(r.two){x.strokeStyle=css('--rust');x.lineWidth=2.5;seg(x,X,Y,r.two.wl,cur.T,Math.min(r.two.wr,V.x[1]+1),cur.T);
+    x.fillStyle=css('--rust');[r.two.wl,r.two.wr].forEach(v=>{if(v<=V.x[1]){x.beginPath();x.arc(X(v),py,3.5,0,7);x.fill()}})}
+  x.fillStyle=css('--rust');x.beginPath();x.arc(px,py,4.5,0,7);x.fill();
   x.restore();
   readout(r)}
 
@@ -314,12 +316,12 @@ function cooling(){
   else if(w<wEut){const pe=(w-wAlpha)/(wEut-wAlpha);
     c=`<dt>ferrite starts (Ae3)</dt><dd>${fmt(TAt(ae3Line,w),0)} °C</dd><dt>pearlite forms (A1)</dt><dd>${A1.toFixed(1)} °C</dd>`+
       `<dt>proeutectoid ferrite</dt><dd>${(100*(1-pe)).toFixed(0)} %</dd><dt>pearlite</dt><dd>${(100*pe).toFixed(0)} %</dd>`;
-    bar=`<span style="width:${100*(1-pe)}%;background:var(--ferrite)"></span><span style="width:${100*pe}%;background:var(--carbon);opacity:.75"></span>`;
+    bar=`<span style="width:${100*(1-pe)}%;background:var(--ink)"></span><span style="width:${100*pe}%;background:var(--honey)"></span>`;
     note='Hypoeutectoid: ferrite forms on the austenite grain boundaries between Ae3 and A1, and the remaining austenite (0.76 wt% C) becomes pearlite. Fractions from the lever rule just above A1.'}
   else if(w<=2.05){const pc=(w-wEut)/(WCEM-wEut);
     c=`<dt>cementite starts (Acm)</dt><dd>${fmt(TAt(acmLine,w),0)} °C</dd><dt>pearlite forms (A1)</dt><dd>${A1.toFixed(1)} °C</dd>`+
       `<dt>proeutectoid Fe₃C</dt><dd>${(100*pc).toFixed(1)} %</dd><dt>pearlite</dt><dd>${(100*(1-pc)).toFixed(1)} %</dd>`;
-    bar=`<span style="width:${100*pc}%;background:var(--ink)"></span><span style="width:${100*(1-pc)}%;background:var(--carbon);opacity:.75"></span>`;
+    bar=`<span style="width:${100*pc}%;background:var(--amber)"></span><span style="width:${100*(1-pc)}%;background:var(--honey)"></span>`;
     note='Hypereutectoid: a cementite network forms on the austenite grain boundaries between Acm and A1, then the rest becomes pearlite.'}
   $('rCool').innerHTML=c;$('cBar').innerHTML=bar;$('cBar').hidden=!bar;$('cNote').textContent=note}
 
@@ -342,7 +344,7 @@ $('sMeta').addEventListener('click',()=>{sys='meta';$('sMeta').setAttribute('ari
 $('sStab').addEventListener('click',()=>{sys='stable';$('sStab').setAttribute('aria-pressed','true');$('sMeta').setAttribute('aria-pressed','false');drawFec()});
 ['oStab','oExt','oT0','oCurie','oWin'].forEach(i=>$(i).addEventListener('change',drawFec));
 $('wc').addEventListener('input',()=>{cooling();drawFec()});
-function key1(){$('key1').innerHTML=`<span style="--c:var(--ink)">Fe–Fe₃C</span><span style="--c:var(--stable);--s:dashed">Fe–graphite</span><span style="--c:var(--ink);--s:dashed">extrapolated</span><span style="--c:var(--ferrite);--s:dashed">T0</span><span style="--c:var(--ferrite);--s:dotted">T0′</span><span style="--c:var(--carbon);--s:dashed">cooling-summary steel</span>`}
+function key1(){$('key1').innerHTML=`<span style="--c:var(--ink)">Fe–Fe₃C</span><span style="--c:var(--stable);--s:dashed">Fe–graphite</span><span style="--c:var(--ink);--s:dashed">extrapolated</span><span style="--c:var(--amber);--s:dashed">T0</span><span style="--c:var(--amber);--s:dotted">T0′</span><span style="--c:var(--honey);--s:dashed">cooling-summary steel</span><span style="--c:var(--rust)">cursor and tie line</span>`}
 
 /* ---------- alloy isopleths ---------- */
 const EL=[["MN","Mn","γ stabiliser","Partitions slowly, so the paraequilibrium, NPLE and LE Ae3 differ a lot. Solute drag at α/γ interfaces."],
@@ -362,7 +364,7 @@ EL.forEach(([k,s])=>{const b=document.createElement('button');b.textContent=s;b.
   b.addEventListener('click',()=>{elSel=k;EL.forEach(([kk])=>$('e'+kk).setAttribute('aria-pressed',kk===k));drawAlloy()});$('els').appendChild(b)});
 function cases(el){return Object.entries(D.alloy).filter(([n,c])=>c.el===el).map(([n,c])=>c).sort((a,b)=>a.w-b.w)}
 function series(c,key){return c[key].map((v,i)=>(key!=='fer'&&c.C[i]<0.1)?null:v)}
-function hatch(x){const p=document.createElement('canvas');p.width=p.height=8;const q=p.getContext('2d');q.strokeStyle=css('--muted');q.globalAlpha=.55;q.lineWidth=1;q.beginPath();q.moveTo(0,8);q.lineTo(8,0);q.stroke();return x.createPattern(p,'repeat')}
+function hatch(x){const p=document.createElement('canvas');p.width=p.height=8;const q=p.getContext('2d');q.strokeStyle=css('--honey');q.globalAlpha=.7;q.lineWidth=1;q.beginPath();q.moveTo(0,8);q.lineTo(8,0);q.stroke();return x.createPattern(p,'repeat')}
 function eutectoid(c){const d=c.C.map((w,i)=>c.fer[i]!=null&&c.car[i]!=null?c.fer[i]-c.car[i]:null);
   for(let i=0;i<d.length-1;i++){if(d[i]!=null&&d[i+1]!=null&&d[i]*d[i+1]<=0&&d[i]!==d[i+1]){const t=d[i]/(d[i]-d[i+1]);const w=c.C[i]+t*(c.C[i+1]-c.C[i]);return [w,c.fer[i]+t*(c.fer[i+1]-c.fer[i])]}}return null}
 function drawAlloy(){
@@ -379,12 +381,13 @@ function drawAlloy(){
     // three-phase band
     x.fillStyle=pat;x.beginPath();let pts=[];c.C.forEach((wc,i)=>{const hi=Math.min(c.fer[i]??1e9,car[i]??1e9);if(aus[i]!=null&&hi<1e8&&hi>aus[i])pts.push([wc,aus[i],hi]);else{if(pts.length>1){x.moveTo(X(pts[0][0]),Y(pts[0][1]));pts.forEach(p=>x.lineTo(X(p[0]),Y(p[1])));pts.slice().reverse().forEach(p=>x.lineTo(X(p[0]),Y(p[2])));x.closePath()}pts=[]}});
     if(pts.length>1){x.moveTo(X(pts[0][0]),Y(pts[0][1]));pts.forEach(p=>x.lineTo(X(p[0]),Y(p[1])));pts.slice().reverse().forEach(p=>x.lineTo(X(p[0]),Y(p[2])));x.closePath()}x.fill();
-    line(c.C,c.fer,ink,1.8,dash);line(c.C,car,elSel==='V'?css('--carbon'):ink,1.8,dash);line(c.C,aus,ink,1.1,dash);
+    line(c.C,c.fer,ink,1.8,dash);line(c.C,car,css('--amber'),2,dash);line(c.C,aus,css('--honey'),2,dash);
     const e=elSel!=='V'&&eutectoid(c);if(e){x.fillStyle=k?css('--panel'):ink;x.strokeStyle=ink;x.lineWidth=1.4;x.beginPath();x.arc(X(e[0]),Y(e[1]),4,0,7);x.fill();x.stroke()}});
-  const px=X(cur2.w),py=Y(cur2.T);x.strokeStyle=css('--tip');x.lineWidth=1;x.beginPath();x.moveTo(px,M.t);x.lineTo(px,h-M.b);x.stroke();
+  const px=X(cur2.w),py=Y(cur2.T);x.strokeStyle=css('--rust');x.lineWidth=1;x.beginPath();x.moveTo(px,M.t);x.lineTo(px,h-M.b);x.stroke();
   x.restore();
   const nm=EL.find(e=>e[0]===elSel);
-  $('key2').innerHTML=`<span style="--c:var(--stable)">plain Fe–C</span>`+cs.map((c,k)=>`<span style="--c:var(--ink);--s:${k?'dashed':'solid'}">${c.w} wt% ${nm[1]}</span>`).join('')+(elSel==='V'?`<span style="--c:var(--carbon)">VC solvus</span>`:'')+`<span style="--c:var(--muted)">hatched: α + γ + carbide</span>`;
+  $('key2').innerHTML=`<span style="--c:var(--stable)">plain Fe–C</span>`+cs.map((c,k)=>`<span style="--c:var(--muted);--s:${k?'dashed':'solid'}">${c.w} wt% ${nm[1]}</span>`).join('')+
+    `<span style="--c:var(--ink)">ferrite starts (Ae3)</span><span style="--c:var(--amber)">first carbide (${elSel==='V'?'VC solvus':'Acm / upper Ae1'})</span><span style="--c:var(--honey)">last austenite (lower Ae1)</span><span style="--c:var(--honey);--s:dotted">hatched: α + γ + carbide</span>`;
   alloyRead(cs,nm)}
 function alloyRead(cs,nm){
   const w=cur2.w,P=D.alloy.plain;
@@ -392,7 +395,7 @@ function alloyRead(cs,nm){
   $('aAt').textContent=`at ${w.toFixed(2)} wt% C (°C)`;
   const up=(c)=>{const f=lin(c.C,c.fer,w),k=lin(c.C,c.car,w);return [f,k]};
   const rows=[['plain Fe–C',P]].concat(cs.map(c=>[`${c.w} wt% ${nm[1]}`,c]));
-  let t='<tr><th></th><th>ferrite starts</th><th>first carbide</th><th>last austenite</th></tr>';
+  let t='<tr><th></th><th><i class="sw" style="--c:var(--ink)"></i>ferrite starts</th><th><i class="sw" style="--c:var(--amber)"></i>first carbide</th><th><i class="sw" style="--c:var(--honey)"></i>last austenite</th></tr>';
   rows.forEach(([n,c])=>{const [f,k]=up(c);const a=w<0.1&&c!==P?NaN:lin(c.C,c.aus,w);t+=`<tr><td>${n}</td><td class="n">${fmt(f,0)}</td><td class="n">${fmt(w<0.1&&c!==P?NaN:k,0)}</td><td class="n">${fmt(a,0)}</td></tr>`});
   $('aTab').innerHTML=t;
   const c1=cs[0],i4=c1.C.indexOf(0.4),p4=P.C.indexOf(0.4);
