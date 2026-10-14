@@ -1,0 +1,657 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>body{margin:0}</style></head><body>
+<title>PLE, NPLE and Paraequilibrium</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: the lab notebook on etched-steel grey, in the honey/gold/orange/sunset palette of the steel phase-diagram lessons; one shared alloy panel drives every instrument */
+:root{
+  --bg:#eef1f3; --panel:#f8fafb; --ink:#17212b; --muted:#56636f; --rule:#cfd6dc;
+  --ferrite:#a8650a; --carbon:#e07b12; --tip:#b4480e; --mn:#17212b; --ple:#d29a12; --gamma:#f5e6bd;
+  --display:"Spectral",Georgia,serif; --body:"Source Sans 3","Segoe UI",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12171c; --panel:#1a2128; --ink:#e3e8ec; --muted:#9aa6b1; --rule:#2d3740;
+  --ferrite:#f2b84b; --carbon:#f39a3c; --tip:#ff7a3d; --mn:#e3e8ec; --ple:#f5c542; --gamma:#3a3221; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12171c; --panel:#1a2128; --ink:#e3e8ec; --muted:#9aa6b1; --rule:#2d3740;
+  --ferrite:#f2b84b; --carbon:#f39a3c; --tip:#ff7a3d; --mn:#e3e8ec; --ple:#f5c542; --gamma:#3a3221; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--body)}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px}
+h1,h2,h3{font-family:var(--display);font-weight:600;text-wrap:balance;margin:0}
+h1{font-size:clamp(28px,4.4vw,42px);line-height:1.1}
+h2{font-size:clamp(22px,3vw,28px);margin-top:8px}
+h3{font-size:18px}
+p{margin:0;max-width:68ch}
+.lede{color:var(--muted);font-size:17px;margin-top:10px}
+.eyebrow{font:500 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+section{display:grid;gap:14px;padding-block:34px;border-top:1px solid var(--rule)}
+header{display:grid;gap:6px;padding-bottom:26px}
+.links{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:10px;font-size:15px}
+a{color:var(--ferrite)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:820px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:14px;display:grid;gap:10px;min-width:0}
+canvas{display:block;width:100%;max-width:100%;touch-action:pan-y;border-radius:4px}
+canvas.drag{touch-action:none;cursor:crosshair}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 18px}
+.ctl{display:grid;gap:2px;font-size:14px}
+.ctl label{display:flex;justify-content:space-between;gap:8px}
+.ctl output{font:500 13px var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+input[type=range]{width:100%;accent-color:var(--ferrite)}
+select,button{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--rule);border-radius:4px;padding:5px 10px}
+button{cursor:pointer}
+button:hover{border-color:var(--ferrite)}
+button[aria-pressed="true"]{border-color:var(--c,var(--ferrite));background:var(--panel);font-weight:600;box-shadow:inset 0 -3px 0 var(--c,var(--ferrite))}
+:focus-visible{outline:2px solid var(--ferrite);outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.key{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted)}
+.key span::before{content:"";display:inline-block;width:14px;height:4px;border-radius:2px;margin-right:6px;vertical-align:middle;background:var(--c)}
+.key span.dash::before{background:repeating-linear-gradient(90deg,var(--c) 0 4px,transparent 4px 7px)}
+dl.read{display:grid;grid-template-columns:auto auto;gap:4px 14px;margin:0;font-size:14px}
+dl.read dt{color:var(--muted)}
+dl.read dd{margin:0;font:500 13px var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+.note{font-size:14px;color:var(--muted)}
+.callout{border-left:3px solid var(--tip);padding:4px 0 4px 12px;font-size:15px;max-width:none}
+.callout.c{border-left-color:var(--carbon)}
+.callout.p{border-left-color:var(--ple)}
+.defs{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.defs div{display:grid;gap:4px;align-content:start}
+.defs b{font-family:var(--display);font-size:17px}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;font-size:14px;width:100%}
+th,td{padding:6px 10px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font:500 12px var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+td.m,code,.m{font:13px var(--mono)}
+.eq{font:14px var(--mono);background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:8px 12px;overflow-x:auto;max-width:100%;white-space:nowrap}
+.alloybar{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:14px;display:grid;gap:10px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px 18px;font-size:13px}
+.stats div{display:grid;gap:0}
+.stats span{color:var(--muted)}
+.stats b{font:500 14px var(--mono);font-variant-numeric:tabular-nums}
+.warn{color:var(--tip);font-size:14px}
+.tag{display:inline-block;font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--rule);border-radius:3px;padding:1px 6px;color:var(--muted);vertical-align:middle}
+.pill{display:inline-block;font:600 13px var(--mono);border-radius:3px;padding:1px 8px;color:var(--c,var(--muted));border:1.5px solid var(--c,var(--muted))}
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.pair > div{display:grid;gap:6px;align-content:start;min-width:0}
+ul.tight{margin:0;padding-left:20px;display:grid;gap:4px;max-width:72ch}
+ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var(--muted);max-width:90ch}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;background:var(--c)}
+</style>
+
+<div class="wrap">
+<header>
+  <a href="./" style="color:var(--muted);font-size:15px">← Phase transformations</a>
+  <div class="eyebrow">Ferrite growth · Fe–C–X (X = Mn) · interface conditions</div>
+  <h1>Paraequilibrium, PLE and NPLE</h1>
+  <p class="lede">When ferrite grows from austenite in Fe–C–Mn, carbon diffuses about a million times faster than manganese. Something has to give at the moving interface. This lesson builds the three classic answers (paraequilibrium, local equilibrium with partitioning, and local equilibrium with negligible partitioning) on one isothermal section, follows the growth rates they predict, and then looks at what the experiments say about the ground in between.</p>
+  <div class="links">
+    <a href="steel-phase-diagram.html">The Fe–C phase diagram</a>
+    <a href="widmanstatten-transition.html">Planar to Widmanstätten Ferrite</a>
+    <a href="martensite-traces.html">Martensite Traces in 3D</a>
+    <a href="ks-variant-atlas.html">KS Variant Atlas</a>
+    <a href="pole-figures.html">Reading Pole Figures</a>
+  </div>
+</header>
+
+<section id="names">
+  <div class="eyebrow">1 · Four interface conditions</div>
+  <h2>Each one is a rule about which chemical potentials match across the interface</h2>
+  <p>Full equilibrium needs every element to have the same chemical potential on both sides of the α/γ interface. The other three relax that rule in different ways. The names vary across the literature, so the table lists the ones you will meet in your sources.</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Condition</th><th>Also called</th><th>Equal across the interface</th><th>Mn in the new ferrite</th><th>What sets the rate</th></tr></thead>
+    <tbody>
+      <tr><td><span class="sw" style="--c:var(--ink)"></span><b>Full equilibrium</b></td><td>Orthoequilibrium</td><td>μ<sub>C</sub>, μ<sub>Fe</sub>, μ<sub>Mn</sub></td><td>Equilibrium value, through the alloy’s own tie-line</td><td>The end state, not a growth law</td></tr>
+      <tr><td><span class="sw" style="--c:var(--ferrite)"></span><b>Paraequilibrium (PE)</b></td><td>Hultgren 1947, Hillert 1953</td><td>μ<sub>C</sub> and the Fe+Mn average u<sub>Fe</sub>μ<sub>Fe</sub>+u<sub>Mn</sub>μ<sub>Mn</sub></td><td>Same Mn/Fe ratio as the austenite. No Mn moves at all</td><td>Carbon diffusion in austenite</td></tr>
+      <tr><td><span class="sw" style="--c:var(--tip)"></span><b>NPLE</b></td><td>LE-NP, LENP, quasi-paraequilibrium (Hillert’s book)</td><td>μ<sub>C</sub>, μ<sub>Fe</sub>, μ<sub>Mn</sub> (full local equilibrium)</td><td>Bulk Mn, but only because a thin Mn spike sits in the austenite ahead of the interface</td><td>Carbon diffusion in austenite</td></tr>
+      <tr><td><span class="sw" style="--c:var(--ple)"></span><b>PLE</b></td><td>LE-P, local equilibrium with partitioning</td><td>μ<sub>C</sub>, μ<sub>Fe</sub>, μ<sub>Mn</sub> (full local equilibrium)</td><td>Less than bulk. Mn is rejected into the austenite over long range</td><td>Mn diffusion in austenite, so it is very slow</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="note">PE is not a local equilibrium. Fe and Mn have different chemical potentials on the two sides, and only their u-fraction-weighted average matches (Hillert, Eq. 14.13). That is why the PE γ/(α+γ) boundary lies inside the full equilibrium two-phase field, which Hillert states as a general rule. PLE and NPLE are both full local equilibrium; they differ only in which tie-line the interface picks.</p>
+</section>
+
+<section id="alloy">
+  <div class="eyebrow">Shared alloy and temperature · drives every instrument below</div>
+  <div class="alloybar">
+    <div class="controls">
+      <div class="ctl"><label for="cC">Carbon, wt% <output id="cCv"></output></label><input id="cC" type="range" min="0.03" max="0.80" step="0.01" value="0.20"></div>
+      <div class="ctl"><label for="cM">Manganese, wt% <output id="cMv"></output></label><input id="cM" type="range" min="0" max="4" step="0.05" value="1.5"></div>
+      <div class="ctl"><label for="T">Isothermal hold temperature <output id="Tv"></output></label><input id="T" type="range" min="660" max="820" step="5" value="720"></div>
+    </div>
+    <div class="row" role="group" aria-label="Example alloys">
+      <span class="note">Examples:</span>
+      <button type="button" id="pr1">Fe–0.1C–1.5Mn, 700 °C</button>
+      <button type="button" id="pr2">Fe–0.2C–1.5Mn, 805 °C</button>
+      <button type="button" id="pr3">Fe–0.4C–3Mn, 720 °C</button>
+    </div>
+    <div class="stats">
+      <div><span>Regime for this alloy</span><b id="sReg"></b></div>
+      <div><span>Ae3 (full equilibrium)</span><b id="sAe3"></b></div>
+      <div><span>PE Ae3</span><b id="sPAe3"></b></div>
+      <div><span>NPLE limit temperature</span><b id="sNAe3"></b></div>
+      <div><span>D<sub>C</sub> in austenite</span><b id="sDC"></b></div>
+      <div><span>D<sub>Mn</sub> in austenite</span><b id="sDM"></b></div>
+      <div><span>D<sub>C</sub>/D<sub>Mn</sub></span><b id="sRat"></b></div>
+      <div><span>√(Dt) after 1 h, C and Mn</span><b id="sLen"></b></div>
+    </div>
+    <p class="note">The thermodynamics is a dilute-solution model built to give the right shapes, not a CALPHAD calculation. The Fe–C γ boundary runs straight from 912 °C to 0.77 wt% C at 727 °C and is extrapolated below it. Mn partitions with k = u<sub>Mn</sub><sup>α</sup>/u<sub>Mn</sub><sup>γ</sup> = 0.58, and Mn lowers the carbon activity through a Wagner parameter ε<sub>C</sub><sup>Mn</sup> = −5 in both phases. D<sub>C</sub> is Ågren’s expression. D<sub>Mn</sub> uses a typical literature value (1.8×10⁻⁵ m²/s, 264 kJ/mol) that is not taken from the sources below. Drag on the isothermal section in section 2 to move the alloy point.</p>
+  </div>
+</section>
+
+<section id="coates">
+  <div class="eyebrow">2 · The isothermal section</div>
+  <h2>Two fluxes, one velocity: why the interface must choose between PLE and NPLE</h2>
+  <p>If the interface is in full local equilibrium, its two ends sit on a tie-line of the isothermal section. Carbon and Mn must both be carried away from the interface fast enough to keep up with it, so the tie-line has to satisfy two flux balances at once (Coates; Militzer et al., Eq. 7):</p>
+  <div class="eq">v = D<sub>C</sub>·(∂C<sub>C</sub>/∂z) / (C<sub>C</sub><sup>γ</sup> − C<sub>C</sub><sup>α</sup>) = D<sub>Mn</sub>·(∂C<sub>Mn</sub>/∂z) / (C<sub>Mn</sub><sup>γ</sup> − C<sub>Mn</sub><sup>α</sup>)</div>
+  <p>With D<sub>C</sub>/D<sub>Mn</sub> around 10⁶ to 10⁷, the two sides can only match in two ways. Either the carbon gradient is almost zero (the tie-line’s γ end sits on the carbon isoactivity line through the alloy, and Mn diffusion sets the pace: <b>PLE</b>), or the Mn gradient is enormous (a thin Mn spike, the ferrite keeps the bulk Mn, and carbon diffusion sets the pace: <b>NPLE</b>). The boundary between the two regions is the envelope of zero partition.</p>
+  <div class="grid2">
+    <div class="panel">
+      <div class="row" role="group" aria-label="Interface condition to construct">
+        <button type="button" id="mEq" style="--c:var(--ink)" aria-pressed="false">Full equilibrium</button>
+        <button type="button" id="mPE" style="--c:var(--ferrite)" aria-pressed="false">PE</button>
+        <button type="button" id="mNP" style="--c:var(--tip)" aria-pressed="true">NPLE</button>
+        <button type="button" id="mPL" style="--c:var(--ple)" aria-pressed="false">PLE</button>
+      </div>
+      <canvas id="cSec" class="drag" aria-label="Isothermal section of Fe–C–Mn with tie-lines, paraequilibrium boundary, envelope of zero partition and the selected construction. Drag to move the alloy."></canvas>
+      <div class="key">
+        <span style="--c:var(--ink)">γ/(α+γ) and α/(α+γ), full equilibrium</span>
+        <span class="dash" style="--c:var(--ferrite)">PE γ boundary</span>
+        <span class="dash" style="--c:var(--tip)">envelope of zero partition</span>
+        <span class="dash" style="--c:var(--carbon)">carbon isoactivity line in γ</span>
+      </div>
+      <p class="note">Shaded below the envelope: NPLE region. Shaded between the envelope and the γ boundary: PLE region. Ferrite holds so little carbon that the α/(α+γ) boundary hugs the Mn axis.</p>
+    </div>
+    <div class="panel">
+      <h3 id="conTitle">Construction</h3>
+      <p id="conText"></p>
+      <dl class="read">
+        <dt>Alloy</dt><dd id="rAl"></dd>
+        <dt>Interface, γ side</dt><dd id="rG"></dd>
+        <dt>Interface, α side</dt><dd id="rA"></dd>
+        <dt id="rXl">Carbon driving diffusion in γ</dt><dd id="rX"></dd>
+      </dl>
+      <p class="warn" id="conWarn" hidden></p>
+      <h3>Regime map for this carbon content</h3>
+      <canvas id="cMap" aria-label="Temperature against Mn content showing the Ae3, PE Ae3 and NPLE limit for the selected carbon content"></canvas>
+      <div class="key">
+        <span style="--c:var(--ink)">Ae3</span>
+        <span class="dash" style="--c:var(--ferrite)">PE Ae3</span>
+        <span class="dash" style="--c:var(--tip)">NPLE limit</span>
+      </div>
+      <p class="note">This is the shape of the Fe–C–Mn map Purdy showed from Zurob et al. (2009): NPLE kinetics are possible only below the NPLE limit, and PE kinetics only below the PE Ae3. Between the NPLE limit and the Ae3 the only local-equilibrium option is PLE.</p>
+    </div>
+  </div>
+  <p class="callout">Try the third example. At Fe–0.4C–3Mn and 720 °C the alloy sits inside the two-phase field but above the envelope, so NPLE is impossible: the NPLE tie-line would put less carbon at the interface than in the bulk, and carbon would have to diffuse uphill. Switch to NPLE to see the warning, then to PLE to see the tie-line the interface has to use instead.</p>
+</section>
+
+<section id="profiles">
+  <div class="eyebrow">3 · Composition profiles across the moving interface</div>
+  <h2>The NPLE spike is real on paper and often thinner than an atom</h2>
+  <div class="grid2">
+    <div class="panel">
+      <canvas id="cProf" aria-label="Carbon and manganese profiles across the ferrite/austenite interface for the selected interface condition"></canvas>
+      <div class="controls">
+        <div class="ctl"><label for="tt">Time at temperature <output id="ttv"></output></label><input id="tt" type="range" min="-1" max="6" step="0.01" value="1"></div>
+      </div>
+      <div class="key">
+        <span style="--c:var(--carbon)">carbon, wt%</span>
+        <span style="--c:var(--mn)">manganese, wt%</span>
+        <span style="--c:var(--ferrite)">ferrite side</span>
+      </div>
+      <p class="note">Each strip has its own length scale, printed above it, because the carbon field and the Mn field can differ by many orders of magnitude.</p>
+    </div>
+    <div class="panel">
+      <h3 id="pfTitle">Profiles</h3>
+      <p id="pfText"></p>
+      <dl class="read">
+        <dt>Ferrite thickness S</dt><dd id="pS"></dd>
+        <dt>Interface velocity v</dt><dd id="pV"></dd>
+        <dt>Carbon field width ahead of the interface</dt><dd id="pDc"></dd>
+        <dt>Mn field width ahead of the interface</dt><dd id="pDm"></dd>
+      </dl>
+      <p class="warn" id="pfWarn" hidden></p>
+    </div>
+  </div>
+  <p class="callout c">Hillert estimates the spike width as D<sub>Mn</sub>/v and notes that it is usually extremely small, with the Mn in it coming from a transient at very early times. Slide the time back toward 0.1 s with the first example: the spike is far below one atomic spacing (about 0.25 nm). Purdy lists “the physical meaning of the spike” among the issues still to be revisited.</p>
+</section>
+
+<section id="kinetics">
+  <div class="eyebrow">4 · Growth rates</div>
+  <h2>PE and NPLE grow in seconds to minutes. PLE takes geological patience</h2>
+  <div class="grid2">
+    <div class="panel">
+      <canvas id="cKin" aria-label="Log-log plot of ferrite thickness against time for paraequilibrium, NPLE and PLE growth"></canvas>
+      <div class="key">
+        <span style="--c:var(--ferrite)">PE</span>
+        <span style="--c:var(--tip)">NPLE</span>
+        <span style="--c:var(--ple)">PLE</span>
+        <span style="--c:var(--muted)">selected time</span>
+      </div>
+      <p class="note">Planar ferrite growing into one austenite grain, with the Zener linear-profile approximation S = √(Dt)·(C<sub>γ</sub>−C<sub>0</sub>)/√((C<sub>0</sub>−C<sub>α</sub>)(C<sub>γ</sub>−C<sub>α</sub>)). There is no soft impingement, so each curve is only meaningful while the ferrite stays below its maximum fraction.</p>
+    </div>
+    <div class="panel">
+      <h3>At the selected time</h3>
+      <div class="tablewrap">
+      <table>
+        <thead><tr><th>Condition</th><th>Thickness</th><th>Velocity</th><th>Ferrite fraction where it stops</th></tr></thead>
+        <tbody id="kTab"></tbody>
+      </table>
+      </div>
+      <p class="note" id="kNote"></p>
+    </div>
+  </div>
+  <div class="pair">
+    <div><h3>Why PE and NPLE look alike</h3><p>Both are carbon-diffusion controlled and both leave the ferrite with the bulk Mn content. They differ only in the carbon content the interface hands to the austenite. PE uses the PE γ boundary. NPLE uses the carbon content at the outer edge of the Mn spike, found by following the carbon isoactivity line from the tie-line’s γ end back to the bulk Mn level. That is why the envelope of zero partition lies below the PE boundary.</p></div>
+    <div><h3>Why PLE is so slow</h3><p>In PLE the same parabolic law applies, but with D<sub>Mn</sub> in place of D<sub>C</sub>. At these temperatures that cuts the thickness by a factor of √(D<sub>C</sub>/D<sub>Mn</sub>), around a thousand. Militzer et al. note that little or no ferrite growth is observed in the partitioning regime on industrial time scales, so most applied work has focused on non-partitioned growth.</p></div>
+  </div>
+</section>
+
+<section id="transition">
+  <div class="eyebrow">5 · Between the limits <span class="tag">illustrative switch</span></div>
+  <h2>Fast interfaces look like PE. Slow ones drift toward NPLE</h2>
+  <p>Neither PE nor NPLE fits the data over a wide range of compositions and temperatures. In Fe–C–Ni, Militzer et al. show PE describing the first 30 to 40 s, after which growth slows sharply. Hutchinson and coworkers fitted this with an interface condition that moves from PE at high velocity toward NPLE as the interface slows. The instrument below uses the simplest version of that idea. It compares the interface velocity v with the speed Mn can cross the interface, D<sub>int</sub>/δ, and blends the interfacial carbon from PE to NPLE using the interface Péclet number P = vδ/D<sub>int</sub>.</p>
+  <div class="grid2">
+    <div class="panel">
+      <canvas id="cTr" aria-label="Ferrite thickness against time for PE, NPLE and the transition model"></canvas>
+      <canvas id="cTrW" aria-label="How PE-like the interface is over time"></canvas>
+      <div class="controls">
+        <div class="ctl"><label for="dI"><span>Mn diffusivity across the interface, D<sub>int</sub></span> <output id="dIv"></output></label><input id="dI" type="range" min="-20" max="-14" step="0.05" value="-17"></div>
+      </div>
+      <div class="key">
+        <span class="dash" style="--c:var(--ferrite)">PE</span>
+        <span class="dash" style="--c:var(--tip)">NPLE</span>
+        <span style="--c:var(--ink)">transition</span>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Reading the transition</h3>
+      <dl class="read">
+        <dt>Interface width δ</dt><dd>1 nm</dd>
+        <dt>Crossover velocity D<sub>int</sub>/δ</dt><dd id="tVc"></dd>
+        <dt>Time when the interface is half PE, half NPLE</dt><dd id="tHalf"></dd>
+        <dt>Thickness after 1 h, transition model</dt><dd id="tS1h"></dd>
+      </dl>
+      <p class="note" id="trNote"></p>
+      <p class="note">The blend weight is P/(1+P). This is a stand-in for the real models, which balance the chemical driving force against a dissipation that has to be calculated (next section). It shows the direction of the transition, not its timing.</p>
+    </div>
+  </div>
+</section>
+
+<section id="dissipation">
+  <div class="eyebrow">6 · Key concept: dissipation at the interface</div>
+  <h2>The modern models find the interface condition from an energy balance</h2>
+  <div class="eq">ΔF = v/M<sub>int</sub> + SD,&nbsp;&nbsp;&nbsp; SD = −(V<sub>m</sub>/v)∫J<sub>i</sub>·∂(μ<sub>i</sub>−μ<sub>n</sub>)/∂z dz</div>
+  <div class="defs">
+    <div><b>What is being balanced</b><p>The chemical driving pressure across the interface ΔF is spent on moving the interface itself (v/M<sub>int</sub>) and on diffusion of the substitutional solute in and across the interface (SD, from Hillert and Sundman). Carbon stays in local equilibrium, and its interfacial content adjusts until the two sides balance (Militzer et al., Eqs 8–10).</p></div>
+    <div><b>Why SD peaks at intermediate speed</b><p>At v = 0 Mn reaches its equilibrium segregation profile and every chemical potential gradient vanishes. At high v there is no time for Mn to segregate and the flux is zero. In between, Mn interacts with the moving interface and SD passes through a maximum. This is the same shape as the Cahn drag curve in the Widmanstätten lesson.</p></div>
+    <div><b>Two ways to draw the box</b><p>Odqvist, Hillert and Ågren take the total driving force and include the spike in the austenite. Hutchinson et al. and Zurob et al. take the driving force across the interface only and limit SD to the interface. Militzer et al. call the two equivalent as long as ΔF and SD are defined over the same region.</p></div>
+    <div><b>Fe–C–Ni against Fe–C–Mo</b><p>In Fe–C–Ni most of the dissipation comes from building the Ni spike, because Ni’s chemical potential differs a lot between γ and α under PE. In Fe–C–Mo, PE and NPLE give almost the same Mo potential, but Mo binds strongly to the interface, so SD is large between about 10⁻⁸ and 10⁻⁶ m/s and the interfacial carbon drops sharply in that range.</p></div>
+    <div><b>Stasis</b><p>If the dissipation curve has a maximum above the driving force, the interface can jump from the fast branch to the slow branch and ferrite growth nearly stops below both the PE and NPLE fractions. Chen and van der Zwaag model stasis in Fe–C–Mn and Fe–C–Ni this way and find Mn gives more incomplete transformation than Ni. Aaronson’s book ties stasis and the TTT bay to nonequilibrium segregation of Mo and Cr at the boundary.</p></div>
+    <div><b>What is not known</b><p>Every version needs the solute binding energy to the interface E<sub>b</sub>, the trans-interface diffusivity and the interface mobility, and none of them is well known. Fits to some data sets can be made by adjusting M<sub>int</sub> and E<sub>b</sub>, which is why Militzer et al. call for better estimates of these parameters.</p></div>
+  </div>
+</section>
+
+<section id="evidence">
+  <div class="eyebrow">7 · What the experiments say</div>
+  <h2>Decarburization layers gave the cleanest tests, and most systems sit between the limits</h2>
+  <p>Decarburizing a ternary austenite in wet hydrogen grows a planar ferrite layer from the surface inward, so the interface stays flat and its thickness can be compared directly with PE and NPLE curves. Precipitation experiments measure the ferrite fraction at stasis. Purdy’s 2009 review and the Panahi et al. general model summarise the findings.</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>System</th><th>Observation</th><th>Interpretation</th></tr></thead>
+    <tbody>
+      <tr><td>Fe–C–Ni</td><td>NPLE kinetics in decarburization at 775 °C for 0.97 and 1.66 Ni (Phillion et al.). Later Monash work on Fe–1.46Ni–0.76C found conditions that are not NPLE.</td><td>A full Ni spike is present. Precipitation shows PE at short times and a transition to NPLE (Hutchinson et al.).</td></tr>
+      <tr><td>Fe–C–Mn</td><td>NPLE at lower temperatures and PE at higher temperatures (Zurob et al. 2009).</td><td>Panahi et al. could not reproduce high-temperature PE with any diffusivity or binding energy. A small change to the Fe–Mn bcc interaction, L<sub>new</sub> − L<sub>TCFE2</sub> = 4007.8 − 4.44T J/mol, let one model fit all the Fe–C–Mn data, so they attribute it to the thermodynamic assessment.</td></tr>
+      <tr><td>Fe–0.94Mn–0.57C</td><td>Decarburization close to NPLE at 825 °C and at 755 °C.</td><td>At 825 °C the model predicts a spike. At 755 °C it predicts no spike: the kinetics look like NPLE only because the dissipation is about the right size.</td></tr>
+      <tr><td>Fe–C–Si, Mo, Cr</td><td>Slower than both PE and NPLE predictions.</td><td>A large dissipation term. A constant dissipation fits decarburization data because the interfacial condition changes slowly over the times measured.</td></tr>
+      <tr><td>Fe–C–Mn–Mo</td><td>Predicted well from Fe–C–Mn and Fe–C–Mo parameters (Sun, Hutchinson, Zurob).</td><td>Some hope that ternary fits extrapolate to real steels.</td></tr>
+      <tr><td>Fe–C–Mn–Si</td><td>Growth is faster than predicted from the ternary parameters.</td><td>Possibly carbon co-segregation: Si repels carbon and Mn attracts it, so the quaternary interface is not the sum of the ternaries.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Binding energy to the interface, fitted (Panahi et al.)</th><th>Ni</th><th>Cu</th><th>Cr</th><th>Co</th><th>Mn</th><th>Si</th><th>Mo</th></tr></thead>
+    <tbody><tr><td>E<sub>b</sub>, kJ/mol</td><td class="m">+1.5</td><td class="m">−1</td><td class="m">−1.5</td><td class="m">−2</td><td class="m">−2.5</td><td class="m">−9</td><td class="m">−15</td></tr></tbody>
+  </table>
+  </div>
+  <p class="callout p">Panahi et al. conclude that observations of NPLE kinetics are often the result of dissipation and do not prove that a full spike exists. Read “NPLE-like kinetics” in a paper as a statement about a growth rate, not about an interface profile.</p>
+</section>
+
+<section id="misuse">
+  <div class="eyebrow">8 · Purdy’s list of common misuses</div>
+  <h2>Where PE and NPLE get applied without checking</h2>
+  <ul class="tight">
+    <li>Using “PE” loosely, for example constrained paraequilibrium in martensite tempering.</li>
+    <li>Assuming the ferrite reaches the PE volume fraction after some fixed time such as one hour.</li>
+    <li>Choosing PE or NPLE in advance when setting up a model, instead of letting the interface condition follow from the kinetics.</li>
+    <li>Applying either limit to intercritical annealing of dual-phase, TRIP or TWIP steels, where the conditions differ.</li>
+  </ul>
+  <p class="note">Purdy’s open questions include segregation and C–X co-segregation at the interface, the physical meaning of the spike, diffusion across rather than along the interface, a better model for the TTT bay, and whether sharp-interface concepts still make sense next to diffuse-interface models.</p>
+</section>
+
+<section id="glossary">
+  <div class="eyebrow">9 · Other key concepts</div>
+  <div class="defs">
+    <div><b>u-fraction</b><p>u<sub>i</sub> = x<sub>i</sub>/(x<sub>Fe</sub>+x<sub>Mn</sub>). It counts solute per substitutional atom, so it stays constant for Mn when only carbon moves. Under PE every product lies on the same u<sub>Mn</sub> level as the parent.</p></div>
+    <div><b>Carbon isoactivity line</b><p>Compositions of austenite with the same carbon activity. Because Mn lowers the carbon activity, the line rises in carbon as Mn increases. Carbon diffuses down activity gradients, not concentration gradients.</p></div>
+    <div><b>Envelope of zero partition</b><p>The locus of alloys for which NPLE is just possible. Below it the NPLE tie-line exists with a positive carbon gradient into the austenite. Also called the zero-partition line.</p></div>
+    <div><b>Spike</b><p>The thin enrichment of Mn in the austenite immediately ahead of an NPLE interface. Its width is about D<sub>Mn</sub>/v, so it shrinks as the interface speeds up.</p></div>
+    <div><b>Decarburization experiment</b><p>Ferrite grows as a flat layer from a surface held at low carbon activity. It removes nucleation and geometry from the problem and gives clean thickness against √t data.</p></div>
+    <div><b>Transformation stasis</b><p>Ferrite growth stops well before the PE or NPLE fraction and resumes only much later, if at all. Often linked to solute drag or carbide precipitation at the interface.</p></div>
+  </div>
+</section>
+
+<section id="sources">
+  <div class="eyebrow">Sources</div>
+  <ol class="refs">
+    <li>M. Hillert, <i>Phase Equilibria, Phase Diagrams and Phase Transformations</i>, 2nd ed., Cambridge University Press (2008), §14.5 Partial chemical equilibrium and §14.6 Transformations in steel under quasi-paraequilibrium, pp. 311–317. Basis for sections 1–3.</li>
+    <li>G. R. Purdy, “PE and LE-NP: paraequilibrium and local equilibrium-negligible partition; a review and a discussion”, ALEMI workshop, Stockholm, May 2009 (slides). Basis for sections 2, 7 and 8.</li>
+    <li>D. Panahi, H. Zurob, G. Purdy, H. P. Van Landeghem, C. Hutchinson, C. Qiu, Y. Bréchet, “Towards a general model for ferrite growth in Fe-C-X”, ALEMI presentation (slides). Basis for section 7.</li>
+    <li>M. Militzer, C. Hutchinson, H. Zurob, G. Miyamoto, Int. Mater. Rev. 68 (2023) 725. <a href="https://doi.org/10.1080/09506608.2022.2126257">doi</a>. Basis for sections 2, 4, 5 and 6.</li>
+    <li>W. Sun, C. Hutchinson, H. Zurob, “Coupled solute drag and transformation stasis during ferrite formation from austenite”, ALEMI presentation (slides).</li>
+    <li>H. Chen, S. van der Zwaag, Acta Mater. 72 (2014) 1. <a href="https://doi.org/10.1016/j.actamat.2014.03.034">doi</a></li>
+    <li>H. I. Aaronson, M. Enomoto, J. K. Lee, <i>Mechanisms of Diffusional Phase Transformations in Metals and Alloys</i>, CRC Press (2010), p. 648.</li>
+    <li>G. R. Purdy, Y. J. M. Bréchet, Acta Metall. Mater. 43 (1995) 3763.</li>
+    <li>M. Hillert, Acta Mater. 47 (1999) 4481. <a href="https://doi.org/10.1016/S1359-6454(99)00336-5">doi</a></li>
+    <li>D. E. Coates, Metall. Trans. 4 (1973) 1077; J. Ågren, Acta Metall. 37 (1989) 181; J. Odqvist, M. Hillert, J. Ågren, Acta Mater. 50 (2002) 3211; H. S. Zurob et al., Acta Mater. 57 (2009) 2781; C. Qiu et al. and H. S. Zurob et al., Metall. Mater. Trans. A 44 (2013) 3472 and 3456. Cited through refs 2–5, not read directly.</li>
+  </ol>
+  <p class="note">Numbers in the instruments come from a simple dilute-solution model chosen to show the right trends. They are not calibrated against these alloys and should not be quoted as predictions.</p>
+</section>
+</div>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function fit(c,aspect,minH){const w=c.clientWidth||300;let h=Math.round(w*aspect);if(minH)h=Math.max(h,minH);const r=window.devicePixelRatio||1;c.width=w*r;c.height=h*r;c.style.height=h+'px';const x=c.getContext('2d');x.setTransform(r,0,0,r,0,0);return {x,w,h}}
+function hexA(hex,a){hex=hex.replace('#','');if(hex.length===3)hex=hex.split('').map(c=>c+c).join('');const n=parseInt(hex,16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`}
+function fmtLen(um){if(!isFinite(um)||um<=0)return '–';if(um>=1000)return (um/1000).toPrecision(3)+' mm';if(um>=1)return um.toPrecision(3)+' µm';if(um>=1e-3)return (um*1000).toPrecision(3)+' nm';return (um*1e6).toFixed(um*1e6<10?1:0)+' pm'}
+function axLen(um){const r=v=>String(Number(v.toPrecision(3)));if(um>=1000)return r(um/1000)+' mm';if(um>=1)return r(um)+' µm';if(um>=1e-3)return r(um*1000)+' nm';return r(um*1e6)+' pm'}
+function fmtV(v){if(!isFinite(v)||v<=0)return '–';if(v>=1)return v.toPrecision(3)+' µm/s';if(v>=1e-3)return (v*1000).toPrecision(3)+' nm/s';return (v*1e6).toPrecision(2)+' pm/s'}
+function fmtT(t){if(t<1)return (t*1000).toPrecision(3)+' ms';if(t<120)return t.toPrecision(3)+' s';if(t<7200)return (t/60).toPrecision(3)+' min';if(t<172800)return (t/3600).toPrecision(3)+' h';return (t/86400).toPrecision(3)+' d'}
+function sci(v){if(!isFinite(v))return '–';const e=Math.floor(Math.log10(v));const m=v/10**e;return m.toFixed(2)+'×10'+String(e).replace('-','⁻').replace(/\d/g,d=>'⁰¹²³⁴⁵⁶⁷⁸⁹'[d])}
+
+/* ---------- dilute-solution Fe–C–Mn model, in u-fractions ---------- */
+const R=8.314, EG=-5, EA=-5, LNKM=Math.log(0.58), KC=0.03;
+const MC=12.011, MFe=55.845, MMn=54.938;
+function wt2u(c,m){const nC=c/MC,nMn=m/MMn,nFe=(100-c-m)/MFe;return {uC:nC/(nFe+nMn),uM:nMn/(nFe+nMn)}}
+function u2wt(uC,uM){const mC=uC*MC,mM=uM*MMn,mF=(1-uM)*MFe,tot=mC+mM+mF;return {c:100*mC/tot,m:100*mM/tot}}
+function ctxT(T){const w=0.77*(912-T)/185;const ucb=(w/MC)/((100-w)/MFe);const C={T,Tk:T+273.15,Delta:ucb*(1-KC),kM:Math.exp(LNKM)};C.uMax=uMgMax(C);return C}
+function tie(uMg,C){let uCg=C.Delta/(1-KC),uCa=KC*uCg,uMa=C.kM*uMg;
+  for(let i=0;i<80;i++){uCa=KC*uCg*Math.exp(EG*uMg-EA*uMa);uMa=C.kM*uMg*Math.exp(EG*uCg-EA*uCa);const n=C.Delta+uCa-Math.log(1-uMa)+Math.log(1-uMg);if(Math.abs(n-uCg)<1e-13){uCg=n;break}uCg=n}
+  return {uCg,uCa,uMg,uMa}}
+function uMgMax(C){let lo=0,hi=0.2;for(let i=0;i<50;i++){const m=(lo+hi)/2;if(tie(m,C).uCg>0)lo=m;else hi=m}return lo}
+function bis(f,lo,hi,n){let flo=f(lo);for(let i=0;i<(n||50);i++){const m=(lo+hi)/2,fm=f(m);if((fm>0)===(flo>0)){lo=m;flo=fm}else hi=m}return (lo+hi)/2}
+function pe(uM,C){const K=KC*Math.exp((EG-EA)*uM);const den=(1-uM)*(1-K)+uM*(EA*K-EG);const uCg=((1-uM)*C.Delta+uM*LNKM)/den;return {uCg,uCa:K*uCg,uMg:uM,uMa:uM}}
+function npTie(uM0,C){if(tie(C.uMax,C).uMa<uM0)return null;const m=bis(g=>tie(g,C).uMa-uM0,uM0,C.uMax);const t=tie(m,C);t.uCs=t.uCg*Math.exp(EG*(t.uMg-uM0));return t}
+function zpl(uM0,C){const t=npTie(uM0,C);return t?t.uCs:NaN}
+function pleTie(uC0,uM0,C){const a0=uC0*Math.exp(EG*uM0);const g=m=>tie(m,C).uCg*Math.exp(EG*m)-a0;if(g(0)<0||g(C.uMax)>0)return null;return tie(bis(g,0,C.uMax),C)}
+function eqTie(uC0,uM0,C){const cr=m=>{const t=tie(m,C);return (t.uMg-t.uMa)*(uC0-t.uCa)-(t.uCg-t.uCa)*(uM0-t.uMa)};return tie(bis(cr,0,C.uMax),C)}
+function DC(Tk,uC){const y=uC;return 4.53e-7*(1+y*(1-y)*8339.9/Tk)*Math.exp(-(1/Tk-2.221e-4)*(17767-y*26436))*1e12} // µm²/s
+function DMn(Tk){return 1.785e-5*Math.exp(-264000/(R*Tk))*1e12}
+/* Zener planar thickening: S = k√(Dt) */
+function zk(cs,c0,ca){return (cs>c0&&c0>ca)?(cs-c0)/Math.sqrt((c0-ca)*(cs-ca)):0}
+
+let mode='NP', S={};
+function solve(){
+  const c=+$('cC').value, m=+$('cM').value, T=+$('T').value;const C=ctxT(T);const {uC,uM}=wt2u(c,m);
+  const gB=tie(uM,C).uCg; // γ boundary carbon at this Mn
+  const P=pe(uM,C), N=npTie(uM,C), L=pleTie(uC,uM,C);
+  const inside=uC<gB;
+  const E=inside?eqTie(uC,uM,C):null;
+  const regime=!inside?'gamma':(N&&uC<N.uCs)?'NP':'PL';
+  const dc=DC(C.Tk,uC), dm=DMn(C.Tk);
+  const kPE=zk(P.uCg,uC,P.uCa), kNP=N?zk(N.uCs,uC,N.uCa):0, kPL=(L&&regime==='PL')?zk(L.uMg,uM,L.uMa):0;
+  S={c,m,T,C,uC,uM,gB,P,N,L,E,regime,dc,dm,kPE,kNP,kPL};
+}
+function ae3T(uC,uM,kind){ // temperature at which the alloy sits on the boundary
+  const f=T=>{const C=ctxT(T);let b;if(kind==='eq')b=tie(uM,C).uCg;else if(kind==='pe')b=pe(uM,C).uCg;else b=zpl(uM,C);if(!isFinite(b))b=-1;return b-uC};
+  if(f(560)<0)return NaN;return bis(f,560,911.9,36)}
+
+function stats(){
+  $('cCv').textContent=S.c.toFixed(2);$('cMv').textContent=S.m.toFixed(2);$('Tv').textContent=S.T+' °C';
+  const reg={gamma:['above Ae3','var(--muted)'],NP:['NPLE region','var(--tip)'],PL:['PLE region','var(--ple)']}[S.regime];
+  $('sReg').innerHTML=`<span class="pill" style="--c:${reg[1]}">${reg[0]}</span>`;
+  $('sAe3').textContent=fmtC(ae3T(S.uC,S.uM,'eq'));$('sPAe3').textContent=fmtC(ae3T(S.uC,S.uM,'pe'));$('sNAe3').textContent=fmtC(ae3T(S.uC,S.uM,'np'));
+  $('sDC').textContent=sci(S.dc*1e-12)+' m²/s';$('sDM').textContent=sci(S.dm*1e-12)+' m²/s';$('sRat').textContent=sci(S.dc/S.dm);
+  $('sLen').textContent=fmtLen(Math.sqrt(S.dc*3600))+', '+fmtLen(Math.sqrt(S.dm*3600));
+}
+function fmtC(T){return isFinite(T)?T.toFixed(0)+' °C':'–'}
+
+/* ---------- Section 2: isothermal section ---------- */
+const XM=5, YC=1.0;
+function secGeom(w,h){const L=48,Rr=12,Tp=12,B=40;return {L,Rr,Tp,B,X:mw=>L+mw/XM*(w-L-Rr),Y:cw=>h-B-cw/YC*(h-B-Tp),iX:px=>(px-L)/(w-L-Rr)*XM,iY:py=>(h-B-py)/(h-B-Tp)*YC}}
+function axes(x,g,w,h,xt,yt,xl,yl,col,mono){
+  x.strokeStyle=col.rule;x.lineWidth=1;x.fillStyle=col.mu;x.font='11px '+mono;
+  for(const v of xt){const X=g.X(v);x.beginPath();x.moveTo(X,g.Tp);x.lineTo(X,h-g.B);x.stroke();x.textAlign='center';x.fillText(String(v),X,h-g.B+14)}
+  for(const v of yt){const Y=g.Y(v);x.beginPath();x.moveTo(g.L,Y);x.lineTo(w-g.Rr,Y);x.stroke();x.textAlign='right';x.fillText(String(v),g.L-6,Y+4)}
+  x.textAlign='center';x.font='12px '+css('--body');x.fillText(xl,(g.L+w-g.Rr)/2,h-6);
+  x.save();x.translate(13,(g.Tp+h-g.B)/2);x.rotate(-Math.PI/2);x.fillText(yl,0,0);x.restore();
+}
+function poly(x,pts,g){let first=true;x.beginPath();for(const p of pts){if(!p||!isFinite(p.c)){first=true;continue}const X=g.X(p.m),Y=g.Y(p.c);if(first){x.moveTo(X,Y);first=false}else x.lineTo(X,Y)}x.stroke()}
+function drawSec(){
+  const c=$('cSec');const {x,w,h}=fit(c,0.78,300);const g=secGeom(w,h);c._g=g;
+  const col={ink:css('--ink'),mu:css('--muted'),rule:css('--rule'),f:css('--ferrite'),t:css('--tip'),p:css('--ple'),ca:css('--carbon'),mn:css('--mn'),pan:css('--panel')};const mono=css('--mono');
+  x.fillStyle=col.pan;x.fillRect(0,0,w,h);
+  const C=S.C;const n=120;
+  const gam=[],alp=[],peL=[],zp=[];
+  for(let i=0;i<=n;i++){const u=C.uMax*i/n;const t=tie(u,C);gam.push(u2wt(Math.max(t.uCg,0),t.uMg));alp.push(u2wt(Math.max(t.uCa,0),t.uMa))}
+  const uMaMax=tie(C.uMax,C).uMa;
+  for(let i=0;i<=n;i++){const u=0.12*i/n;const p=pe(u,C);peL.push(p.uCg>0?u2wt(p.uCg,u):null)}
+  for(let i=0;i<=n;i++){const u=uMaMax*0.999*i/n;const z=zpl(u,C);zp.push(isFinite(z)&&z>0?u2wt(z,u):null)}
+  // shading
+  x.save();x.beginPath();x.rect(g.L,g.Tp,w-g.L-g.Rr,h-g.B-g.Tp);x.clip();
+  x.fillStyle=hexA(col.p,0.10);x.beginPath();x.moveTo(g.X(0),g.Y(0));for(const p of gam)x.lineTo(g.X(p.m),g.Y(p.c));x.lineTo(g.X(gam[gam.length-1].m),g.Y(0));x.closePath();x.fill();
+  x.fillStyle=hexA(col.t,0.13);x.beginPath();x.moveTo(g.X(0),g.Y(0));for(const p of zp)if(p)x.lineTo(g.X(p.m),g.Y(p.c));x.lineTo(g.X(u2wt(0,uMaMax).m),g.Y(0));x.closePath();x.fill();
+  x.restore();
+  axes(x,g,w,h,[0,1,2,3,4,5],[0,0.2,0.4,0.6,0.8,1.0],'Mn, wt%','C, wt%',col,mono);
+  x.save();x.beginPath();x.rect(g.L,g.Tp,w-g.L-g.Rr,h-g.B-g.Tp);x.clip();
+  // tie-lines
+  x.strokeStyle=hexA(col.mu,0.45);x.lineWidth=1;
+  for(let i=1;i<10;i++){const t=tie(C.uMax*i/10,C);const a=u2wt(t.uCa,t.uMa),b=u2wt(t.uCg,t.uMg);x.beginPath();x.moveTo(g.X(a.m),g.Y(a.c));x.lineTo(g.X(b.m),g.Y(b.c));x.stroke()}
+  x.lineWidth=2;x.strokeStyle=col.ink;poly(x,gam,g);poly(x,alp,g);
+  x.setLineDash([6,4]);x.strokeStyle=col.f;poly(x,peL,g);x.strokeStyle=col.t;x.setLineDash([8,3,2,3]);poly(x,zp,g);x.setLineDash([]);
+  // construction
+  const A=u2wt(S.uC,S.uM);
+  const seg=(t,cl)=>{const a=u2wt(t.uCa,t.uMa),b=u2wt(t.uCg,t.uMg);x.strokeStyle=cl;x.lineWidth=2.5;x.beginPath();x.moveTo(g.X(a.m),g.Y(a.c));x.lineTo(g.X(b.m),g.Y(b.c));x.stroke();
+    x.fillStyle=cl;for(const p of [a,b]){x.beginPath();x.arc(g.X(p.m),g.Y(p.c),4,0,7);x.fill()}};
+  const iso=(a0,cl)=>{x.strokeStyle=cl;x.lineWidth=1.6;x.setLineDash([3,3]);const pts=[];for(let i=0;i<=60;i++){const u=0.12*i/60;pts.push(u2wt(a0*Math.exp(-EG*u),u))}poly(x,pts,g);x.setLineDash([])};
+  if(mode==='Eq'&&S.E)seg(S.E,col.ink);
+  if(mode==='PE'&&S.P.uCg>0)seg(S.P,col.f);
+  if(mode==='NP'&&S.N){iso(S.N.uCg*Math.exp(EG*S.N.uMg),col.ca);seg(S.N,col.t);const s=u2wt(S.N.uCs,S.uM);x.strokeStyle=col.ca;x.lineWidth=2;x.beginPath();x.arc(g.X(s.m),g.Y(s.c),5,0,7);x.stroke()}
+  if(mode==='PL'){iso(S.uC*Math.exp(EG*S.uM),col.ca);if(S.L)seg(S.L,col.p)}
+  x.restore();
+  // alloy point
+  x.fillStyle=col.ink;x.strokeStyle=col.pan;x.lineWidth=2;x.beginPath();x.arc(g.X(A.m),g.Y(A.c),6,0,7);x.fill();x.stroke();
+  x.font='12px '+css('--body');x.fillStyle=col.ink;x.textAlign='left';x.fillText('alloy',g.X(A.m)+9,g.Y(A.c)-8);
+  x.fillStyle=col.mu;x.fillText('γ',w-30,g.Tp+16);x.fillText('α+γ',g.X(3.2),g.Y(0.1));
+  x.textAlign='left';x.fillText(S.T+' °C',g.L+8,g.Tp+16);
+  conText();
+}
+function fw(t,side){const p=side==='g'?u2wt(t.uCg,t.uMg):u2wt(t.uCa,t.uMa);return p.c.toFixed(3)+' C, '+p.m.toFixed(2)+' Mn'}
+function conText(){
+  const A=u2wt(S.uC,S.uM);$('rAl').textContent=A.c.toFixed(3)+' C, '+A.m.toFixed(2)+' Mn';
+  let title,txt,t=null,xl='Carbon driving diffusion in γ',xv='–',warn='';
+  if(mode==='Eq'){title='Full equilibrium';txt='The tie-line that passes through the alloy point. This is where the alloy ends up after infinite time, with Mn partitioned between ferrite and austenite. It is not a growth condition, because it would need Mn to move over the same distance as carbon.';t=S.E;if(!t)warn='The alloy is above Ae3 at this temperature, so there is no α+γ tie-line through it.';xl='Equilibrium ferrite fraction';if(t)xv=(100*(t.uCg-S.uC)/(t.uCg-t.uCa)).toFixed(0)+' % (by C lever)'}
+  if(mode==='PE'){title='Paraequilibrium';txt='The tie-line is vertical in this diagram: both phases keep the alloy’s Mn content, and only carbon redistributes. Its γ end lies on the dashed PE boundary, inside the full two-phase field. Carbon diffuses into the austenite down from that content toward the bulk.';t=S.P;xv=u2wt(S.P.uCg,S.uM).c.toFixed(3)+' wt%';if(S.uC>=S.P.uCg)warn='The alloy is above the PE boundary, so ferrite cannot grow under paraequilibrium here.'}
+  if(mode==='NP'){title='Local equilibrium, negligible partitioning';txt='Pick the tie-line whose ferrite end has exactly the bulk Mn content. Its γ end has more Mn than the bulk, which is the spike. Follow the carbon isoactivity line (dotted) from that γ end down to the bulk Mn level: the circle is the carbon content just outside the spike, and that is what drives carbon diffusion.';t=S.N;if(S.N){xv=u2wt(S.N.uCs,S.uM).c.toFixed(3)+' wt%';if(S.N.uCs<=S.uC)warn='This alloy is above the envelope of zero partition. The carbon outside the spike would be lower than in the bulk, so carbon would have to diffuse uphill. NPLE is impossible here; try PLE.'}else warn='No tie-line has a ferrite end with this much Mn at this temperature.'}
+  if(mode==='PL'){title='Local equilibrium with partitioning';txt='Carbon has almost no gradient, so the γ end of the tie-line lies on the carbon isoactivity line through the alloy (dotted). That fixes the tie-line. The ferrite gets less Mn than the bulk, and the rejected Mn has to diffuse away through the austenite, which sets the rate.';t=S.L;xl='Mn at the interface, γ side';if(S.L){xv=u2wt(S.L.uCg,S.L.uMg).m.toFixed(2)+' wt%';if(S.L.uMg<=S.uM||S.regime==='NP')warn='This alloy is in the NPLE region. The PLE tie-line would need Mn to flow toward the interface, so carbon-controlled NPLE growth is the faster option here.'}else warn='The isoactivity line through the alloy does not reach the γ boundary. The alloy is probably above Ae3.'}
+  $('conTitle').textContent=title;$('conText').textContent=txt;
+  $('rG').textContent=t&&t.uCg>0?fw(t,'g'):'–';$('rA').textContent=t&&t.uCg>0?fw(t,'a'):'–';$('rXl').textContent=xl;$('rX').textContent=xv;
+  $('conWarn').hidden=!warn;$('conWarn').textContent=warn;
+}
+let mapCache={key:'',data:null};
+function drawMap(){
+  const c=$('cMap');const {x,w,h}=fit(c,0.62,220);
+  const col={ink:css('--ink'),mu:css('--muted'),rule:css('--rule'),f:css('--ferrite'),t:css('--tip'),p:css('--ple'),pan:css('--panel')};
+  const key=S.c.toFixed(2);
+  if(mapCache.key!==key){const d={eq:[],pe:[],np:[]};for(let i=0;i<=32;i++){const m=4*i/32;const {uC,uM}=wt2u(S.c,m);d.eq.push({m,T:ae3T(uC,uM,'eq')});d.pe.push({m,T:ae3T(uC,uM,'pe')});d.np.push({m,T:ae3T(uC,uM,'np')})}mapCache={key,data:d}}
+  const d=mapCache.data;const T0=560,T1=920;
+  const g={L:48,Rr:12,Tp:10,B:40};g.X=m=>g.L+m/4*(w-g.L-g.Rr);g.Y=T=>h-g.B-(T-T0)/(T1-T0)*(h-g.B-g.Tp);
+  x.fillStyle=col.pan;x.fillRect(0,0,w,h);
+  x.save();x.beginPath();x.rect(g.L,g.Tp,w-g.L-g.Rr,h-g.B-g.Tp);x.clip();
+  const fillUnder=(arr,cl)=>{x.fillStyle=cl;x.beginPath();x.moveTo(g.X(0),g.Y(T0));for(const p of arr)x.lineTo(g.X(p.m),g.Y(isFinite(p.T)?p.T:T0));x.lineTo(g.X(4),g.Y(T0));x.closePath();x.fill()};
+  fillUnder(d.eq,hexA(col.p,0.10));fillUnder(d.np,hexA(col.t,0.14));
+  x.restore();
+  axes(x,g,w,h,[0,1,2,3,4],[600,700,800,900],'Mn, wt%','T, °C',{rule:col.rule,mu:col.mu},css('--mono'));
+  x.save();x.beginPath();x.rect(g.L,g.Tp,w-g.L-g.Rr,h-g.B-g.Tp);x.clip();
+  const line=(arr,cl,dash)=>{x.strokeStyle=cl;x.lineWidth=2;x.setLineDash(dash);x.beginPath();let f=true;for(const p of arr){if(!isFinite(p.T)){f=true;continue}if(f){x.moveTo(g.X(p.m),g.Y(p.T));f=false}else x.lineTo(g.X(p.m),g.Y(p.T))}x.stroke();x.setLineDash([])};
+  line(d.eq,col.ink,[]);line(d.pe,col.f,[6,4]);line(d.np,col.t,[8,3,2,3]);
+  x.restore();
+  x.fillStyle=col.ink;x.strokeStyle=col.pan;x.lineWidth=2;x.beginPath();x.arc(g.X(S.m),g.Y(S.T),5.5,0,7);x.fill();x.stroke();
+  x.fillStyle=col.mu;x.font='12px '+css('--body');x.textAlign='left';x.fillText('Fe–'+S.c.toFixed(2)+'C–xMn',g.L+8,g.Tp+14);
+}
+
+/* ---------- Section 3: profiles ---------- */
+function curK(){return S.regime==='NP'?S.kNP:S.regime==='PL'?S.kPL:0}
+function drawProf(){
+  const c=$('cProf');const {x,w,h}=fit(c,0.82,320);
+  const col={ink:css('--ink'),mu:css('--muted'),rule:css('--rule'),f:css('--ferrite'),ca:css('--carbon'),mn:css('--mn'),pan:css('--panel'),g:css('--gamma')};
+  x.fillStyle=col.pan;x.fillRect(0,0,w,h);
+  const t=10**+$('tt').value;$('ttv').textContent=fmtT(t);
+  let warn='',title='',txt='';
+  const m=mode;
+  const strips=[{y0:22,y1:h/2-14},{y0:h/2+22,y1:h-22}];
+  const L=40,Rr=10;
+  const A=u2wt(S.uC,S.uM);
+  function strip(i,xmin,xmax,fn,vmin,vmax,cl,label){
+    const s=strips[i];const X=v=>L+(v-xmin)/(xmax-xmin)*(w-L-Rr);const Y=v=>s.y1-(v-vmin)/(vmax-vmin)*(s.y1-s.y0);
+    x.fillStyle=hexA(col.f,0.10);x.fillRect(L,s.y0,X(0)-L,s.y1-s.y0);
+    x.fillStyle=hexA(col.g,0.35);x.fillRect(X(0),s.y0,w-Rr-X(0),s.y1-s.y0);
+    x.strokeStyle=col.ink;x.lineWidth=1;x.beginPath();x.moveTo(X(0),s.y0);x.lineTo(X(0),s.y1);x.stroke();
+    x.strokeStyle=cl;x.lineWidth=2.2;x.beginPath();const N=500;let first=true;
+    for(let k=0;k<=N;k++){const z=xmin+(xmax-xmin)*k/N;const v=fn(z);const XX=X(z),YY=Y(v);if(first){x.moveTo(XX,YY);first=false}else x.lineTo(XX,YY)}x.stroke();
+    x.fillStyle=col.mu;x.font='11px '+css('--mono');x.textAlign='right';x.fillText(vmax.toFixed(vmax<1?2:1),L-4,s.y0+8);x.fillText(vmin.toFixed(vmin<1?2:1),L-4,s.y1);
+    x.textAlign='left';x.font='12px '+css('--body');x.fillStyle=col.ink;x.fillText(label,L+4,s.y0-6);
+    x.fillStyle=col.mu;x.fillText('α',L+4,s.y1-4);x.fillText('γ',X(0)+6,s.y1-4);
+  }
+  const pS=$('pS'),pV=$('pV'),pDc=$('pDc'),pDm=$('pDm');
+  if(m==='Eq'||S.regime==='gamma'||(m==='PE'&&S.kPE<=0)||(m==='NP'&&S.kNP<=0)||(m==='PL'&&S.kPL<=0)){
+    x.fillStyle=col.mu;x.font='14px '+css('--body');x.textAlign='left';
+    const msg=m==='Eq'?'Full equilibrium is the end state. Pick PE, NPLE or PLE to see a growing interface.':S.regime==='gamma'?'The alloy is above Ae3. No ferrite grows.':'This condition cannot drive growth for this alloy. See the warning in section 2.';
+    wrapText(x,msg,16,30,w-32,20);
+    $('pfTitle').textContent='Profiles';$('pfText').textContent='';[pS,pV,pDc,pDm].forEach(e=>e.textContent='–');$('pfWarn').hidden=true;return}
+  if(m==='PE'){
+    const k=S.kPE,s=k*Math.sqrt(S.dc*t),v=s/(2*t),P=S.P;const cs=u2wt(P.uCg,S.uM).c,ca=u2wt(P.uCa,S.uM).c,c0=A.c;
+    const del=2*s*(S.uC-P.uCa)/(P.uCg-S.uC);
+    strip(0,-0.6*del,1.6*del,z=>z<0?ca:z<del?cs+(c0-cs)*z/del:c0,0,Math.max(cs*1.15,0.1),col.ca,'Carbon · span '+fmtLen(2.2*del));
+    strip(1,-0.6*del,1.6*del,()=>A.m,0,Math.max(A.m*1.6,0.5),col.mn,'Manganese · same span, flat');
+    title='Paraequilibrium';txt='Carbon jumps from the ferrite content to the PE γ content at the interface, then falls to the bulk value across the diffusion field. Mn is flat right through the interface: the ferrite inherits the austenite’s Mn/Fe ratio, so μ_Mn and μ_Fe differ on the two sides.';
+    pS.textContent=fmtLen(s);pV.textContent=fmtV(v);pDc.textContent=fmtLen(del);pDm.textContent='none';
+  }
+  if(m==='NP'){
+    const k=S.kNP,s=k*Math.sqrt(S.dc*t),v=s/(2*t),N=S.N;const cg=u2wt(N.uCg,N.uMg).c,cs=u2wt(N.uCs,S.uM).c,ca=u2wt(N.uCa,N.uMa).c,c0=A.c;
+    const del=2*s*(S.uC-N.uCa)/(N.uCs-S.uC);const lam=S.dm/v;
+    const sp=0.035*del; // spike drawn wider than life in the carbon strip
+    strip(0,-0.6*del,1.6*del,z=>z<0?ca:z<sp?cg+(cs-cg)*(1-Math.exp(-4*z/sp))/(1-Math.exp(-4)):z<del?cs+(c0-cs)*(z-sp)/(del-sp):c0,0,Math.max(cg*1.15,0.1),col.ca,'Carbon · span '+fmtLen(2.2*del)+' (spike drawn wider)');
+    const mg=u2wt(N.uCg,N.uMg).m;
+    strip(1,-4*lam,10*lam,z=>z<0?A.m:A.m+(mg-A.m)*Math.exp(-z/lam),0,mg*1.2,col.mn,'Manganese spike · span '+fmtLen(14*lam));
+    title='NPLE';txt='The ferrite has the bulk Mn content, but the austenite touching it is in full local equilibrium with that ferrite, so it holds more Mn. The excess decays over D_Mn/v. Inside the spike Mn lowers the carbon activity, so the carbon content falls to the value on the isoactivity line before the long carbon field begins.';
+    pS.textContent=fmtLen(s);pV.textContent=fmtV(v);pDc.textContent=fmtLen(del);pDm.textContent=fmtLen(lam);
+    if(lam<2.5e-4)warn='The spike is '+fmtLen(lam)+' wide, narrower than one atomic spacing. A continuum spike this thin has no physical meaning.';
+  }
+  if(m==='PL'){
+    const k=S.kPL,s=k*Math.sqrt(S.dm*t),v=s/(2*t),Lt=S.L;const mg=u2wt(Lt.uCg,Lt.uMg).m,ma=u2wt(Lt.uCa,Lt.uMa).m,ca=u2wt(Lt.uCa,Lt.uMa).c;
+    const del=2*s*(S.uM-Lt.uMa)/(Lt.uMg-S.uM);const a0=S.uC*Math.exp(EG*S.uM);
+    const mz=z=>z<0?ma:z<del?mg+(A.m-mg)*z/del:A.m;
+    const uMz=z=>z<0?Lt.uMa:z<del?Lt.uMg+(S.uM-Lt.uMg)*z/del:S.uM;
+    strip(0,-0.6*del,1.6*del,z=>z<0?ca:u2wt(a0*Math.exp(-EG*uMz(z)),uMz(z)).c,0,Math.max(A.c*1.3,0.1),col.ca,'Carbon · span '+fmtLen(2.2*del)+', follows Mn');
+    strip(1,-0.6*del,1.6*del,mz,0,mg*1.2,col.mn,'Manganese · same span');
+    title='PLE';txt='Mn is rejected by the ferrite and piles up in the austenite, then diffuses away over √(D_Mn t). Carbon keeps the same activity everywhere in the austenite, so its content only rises where Mn is high. All of this happens within a few nanometres to a micron, because Mn is so slow.';
+    pS.textContent=fmtLen(s);pV.textContent=fmtV(v);pDc.textContent='no activity gradient';pDm.textContent=fmtLen(del);
+  }
+  $('pfTitle').textContent=title;$('pfText').textContent=txt;$('pfWarn').hidden=!warn;$('pfWarn').textContent=warn;
+}
+function wrapText(x,txt,X,Y,maxW,lh){const words=txt.split(' ');let line='';for(const wd of words){const t=line?line+' '+wd:wd;if(x.measureText(t).width>maxW&&line){x.fillText(line,X,Y);Y+=lh;line=wd}else line=t}x.fillText(line,X,Y)}
+
+/* ---------- Section 4: kinetics ---------- */
+function logPlot(x,w,h,col,yLo,yHi,ylab){
+  const g={L:66,Rr:12,Tp:10,B:40};g.X=t=>g.L+(Math.log10(t)+1)/7*(w-g.L-g.Rr);g.Y=v=>h-g.B-(Math.log10(v)-yLo)/(yHi-yLo)*(h-g.B-g.Tp);
+  x.fillStyle=col.pan;x.fillRect(0,0,w,h);x.strokeStyle=col.rule;x.lineWidth=1;x.fillStyle=col.mu;x.font='11px '+css('--mono');
+  const tl={'-1':'0.1 s','0':'1 s','1':'10 s','2':'100 s','3':'17 min','4':'2.8 h','5':'28 h','6':'12 d'};
+  for(let e=-1;e<=6;e++){const X=g.X(10**e);x.beginPath();x.moveTo(X,g.Tp);x.lineTo(X,h-g.B);x.stroke();x.textAlign='center';if(w>420||e%2!==0)x.fillText(tl[e],X,h-g.B+14)}
+  for(let e=Math.ceil(yLo);e<=yHi;e++){const Y=g.Y(10**e);x.beginPath();x.moveTo(g.L,Y);x.lineTo(w-g.Rr,Y);x.stroke();x.textAlign='right';x.fillText(axLen(10**e),g.L-4,Y+4)}
+  x.textAlign='center';x.font='12px '+css('--body');x.fillText('time at temperature',(g.L+w)/2,h-6);
+  x.save();x.translate(12,(g.Tp+h-g.B)/2);x.rotate(-Math.PI/2);x.fillText(ylab,0,0);x.restore();
+  return g;
+}
+function curve(x,g,f,cl,w,dash,h){x.save();x.beginPath();x.rect(g.L,g.Tp,w-g.L-g.Rr,h-g.B-g.Tp);x.clip();x.strokeStyle=cl;x.lineWidth=2.2;x.setLineDash(dash||[]);x.beginPath();let first=true;for(let i=0;i<=200;i++){const t=10**(-1+7*i/200);const v=f(t);if(!(v>0)){first=true;continue}if(first){x.moveTo(g.X(t),g.Y(v));first=false}else x.lineTo(g.X(t),g.Y(v))}x.stroke();x.restore()}
+function drawKin(){
+  const c=$('cKin');const {x,w,h}=fit(c,0.7,280);
+  const col={ink:css('--ink'),mu:css('--muted'),rule:css('--rule'),f:css('--ferrite'),t:css('--tip'),p:css('--ple'),pan:css('--panel')};
+  const g=logPlot(x,w,h,col,-4,4,'ferrite thickness');
+  const t=10**+$('tt').value;
+  const rows=[];
+  const fr=(cs,c0,ca)=>cs>c0?(100*(cs-c0)/(cs-ca)).toFixed(0)+' %':'–';
+  if(S.kPE>0){curve(x,g,tt=>S.kPE*Math.sqrt(S.dc*tt),col.f,w,[],h);const s=S.kPE*Math.sqrt(S.dc*t);rows.push(['PE','var(--ferrite)',fmtLen(s),fmtV(s/2/t),fr(S.P.uCg,S.uC,S.P.uCa)])}else rows.push(['PE','var(--ferrite)','–','–','not possible']);
+  if(S.kNP>0){curve(x,g,tt=>S.kNP*Math.sqrt(S.dc*tt),col.t,w,[],h);const s=S.kNP*Math.sqrt(S.dc*t);rows.push(['NPLE','var(--tip)',fmtLen(s),fmtV(s/2/t),fr(S.N.uCs,S.uC,S.N.uCa)])}else rows.push(['NPLE','var(--tip)','–','–','not possible']);
+  if(S.kPL>0){curve(x,g,tt=>S.kPL*Math.sqrt(S.dm*tt),col.p,w,[],h);const s=S.kPL*Math.sqrt(S.dm*t);rows.push(['PLE','var(--ple)',fmtLen(s),fmtV(s/2/t),S.E?fr(S.E.uCg,S.uC,S.E.uCa)+' (equilibrium)':'–'])}else rows.push(['PLE','var(--ple)','–','–',S.regime==='NP'?'not needed: NPLE is faster':'not possible']);
+  x.strokeStyle=col.mu;x.setLineDash([3,3]);x.lineWidth=1;x.beginPath();x.moveTo(g.X(t),g.Tp);x.lineTo(g.X(t),h-g.B);x.stroke();x.setLineDash([]);
+  $('kTab').innerHTML=rows.map(r=>`<tr><td><span class="sw" style="--c:${r[1]}"></span>${r[0]}</td><td class="m">${r[2]}</td><td class="m">${r[3]}</td><td class="m">${r[4]}</td></tr>`).join('');
+  let note='';
+  if(S.regime==='gamma')note='The alloy is above Ae3 at this temperature, so no ferrite grows.';
+  else if(S.regime==='NP')note='This alloy is in the NPLE region. Growth is carbon controlled, and the NPLE curve sits just below the PE curve because the interface hands slightly less carbon to the austenite. The fractions are by carbon lever rule on each tie-line.';
+  else note='This alloy is in the PLE region. If the interface stays in local equilibrium, only the PLE curve applies, roughly a thousand times thinner than carbon-controlled growth.'+(S.kPE>0?' The PE curve shows what happens if Mn is frozen out instead.':' It is also above the PE boundary, so even freezing Mn out would not let ferrite grow.');
+  $('kNote').textContent=note;
+}
+
+/* ---------- Section 5: transition ---------- */
+function runTransition(Dint){
+  const dl=1e-3, Di=Dint*1e12; // µm, µm²/s
+  const P=S.P;const uC0=S.uC;
+  const csNP=S.N?S.N.uCs:uC0-1e-4, caNP=S.N?S.N.uCa:P.uCa;
+  const rhs=(v,s)=>{const p=v*dl/Di,wv=p/(1+p);const cs=wv*P.uCg+(1-wv)*csNP,ca=wv*P.uCa+(1-wv)*caNP;return cs>uC0?S.dc*(cs-uC0)**2/(2*s*(uC0-ca)*(cs-ca)):0};
+  const vOf=s=>{const vmax=rhs(1e12,s);if(!(vmax>0))return 0;let lo=Math.log(1e-14),hi=Math.log(vmax);if(Math.exp(lo)-rhs(Math.exp(lo),s)>0)return Math.exp(lo);for(let i=0;i<60;i++){const m=(lo+hi)/2;const v=Math.exp(m);if(v-rhs(v,s)>0)hi=m;else lo=m}return Math.exp((lo+hi)/2)};
+  const out=[];let t=1e-3,s=S.kPE*Math.sqrt(S.dc*t);const N=420;const r=Math.pow(1e6/1e-3,1/N);
+  for(let i=0;i<=N;i++){const v=vOf(s);const p=v*dl/Di;out.push({t,s,w:p/(1+p),v});const tn=t*r,dt=tn-t;const v2=vOf(s+v*dt/2);s+=v2*dt;t=tn}
+  return out;
+}
+let trCache={key:'',data:null};
+function drawTr(){
+  const Dint=10**+$('dI').value;$('dIv').textContent=sci(Dint)+' m²/s';
+  const col={ink:css('--ink'),mu:css('--muted'),rule:css('--rule'),f:css('--ferrite'),t:css('--tip'),pan:css('--panel')};
+  const c=$('cTr');const {x,w,h}=fit(c,0.6,240);const g=logPlot(x,w,h,col,-3,3,'ferrite thickness');
+  const c2=$('cTrW');const f2=fit(c2,0.24,110);
+  $('tVc').textContent=fmtV(Dint*1e12/1e-3);
+  if(S.kPE<=0){x.fillStyle=col.mu;x.font='14px '+css('--body');x.textAlign='left';wrapText(x,'Paraequilibrium growth is not possible for this alloy, so there is nothing to transition from.',g.L+10,g.Tp+24,w-g.L-30,20);f2.x.fillStyle=col.pan;f2.x.fillRect(0,0,f2.w,f2.h);$('tHalf').textContent='–';$('tS1h').textContent='–';$('trNote').textContent='';return}
+  const key=[S.c,S.m,S.T,Dint].join();if(trCache.key!==key)trCache={key,data:runTransition(Dint)};const d=trCache.data;
+  curve(x,g,tt=>S.kPE*Math.sqrt(S.dc*tt),col.f,w,[6,4],h);
+  if(S.kNP>0)curve(x,g,tt=>S.kNP*Math.sqrt(S.dc*tt),col.t,w,[8,3,2,3],h);
+  x.save();x.beginPath();x.rect(g.L,g.Tp,w-g.L-g.Rr,h-g.B-g.Tp);x.clip();x.strokeStyle=col.ink;x.lineWidth=2.4;x.beginPath();let first=true;for(const p of d){if(p.t<0.1||!(p.s>0))continue;if(first){x.moveTo(g.X(p.t),g.Y(p.s));first=false}else x.lineTo(g.X(p.t),g.Y(p.s))}x.stroke();x.restore();
+  // weight strip
+  const X2=f2.x,w2=f2.w,h2=f2.h;const L=g.L,Rr=g.Rr;X2.fillStyle=col.pan;X2.fillRect(0,0,w2,h2);
+  const gx=t=>L+(Math.log10(t)+1)/7*(w2-L-Rr),gy=v=>h2-22-v*(h2-34);
+  X2.strokeStyle=col.rule;X2.lineWidth=1;X2.beginPath();X2.moveTo(L,gy(0));X2.lineTo(w2-Rr,gy(0));X2.moveTo(L,gy(1));X2.lineTo(w2-Rr,gy(1));X2.stroke();
+  X2.fillStyle=col.mu;X2.font='11px '+css('--mono');X2.textAlign='right';X2.fillText('PE',L-4,gy(1)+4);X2.fillText(S.regime==='NP'?'NPLE':'stall',L-4,gy(0)+4);
+  X2.textAlign='left';X2.font='12px '+css('--body');X2.fillText('how PE-like the interface is, P/(1+P)',L+4,11);
+  X2.strokeStyle=col.ink;X2.lineWidth=2;X2.beginPath();first=true;for(const p of d){if(p.t<0.1)continue;if(first){X2.moveTo(gx(p.t),gy(p.w));first=false}else X2.lineTo(gx(p.t),gy(p.w))}X2.stroke();
+  let th=NaN;for(let i=1;i<d.length;i++)if(d[i-1].w>=0.5&&d[i].w<0.5){th=d[i].t;break}
+  $('tHalf').textContent=isFinite(th)?fmtT(th):(d[d.length-1].w>=0.5?'later than 12 days':'before 1 ms');
+  let s1=NaN;for(const p of d)if(p.t<=3600)s1=p.s;$('tS1h').textContent=fmtLen(s1);
+  $('trNote').textContent=S.regime==='NP'?'Raise D_int and Mn keeps up with the interface earlier, so the curve leaves PE sooner and settles onto NPLE. Lower it and the interface stays PE-like for hours, which is the behaviour Zurob et al. reported for Fe–C–Mn at high temperature.':'This alloy is in the PLE region, where the NPLE carbon content is below the bulk. As the interface slows and stops being PE-like, the carbon driving force vanishes and growth stalls, leaving only slow Mn-controlled PLE growth. This is one route to stasis-like behaviour.';
+}
+
+/* ---------- wiring ---------- */
+function all(){solve();stats();drawSec();drawMap();drawProf();drawKin();drawTr()}
+let raf=0;function sched(){if(!raf)raf=requestAnimationFrame(()=>{raf=0;all()})}
+['cC','cM','T'].forEach(id=>$(id).addEventListener('input',sched));
+$('tt').addEventListener('input',()=>{drawProf();drawKin()});
+$('dI').addEventListener('input',()=>{drawTr()});
+const modes={mEq:'Eq',mPE:'PE',mNP:'NP',mPL:'PL'};
+for(const id in modes)$(id).addEventListener('click',()=>{mode=modes[id];for(const j in modes)$(j).setAttribute('aria-pressed',String(j===id));drawSec();drawProf()});
+const presets={pr1:[0.10,1.5,700],pr2:[0.20,1.5,805],pr3:[0.40,3.0,720]};
+for(const id in presets)$(id).addEventListener('click',()=>{const [c,m,T]=presets[id];$('cC').value=c;$('cM').value=m;$('T').value=T;all()});
+const sec=$('cSec');let dragging=false;
+function fromPtr(e){const r=sec.getBoundingClientRect();const g=sec._g;if(!g)return;const mw=Math.min(4,Math.max(0,g.iX(e.clientX-r.left))),cw=Math.min(0.8,Math.max(0.03,g.iY(e.clientY-r.top)));$('cC').value=cw.toFixed(2);$('cM').value=(Math.round(mw/0.05)*0.05).toFixed(2);sched()}
+sec.addEventListener('pointerdown',e=>{dragging=true;sec.setPointerCapture(e.pointerId);fromPtr(e)});
+sec.addEventListener('pointermove',e=>{if(dragging)fromPtr(e)});
+sec.addEventListener('pointerup',()=>dragging=false);sec.addEventListener('pointercancel',()=>dragging=false);
+let rw=0;window.addEventListener('resize',()=>{clearTimeout(rw);rw=setTimeout(all,120)});
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',all);
+new MutationObserver(all).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+all();
+})();
+</script>
+
+</body></html>
