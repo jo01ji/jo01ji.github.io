@@ -1,7 +1,8 @@
 /* =========================================================================
    jo01ji.com — shared stylesheet
    Edit the variables in :root to change colours and fonts site-wide.
-   Palette idea: temper colours on steel (straw, bronze, blue) on paper.
+   Palette: honey, gold, amber, sunset and rust (the same warm set as the
+   phase-transformation lessons) on monochrome black and white.
    ========================================================================= */
 
 :root {
@@ -25,15 +26,19 @@
   --section: clamp(var(--space-12), 8vw, var(--space-24));
   --maxw: 1160px;
 
-  /* Colour — light (default) */
-  --bg: #f5f2ec;
-  --surface: #fbf9f5;
-  --ink: #1d1f22;
-  --muted: #5d6167;
-  --line: #ddd7cc;
-  --accent: #2f5d86;       /* temper blue */
+  /* Colour — light (default): monochrome base, warm accents */
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --ink: #111111;
+  --muted: #555555;
+  --line: #dddddd;
+  --accent: #975a08;       /* gold, links and buttons */
   --accent-ink: #ffffff;
-  --straw: #b8893a;        /* temper straw, used sparingly */
+  --honey: #d29a12;
+  --amber: #e07b12;
+  --rust: #b4480e;
+  --straw: var(--honey);   /* bullets and dots */
+  --sunset: linear-gradient(90deg, var(--honey), var(--amber), var(--rust));
 
   --radius-sm: 4px;
   --radius-md: 8px;
@@ -42,14 +47,16 @@
 }
 
 [data-theme='dark'] {
-  --bg: #141517;
-  --surface: #1b1d20;
-  --ink: #e9e6e0;
-  --muted: #a3a6ab;
-  --line: #2d3035;
-  --accent: #8ab4dc;
-  --accent-ink: #0e1a26;
-  --straw: #d4a95a;
+  --bg: #0f0f0f;
+  --surface: #1a1a1a;
+  --ink: #f2f2f2;
+  --muted: #a6a6a6;
+  --line: #2e2e2e;
+  --accent: #f2b84b;
+  --accent-ink: #111111;
+  --honey: #f5c542;
+  --amber: #f39a3c;
+  --rust: #ff7a3d;
   color-scheme: dark;
 }
 
@@ -93,6 +100,7 @@ p { margin: 0 0 var(--space-4); max-width: 68ch; }
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--line);
 }
+.site-header::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--sunset); }
 .site-header .wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; gap: var(--space-4); }
 .brand { display: flex; align-items: center; gap: var(--space-2); color: var(--ink); text-decoration: none; font: 500 var(--text-base)/1 var(--font-mono); }
 .brand svg { width: 26px; height: 26px; }
@@ -119,14 +127,10 @@ p { margin: 0 0 var(--space-4); max-width: 68ch; }
 
 /* ---------- Hero (home) ---------- */
 .hero { padding: var(--section) 0; }
-.hero .wrap { display: grid; grid-template-columns: 1.35fr 1fr; gap: clamp(var(--space-8), 6vw, var(--space-16)); align-items: end; }
+.hero .wrap { display: grid; grid-template-columns: 1fr; gap: clamp(var(--space-8), 6vw, var(--space-16)); align-items: end; }
 .hero h1 { font-family: var(--font-display); font-size: var(--text-hero); letter-spacing: -0.02em; margin: var(--space-4) 0 var(--space-6); }
 .hero h1 em { font-style: italic; color: var(--accent); }
 .hero .lede { font-size: var(--text-lg); color: var(--ink); max-width: 36ch; line-height: 1.5; }
-.hero figure { margin: 0; }
-.hero figure img { aspect-ratio: 5 / 6; object-fit: cover; border-radius: var(--radius-md); width: 100%; }
-.hero figcaption { margin-top: var(--space-2); }
-@media (max-width: 800px) { .hero .wrap { grid-template-columns: 1fr; } .hero figure { max-width: 360px; } }
 
 /* Facts strip */
 .facts { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
