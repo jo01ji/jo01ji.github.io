@@ -127,14 +127,10 @@ p { margin: 0 0 var(--space-4); max-width: 68ch; }
 
 /* ---------- Hero (home) ---------- */
 .hero { padding: var(--section) 0; }
-.hero .wrap { display: grid; grid-template-columns: 1.35fr 1fr; gap: clamp(var(--space-8), 6vw, var(--space-16)); align-items: end; }
+.hero .wrap { display: grid; grid-template-columns: 1fr; gap: clamp(var(--space-8), 6vw, var(--space-16)); align-items: end; }
 .hero h1 { font-family: var(--font-display); font-size: var(--text-hero); letter-spacing: -0.02em; margin: var(--space-4) 0 var(--space-6); }
 .hero h1 em { font-style: italic; color: var(--accent); }
 .hero .lede { font-size: var(--text-lg); color: var(--ink); max-width: 36ch; line-height: 1.5; }
-.hero figure { margin: 0; }
-.hero figure img { aspect-ratio: 5 / 6; object-fit: cover; border-radius: var(--radius-md); width: 100%; }
-.hero figcaption { margin-top: var(--space-2); }
-@media (max-width: 800px) { .hero .wrap { grid-template-columns: 1fr; } .hero figure { max-width: 360px; } }
 
 /* Facts strip */
 .facts { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
