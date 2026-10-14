@@ -135,7 +135,7 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var
       <div><span>D<sub>C</sub>/D<sub>Mn</sub></span><b id="sRat"></b></div>
       <div><span>√(Dt) after 1 h, C and Mn</span><b id="sLen"></b></div>
     </div>
-    <p class="note">The thermodynamics is a dilute-solution model built to give the right shapes, not a CALPHAD calculation. The Fe–C γ boundary runs straight from 912 °C to 0.77 wt% C at 727 °C and is extrapolated below it. Mn partitions with k = u<sub>Mn</sub><sup>α</sup>/u<sub>Mn</sub><sup>γ</sup> = 0.58, and Mn lowers the carbon activity through a Wagner parameter ε<sub>C</sub><sup>Mn</sup> = −5 in both phases. D<sub>C</sub> is Ågren’s expression. D<sub>Mn</sub> uses a typical literature value (1.8×10⁻⁵ m²/s, 264 kJ/mol) that is not taken from the sources below. Drag on the isothermal section in section 2 to move the alloy point.</p>
+    <p class="note">The thermodynamics is a dilute-solution model built to give the right shapes, not a CALPHAD calculation. The Fe–C γ boundary runs straight from 912 °C to 0.77 wt% C at 727 °C and is extrapolated below it. Mn partitions with k = u<sub>Mn</sub><sup>α</sup>/u<sub>Mn</sub><sup>γ</sup> = 0.58 at infinite dilution, and Mn lowers the carbon activity through a Wagner parameter ε<sub>C</sub><sup>Mn</sup> = −5 in both phases. Every boundary and tie-line is an exact tangent construction on one Gibbs energy function per phase, drawn in section 3. D<sub>C</sub> is Ågren’s expression. D<sub>Mn</sub> uses a typical literature value (1.8×10⁻⁵ m²/s, 264 kJ/mol) that is not taken from the sources below. Drag on the isothermal section in section 2 to move the alloy point.</p>
   </div>
 </section>
 
@@ -185,8 +185,61 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var
   <p class="callout">Try the third example. At Fe–0.4C–3Mn and 720 °C the alloy sits inside the two-phase field but above the envelope, so NPLE is impossible: the NPLE tie-line would put less carbon at the interface than in the bulk, and carbon would have to diffuse uphill. Switch to NPLE to see the warning, then to PLE to see the tie-line the interface has to use instead.</p>
 </section>
 
+<section id="gibbs">
+  <div class="eyebrow">3 · Key concept: Gibbs energy curves</div>
+  <h2>Every interface condition is a tangent construction on the Gibbs energy curves</h2>
+  <p>The tie-lines in section 2 come from the molar Gibbs energy surfaces of ferrite and austenite over carbon and Mn content. Two cuts through those surfaces show all four conditions. Energies are per mole of Fe+Mn atoms (Hillert’s G<sub>m12</sub>), so carbon can be added without changing the amount of metal. Each plot subtracts the same straight line from both curves so the curvature is visible. Subtracting a straight line does not move any tangent point or crossing.</p>
+  <div class="row" role="group" aria-label="Interface condition for the Gibbs energy plots">
+    <button type="button" id="gEq" style="--c:var(--ink)" aria-pressed="false">Full equilibrium</button>
+    <button type="button" id="gPE" style="--c:var(--ferrite)" aria-pressed="false">PE</button>
+    <button type="button" id="gNP" style="--c:var(--tip)" aria-pressed="true">NPLE</button>
+    <button type="button" id="gPL" style="--c:var(--ple)" aria-pressed="false">PLE</button>
+    <span class="note">Same selection as section 2.</span>
+  </div>
+  <div class="pair">
+    <div class="panel">
+      <h3>Cut at the alloy’s Mn content: G against carbon</h3>
+      <canvas id="cGc" aria-label="Molar Gibbs energy of ferrite and austenite against carbon content at the alloy Mn content, with the paraequilibrium common tangent and the parallel tangents at the alloy"></canvas>
+      <div class="key">
+        <span style="--c:var(--ferrite)">α (ferrite)</span>
+        <span style="--c:var(--ink)">γ (austenite)</span>
+        <span class="dash" style="--c:var(--ferrite)">PE common tangent</span>
+        <span class="dash" style="--c:var(--muted)">parallel tangents at the alloy</span>
+      </div>
+      <p class="note">Nothing in this cut changes its Mn content, so it holds paraequilibrium exactly: the PE tie-line is the ordinary common tangent of these two curves. Hillert draws it as the tangent line through the carbon corner that sits above the full tangent plane (Fig. 14.10). The local-equilibrium tie-lines leave this cut, because their two ends have different Mn contents.</p>
+      <dl class="read">
+        <dt>Curves cross (T<sub>0</sub> carbon at this Mn)</dt><dd id="gT0"></dd>
+        <dt>Driving force to nucleate PE ferrite (parallel tangents)</dt><dd id="gDn"></dd>
+        <dt>Driving force for full PE decomposition</dt><dd id="gDt"></dd>
+      </dl>
+    </div>
+    <div class="panel">
+      <h3 id="gmTitle">Cut at fixed carbon potential: G against Mn</h3>
+      <canvas id="cGm" aria-label="Gibbs energy of ferrite and austenite against Mn content at the carbon potential of the selected interface condition"></canvas>
+      <div class="key">
+        <span style="--c:var(--ferrite)">α (ferrite)</span>
+        <span style="--c:var(--ink)">γ (austenite)</span>
+        <span class="dash" style="--c:var(--c2,var(--ink))" id="gmKey">common tangent</span>
+        <span class="dash" style="--c:var(--muted)">alloy Mn</span>
+      </div>
+      <p id="gmText"></p>
+      <dl class="read">
+        <dt>Carbon activity in γ, relative to the alloy</dt><dd id="gAc"></dd>
+        <dt id="gR1l">Mn at the tangent points, α and γ</dt><dd id="gR1"></dd>
+      </dl>
+      <p class="warn" id="gmWarn" hidden></p>
+    </div>
+  </div>
+  <div class="defs">
+    <div><b>Fixing μ<sub>C</sub> turns a plane into a line</b><p>A tangent plane to two surfaces is hard to draw. But all four conditions share one carbon potential across the interface. Holding μ<sub>C</sub> fixed and letting each phase take whatever carbon matches it gives the function Φ = G<sub>m12</sub> − u<sub>C</sub>μ<sub>C</sub> = u<sub>Fe</sub>μ<sub>Fe</sub> + u<sub>Mn</sub>μ<sub>Mn</sub> (Hillert, Eq. 14.14), which depends on Mn only. On that cut the tangent plane becomes an ordinary common tangent.</p></div>
+    <div><b>Local equilibrium: touch, don’t cross</b><p>Full equilibrium, PLE and NPLE are common tangents on the right-hand plot. They differ only in which carbon potential, and so which tangent, the interface uses. Equal slopes mean equal μ<sub>Mn</sub> − μ<sub>Fe</sub>, and the shared line means equal μ<sub>Fe</sub> and μ<sub>Mn</sub> separately.</p></div>
+    <div><b>Paraequilibrium: cross, don’t touch</b><p>Under PE the two curves only have to meet at the alloy’s Mn content. Equal Φ there is Hillert’s condition u<sub>Fe</sub>μ<sub>Fe</sub>+u<sub>Mn</sub>μ<sub>Mn</sub> equal on both sides (Eq. 14.13). Their slopes differ, and that difference is the jump in μ<sub>Mn</sub> − μ<sub>Fe</sub> across a PE interface. Under NPLE the spike removes that jump.</p></div>
+    <div><b>Where the curves cross: T<sub>0</sub></b><p>Left of the crossing in the carbon cut, ferrite of the same composition as the austenite has lower G, so the change could happen with no diffusion at all. The T<sub>0</sub> line joins these crossings at each temperature, and it is the reference used for bainite and massive ferrite.</p></div>
+  </div>
+</section>
+
 <section id="profiles">
-  <div class="eyebrow">3 · Composition profiles across the moving interface</div>
+  <div class="eyebrow">4 · Composition profiles across the moving interface</div>
   <h2>The NPLE spike is real on paper and often thinner than an atom</h2>
   <div class="grid2">
     <div class="panel">
@@ -217,7 +270,7 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var
 </section>
 
 <section id="kinetics">
-  <div class="eyebrow">4 · Growth rates</div>
+  <div class="eyebrow">5 · Growth rates</div>
   <h2>PE and NPLE grow in seconds to minutes. PLE takes geological patience</h2>
   <div class="grid2">
     <div class="panel">
@@ -248,7 +301,7 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var
 </section>
 
 <section id="transition">
-  <div class="eyebrow">5 · Between the limits <span class="tag">illustrative switch</span></div>
+  <div class="eyebrow">6 · Between the limits <span class="tag">illustrative switch</span></div>
   <h2>Fast interfaces look like PE. Slow ones drift toward NPLE</h2>
   <p>Neither PE nor NPLE fits the data over a wide range of compositions and temperatures. In Fe–C–Ni, Militzer et al. show PE describing the first 30 to 40 s, after which growth slows sharply. Hutchinson and coworkers fitted this with an interface condition that moves from PE at high velocity toward NPLE as the interface slows. The instrument below uses the simplest version of that idea. It compares the interface velocity v with the speed Mn can cross the interface, D<sub>int</sub>/δ, and blends the interfacial carbon from PE to NPLE using the interface Péclet number P = vδ/D<sub>int</sub>.</p>
   <div class="grid2">
@@ -279,7 +332,7 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var
 </section>
 
 <section id="dissipation">
-  <div class="eyebrow">6 · Key concept: dissipation at the interface</div>
+  <div class="eyebrow">7 · Key concept: dissipation at the interface</div>
   <h2>The modern models find the interface condition from an energy balance</h2>
   <div class="eq">ΔF = v/M<sub>int</sub> + SD,&nbsp;&nbsp;&nbsp; SD = −(V<sub>m</sub>/v)∫J<sub>i</sub>·∂(μ<sub>i</sub>−μ<sub>n</sub>)/∂z dz</div>
   <div class="defs">
@@ -293,7 +346,7 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var
 </section>
 
 <section id="evidence">
-  <div class="eyebrow">7 · What the experiments say</div>
+  <div class="eyebrow">8 · What the experiments say</div>
   <h2>Decarburization layers gave the cleanest tests, and most systems sit between the limits</h2>
   <p>Decarburizing a ternary austenite in wet hydrogen grows a planar ferrite layer from the surface inward, so the interface stays flat and its thickness can be compared directly with PE and NPLE curves. Precipitation experiments measure the ferrite fraction at stasis. Purdy’s 2009 review and the Panahi et al. general model summarise the findings.</p>
   <div class="tablewrap">
@@ -319,7 +372,7 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var
 </section>
 
 <section id="misuse">
-  <div class="eyebrow">8 · Purdy’s list of common misuses</div>
+  <div class="eyebrow">9 · Purdy’s list of common misuses</div>
   <h2>Where PE and NPLE get applied without checking</h2>
   <ul class="tight">
     <li>Using “PE” loosely, for example constrained paraequilibrium in martensite tempering.</li>
@@ -331,7 +384,7 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var
 </section>
 
 <section id="glossary">
-  <div class="eyebrow">9 · Other key concepts</div>
+  <div class="eyebrow">10 · Other key concepts</div>
   <div class="defs">
     <div><b>u-fraction</b><p>u<sub>i</sub> = x<sub>i</sub>/(x<sub>Fe</sub>+x<sub>Mn</sub>). It counts solute per substitutional atom, so it stays constant for Mn when only carbon moves. Under PE every product lies on the same u<sub>Mn</sub> level as the parent.</p></div>
     <div><b>Carbon isoactivity line</b><p>Compositions of austenite with the same carbon activity. Because Mn lowers the carbon activity, the line rises in carbon as Mn increases. Carbon diffuses down activity gradients, not concentration gradients.</p></div>
@@ -379,11 +432,19 @@ function wt2u(c,m){const nC=c/MC,nMn=m/MMn,nFe=(100-c-m)/MFe;return {uC:nC/(nFe+
 function u2wt(uC,uM){const mC=uC*MC,mM=uM*MMn,mF=(1-uM)*MFe,tot=mC+mM+mF;return {c:100*mC/tot,m:100*mM/tot}}
 function ctxT(T){const w=0.77*(912-T)/185;const ucb=(w/MC)/((100-w)/MFe);const C={T,Tk:T+273.15,Delta:ucb*(1-KC),kM:Math.exp(LNKM)};C.uMax=uMgMax(C);return C}
 function tie(uMg,C){let uCg=C.Delta/(1-KC),uCa=KC*uCg,uMa=C.kM*uMg;
-  for(let i=0;i<80;i++){uCa=KC*uCg*Math.exp(EG*uMg-EA*uMa);uMa=C.kM*uMg*Math.exp(EG*uCg-EA*uCa);const n=C.Delta+uCa-Math.log(1-uMa)+Math.log(1-uMg);if(Math.abs(n-uCg)<1e-13){uCg=n;break}uCg=n}
+  for(let i=0;i<120;i++){uCa=KC*uCg*Math.exp(EG*(uMg-uMa));uMa=uMg>0?Math.exp(LNKM+Math.log(uMg)+(EG-1)*(uCg-uCa)-EG*(uCg*uMg-uCa*uMa)):0;const n=(C.Delta+Math.log((1-uMg)/(1-uMa))+uCa*(1+EG*uMa))/(1+EG*uMg);if(Math.abs(n-uCg)<1e-13){uCg=n;break}uCg=n}
   return {uCg,uCa,uMg,uMa}}
-function uMgMax(C){let lo=0,hi=0.2;for(let i=0;i<50;i++){const m=(lo+hi)/2;if(tie(m,C).uCg>0)lo=m;else hi=m}return lo}
+function uMgMax(C){let lo=0,hi=0.15;for(let i=0;i<50;i++){const m=(lo+hi)/2;if(tie(m,C).uCg>0)lo=m;else hi=m}return lo}
 function bis(f,lo,hi,n){let flo=f(lo);for(let i=0;i<(n||50);i++){const m=(lo+hi)/2,fm=f(m);if((fm>0)===(flo>0)){lo=m;flo=fm}else hi=m}return (lo+hi)/2}
-function pe(uM,C){const K=KC*Math.exp((EG-EA)*uM);const den=(1-uM)*(1-K)+uM*(EA*K-EG);const uCg=((1-uM)*C.Delta+uM*LNKM)/den;return {uCg,uCa:K*uCg,uMg:uM,uMa:uM}}
+function pe(uM,C){const uCg=((1-uM)*C.Delta+uM*LNKM)/(1-KC);return {uCg,uCa:KC*uCg,uMg:uM,uMa:uM}}
+/* molar Gibbs energy per mole of Fe+Mn (Hillert's G_m12), in units of RT. Every tie-line above is an exact tangent construction on these */
+const GC=3; // reference for carbon in γ; any constant here only tilts the curves
+function xl(x){return x>0?x*Math.log(x):0}
+function gpar(ph,C){return ph==='a'?{fe:-C.Delta,mn:-LNKM,c:GC-Math.log(KC)}:{fe:0,mn:0,c:GC}}
+function Gm(ph,uC,uM,C){const g=gpar(ph,C);return (1-uM)*g.fe+uM*g.mn+xl(1-uM)+xl(uM)+xl(uC)-uC+g.c*uC+EG*uC*uM}
+function muC(ph,uC,uM,C){return gpar(ph,C).c+Math.log(uC)+EG*uM}
+function Phi(ph,uM,m,C){const g=gpar(ph,C);return (1-uM)*g.fe+uM*g.mn+xl(1-uM)+xl(uM)-Math.exp(m-g.c-EG*uM)}
+function dPhi(ph,uM,m,C){const g=gpar(ph,C);return g.mn-g.fe+Math.log(uM/(1-uM))+EG*Math.exp(m-g.c-EG*uM)}
 function npTie(uM0,C){if(tie(C.uMax,C).uMa<uM0)return null;const m=bis(g=>tie(g,C).uMa-uM0,uM0,C.uMax);const t=tie(m,C);t.uCs=t.uCg*Math.exp(EG*(t.uMg-uM0));return t}
 function zpl(uM0,C){const t=npTie(uM0,C);return t?t.uCs:NaN}
 function pleTie(uC0,uM0,C){const a0=uC0*Math.exp(EG*uM0);const g=m=>tie(m,C).uCg*Math.exp(EG*m)-a0;if(g(0)<0||g(C.uMax)>0)return null;return tie(bis(g,0,C.uMax),C)}
@@ -503,7 +564,82 @@ function drawMap(){
   x.fillStyle=col.mu;x.font='12px '+css('--body');x.textAlign='left';x.fillText('Fe–'+S.c.toFixed(2)+'C–xMn',g.L+8,g.Tp+14);
 }
 
-/* ---------- Section 3: profiles ---------- */
+
+/* ---------- Section 3: Gibbs energy curves ---------- */
+function gFrame(c,aspect){const {x,w,h}=fit(c,aspect,250);const col={ink:css('--ink'),mu:css('--muted'),rule:css('--rule'),f:css('--ferrite'),ca:css('--carbon'),t:css('--tip'),p:css('--ple'),pan:css('--panel')};x.fillStyle=col.pan;x.fillRect(0,0,w,h);return {x,w,h,col}}
+function gAxes(F,x0,x1,y0,y1,xt,xlab){const {x,w,h,col}=F;const g={L:56,Rr:12,Tp:12,B:40};g.X=v=>g.L+(v-x0)/(x1-x0)*(w-g.L-g.Rr);g.Y=v=>h-g.B-(v-y0)/(y1-y0)*(h-g.B-g.Tp);
+  x.strokeStyle=col.rule;x.lineWidth=1;x.fillStyle=col.mu;x.font='11px '+css('--mono');
+  for(const t of xt){const X=g.X(t.u);x.beginPath();x.moveTo(X,g.Tp);x.lineTo(X,h-g.B);x.stroke();x.textAlign='center';x.fillText(t.l,X,h-g.B+14)}
+  const step=niceStep((y1-y0)/4);for(let v=Math.ceil(y0/step)*step;v<=y1;v+=step){const Y=g.Y(v);x.beginPath();x.moveTo(g.L,Y);x.lineTo(w-g.Rr,Y);x.stroke();x.textAlign='right';x.fillText(Math.round(v),g.L-5,Y+4)}
+  x.textAlign='center';x.font='12px '+css('--body');x.fillText(xlab,(g.L+w-g.Rr)/2,h-6);
+  x.save();x.translate(12,(g.Tp+h-g.B)/2);x.rotate(-Math.PI/2);x.fillText('G − reference line, J/mol',0,0);x.restore();
+  return g}
+function niceStep(r){const e=10**Math.floor(Math.log10(r));for(const m of [1,2,5,10])if(m*e>=r)return m*e;return 10*e}
+function clipTo(F,g){F.x.save();F.x.beginPath();F.x.rect(g.L,g.Tp,F.w-g.L-g.Rr,F.h-g.B-g.Tp);F.x.clip()}
+function fline(F,g,f,a,b,cl,lw,dash){const x=F.x;x.strokeStyle=cl;x.lineWidth=lw;x.setLineDash(dash||[]);x.beginPath();for(let i=0;i<=240;i++){const u=a+(b-a)*i/240;const v=f(u);i?x.lineTo(g.X(u),g.Y(v)):x.moveTo(g.X(u),g.Y(v))}x.stroke();x.setLineDash([])}
+function dot(F,g,u,v,cl,r){F.x.fillStyle=cl;F.x.beginPath();F.x.arc(g.X(u),g.Y(v),r||4,0,7);F.x.fill()}
+function vline(F,g,u,cl,lbl){const x=F.x;x.strokeStyle=cl;x.lineWidth=1;x.setLineDash([3,3]);x.beginPath();x.moveTo(g.X(u),g.Tp);x.lineTo(g.X(u),F.h-g.B);x.stroke();x.setLineDash([]);if(lbl){x.fillStyle=cl;x.font='12px '+css('--body');x.textAlign='left';x.fillText(lbl,g.X(u)+4,g.Tp+14)}}
+function yRange(vals){let lo=Math.min(...vals),hi=Math.max(...vals);const pad=0.12*(hi-lo||1);return [lo-pad,hi+pad]}
+function drawG(){
+  const C=S.C,RT=R*C.Tk,uM0=S.uM,uC0=S.uC;
+  /* left: carbon cut at the alloy Mn */
+  {const F=gFrame($('cGc'),0.8);const P=S.P;
+   const xmax=1.3*Math.max(P.uCg,uC0,S.gB,0.01);
+   const ga=u=>Gm('a',u,uM0,C)*RT, gg=u=>Gm('g',u,uM0,C)*RT;
+   const s0=gg(0),s1=(gg(xmax)-s0)/xmax, ref=u=>s0+s1*u;
+   const A=u=>ga(u)-ref(u), Gg=u=>gg(u)-ref(u);
+   const vals=[];for(let i=0;i<=60;i++){const u=xmax*i/60;vals.push(Gg(u))}
+   let uT0=NaN;{const d=u=>ga(u)-gg(u);if(d(1e-7)<0&&d(xmax)>0)uT0=bis(d,1e-7,xmax)}
+   for(let i=0;i<=60;i++){const u=(isFinite(uT0)?Math.min(xmax,2.2*uT0):xmax)*i/60;vals.push(A(u))}
+   const [y0,y1]=yRange(vals);
+   const xt=[];const cmax=u2wt(xmax,uM0).c;const st=cmax>0.6?0.2:cmax>0.3?0.1:0.05;for(let c=0;c<=cmax+1e-9;c+=st){xt.push({u:wt2u(c,S.m).uC,l:c.toFixed(2)})}
+   const g=gAxes(F,0,xmax,y0,y1,xt,'C, wt%  (Mn fixed at '+S.m.toFixed(2)+' wt%)');
+   clipTo(F,g);
+   fline(F,g,Gg,1e-6,xmax,F.col.ink,2.4);fline(F,g,A,1e-6,xmax,F.col.f,2.4);
+   let dn=NaN,dt=NaN;
+   if(P.uCg>0){const pa=P.uCa,pg=P.uCg;const sl=(Gg(pg)-A(pa))/(pg-pa);const L=u=>A(pa)+sl*(u-pa);fline(F,g,L,0,xmax,F.col.f,1.6,[6,4]);dot(F,g,pa,A(pa),F.col.f);dot(F,g,pg,Gg(pg),F.col.f);
+     if(uC0<pg)dt=(Gg(uC0)-L(uC0))}
+   // parallel tangents at the alloy
+   if(uC0<xmax){const m=muC('g',uC0,uM0,C);const sl=m*RT-s1;const Lg=u=>Gg(uC0)+sl*(u-uC0);const ua=Math.exp(m-gpar('a',C).c-EG*uM0);const La=u=>A(ua)+sl*(u-ua);
+     fline(F,g,Lg,0,xmax,F.col.mu,1.2,[3,3]);fline(F,g,La,0,xmax,F.col.mu,1.2,[3,3]);dot(F,g,uC0,Gg(uC0),F.col.ink,4.5);dot(F,g,ua,A(ua),F.col.mu,3.5);dn=Lg(ua)-A(ua)}
+   F.x.restore();
+   vline(F,g,uC0,F.col.ink,'alloy');if(isFinite(uT0)){vline(F,g,uT0,F.col.mu,'');F.x.fillStyle=F.col.mu;F.x.font='12px '+css('--body');F.x.textAlign='right';F.x.fillText('T₀',g.X(uT0)-4,g.Tp+30)}
+   $('gT0').textContent=isFinite(uT0)?u2wt(uT0,uM0).c.toFixed(3)+' wt% C':'–';
+   $('gDn').textContent=isFinite(dn)?(dn>0?dn.toFixed(0)+' J/mol':'none, '+dn.toFixed(0)+' J/mol'):'–';
+   $('gDt').textContent=isFinite(dt)&&dt>0?dt.toFixed(1)+' J/mol of alloy':'none';
+  }
+  /* right: Mn cut at fixed carbon potential */
+  {const F=gFrame($('cGm'),0.8);let t=null,m=NaN,ttl='',txt='',warn='',keyc='var(--ink)',lab='common tangent';
+   if(mode==='Eq'){t=S.E;keyc='var(--ink)';ttl='Full equilibrium: one common tangent';txt='At the carbon potential of the alloy’s own tie-line, the two curves share one tangent. Its touching points are the Mn contents of the ferrite and austenite after infinite time. Every μ matches on both sides.';if(!t)warn='The alloy is above Ae3, so there is no tie-line through it.'}
+   if(mode==='NP'){t=S.N;keyc='var(--tip)';ttl='NPLE: the tangent that touches α at the bulk Mn';txt='Same rule as equilibrium, but the interface picks the carbon potential whose tangent touches the ferrite curve exactly at the alloy’s Mn. The austenite touching point lies further right: that is the Mn content at the top of the spike.';if(!t)warn='No tangent touches the ferrite curve at this Mn content.';else if(S.regime!=='NP')warn='This alloy is above the envelope of zero partition, so the carbon potential here is too low to drive carbon into the bulk austenite.'}
+   if(mode==='PL'){t=S.L;keyc='var(--ple)';ttl='PLE: the tangent at the alloy’s carbon potential';txt='Carbon has no activity gradient, so the carbon potential is the alloy’s own. The common tangent at that potential touches the ferrite curve left of the alloy Mn: Mn is partitioned, and its slow diffusion sets the rate.';if(!t)warn='At the alloy’s carbon potential the curves have no common tangent in this range.';else if(S.regime==='NP')warn='In the NPLE region this tangent needs Mn to diffuse toward the interface, so the faster NPLE condition wins.'}
+   if(mode==='PE'){keyc='var(--ferrite)';lab='tangents at the crossing';ttl='PE: the curves cross at the alloy Mn';txt='At the PE carbon potential the two curves cross exactly at the alloy’s Mn content, so uFe·μFe + uMn·μMn is the same on both sides. The tangents at the crossing have different slopes: μMn − μFe jumps across the interface, which is why PE is not a local equilibrium.';if(S.P.uCg<=0)warn='No PE tie-line exists at this temperature and Mn content.'}
+   if(mode==='PE'&&S.P.uCg>0)m=muC('g',S.P.uCg,uM0,C);else if(t)m=muC('g',t.uCg,t.uMg,C);
+   $('gmTitle').textContent=ttl;$('gmText').textContent=txt;$('gmWarn').hidden=!warn;$('gmWarn').textContent=warn;
+   $('gmKey').style.setProperty('--c2',keyc);$('gmKey').textContent=lab;
+   if(!isFinite(m)){F.x.fillStyle=F.col.mu;F.x.font='14px '+css('--body');F.x.textAlign='left';wrapText(F.x,'No tangent construction exists for this condition at this alloy and temperature.',16,30,F.w-32,20);$('gAc').textContent='–';$('gR1').textContent='–';return}
+   const umax=Math.max(0.06,1.35*Math.max(uM0,t?t.uMg:0));
+   const pa=u=>Phi('a',u,m,C)*RT, pg=u=>Phi('g',u,m,C)*RT;
+   const s0=pg(0),s1=(pg(umax)-s0)/umax,ref=u=>s0+s1*u;
+   const A=u=>pa(u)-ref(u),Gg=u=>pg(u)-ref(u);
+   const vals=[];for(let i=0;i<=60;i++){const u=umax*i/60;vals.push(A(u),Gg(u))}
+   const [y0,y1]=yRange(vals);
+   const xt=[];const mmax=u2wt(0,umax).m;const st=mmax>6?2:1;for(let mm=0;mm<=mmax+1e-9;mm+=st)xt.push({u:wt2u(0,mm).uM,l:String(mm)});
+   const g=gAxes(F,0,umax,y0,y1,xt,'Mn, wt%  (carbon potential fixed)');
+   clipTo(F,g);
+   fline(F,g,Gg,0,umax,F.col.ink,2.4);fline(F,g,A,0,umax,F.col.f,2.4);
+   const kc=css(keyc.slice(4,-1));
+   if(mode==='PE'){const y=Gg(uM0);const sa=dPhi('a',uM0,m,C)*RT-s1,sg=dPhi('g',uM0,m,C)*RT-s1;
+     fline(F,g,u=>y+sa*(u-uM0),0,umax,kc,1.6,[6,4]);fline(F,g,u=>y+sg*(u-uM0),0,umax,kc,1.6,[2,3]);dot(F,g,uM0,y,kc,5);
+     $('gR1l').textContent='Jump in μMn − μFe across the interface';$('gR1').textContent=((sa-sg)).toFixed(0)+' J/mol';
+   }else{const sl=(Gg(t.uMg)-A(t.uMa))/(t.uMg-t.uMa);fline(F,g,u=>A(t.uMa)+sl*(u-t.uMa),0,umax,kc,1.6,[6,4]);dot(F,g,t.uMa,A(t.uMa),kc,4.5);dot(F,g,t.uMg,Gg(t.uMg),kc,4.5);
+     $('gR1l').textContent='Mn at the tangent points, α and γ';$('gR1').textContent=u2wt(t.uCa,t.uMa).m.toFixed(2)+', '+u2wt(t.uCg,t.uMg).m.toFixed(2)+' wt%'}
+   F.x.restore();vline(F,g,uM0,F.col.mu,'alloy');
+   const a0=uC0*Math.exp(EG*uM0);const aR=Math.exp(m-GC)/a0;$('gAc').textContent=aR.toFixed(2)+(aR>1.0005?' (carbon flows into γ)':aR<0.9995?' (would flow uphill)':' (no gradient)');
+  }
+}
+
+/* ---------- Section 4: profiles ---------- */
 function curK(){return S.regime==='NP'?S.kNP:S.regime==='PL'?S.kPL:0}
 function drawProf(){
   const c=$('cProf');const {x,w,h}=fit(c,0.82,320);
@@ -633,13 +769,13 @@ function drawTr(){
 }
 
 /* ---------- wiring ---------- */
-function all(){solve();stats();drawSec();drawMap();drawProf();drawKin();drawTr()}
+function all(){solve();stats();drawSec();drawMap();drawG();drawProf();drawKin();drawTr()}
 let raf=0;function sched(){if(!raf)raf=requestAnimationFrame(()=>{raf=0;all()})}
 ['cC','cM','T'].forEach(id=>$(id).addEventListener('input',sched));
 $('tt').addEventListener('input',()=>{drawProf();drawKin()});
 $('dI').addEventListener('input',()=>{drawTr()});
-const modes={mEq:'Eq',mPE:'PE',mNP:'NP',mPL:'PL'};
-for(const id in modes)$(id).addEventListener('click',()=>{mode=modes[id];for(const j in modes)$(j).setAttribute('aria-pressed',String(j===id));drawSec();drawProf()});
+const modes={mEq:'Eq',mPE:'PE',mNP:'NP',mPL:'PL',gEq:'Eq',gPE:'PE',gNP:'NP',gPL:'PL'};
+for(const id in modes)$(id).addEventListener('click',()=>{mode=modes[id];for(const j in modes)$(j).setAttribute('aria-pressed',String(modes[j]===mode));drawSec();drawG();drawProf()});
 const presets={pr1:[0.10,1.5,700],pr2:[0.20,1.5,805],pr3:[0.40,3.0,720]};
 for(const id in presets)$(id).addEventListener('click',()=>{const [c,m,T]=presets[id];$('cC').value=c;$('cM').value=m;$('T').value=T;all()});
 const sec=$('cSec');let dragging=false;
