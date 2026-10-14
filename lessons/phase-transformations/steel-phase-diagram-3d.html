@@ -1,0 +1,408 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Fe–C–X in 3D</title>
+<meta name="description" content="How alloying elements move the steel corner of the Fe–C diagram, as a turnable 3D stack with plain Fe–C exact and the alloy shifts shown as arrows.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Same lab-notebook palette as the flat Fe–C lesson: monochrome ink, honey accents.
+   Layout: 3D stack on the left, the chosen slice and its numbers on the right. */
+:root{
+  --bg:#eef1f3; --panel:#f8fafb; --ink:#17212b; --muted:#56636f; --rule:#cfd6dc; --grid:#e2e7eb;
+  --accent:#a8650a; --honey:#d29a12; --amber:#e07b12; --rust:#b4480e; --stable:#8d979f; --window:#f5e6bd;
+  --display:"Spectral",Georgia,serif; --body:"Source Sans 3","Segoe UI",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12171c; --panel:#1a2128; --ink:#e3e8ec; --muted:#9aa6b1; --rule:#2d3740; --grid:#222b33;
+  --accent:#f2b84b; --honey:#f5c542; --amber:#f39a3c; --rust:#ff7a3d; --stable:#6c7782; --window:#3a3221; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12171c; --panel:#1a2128; --ink:#e3e8ec; --muted:#9aa6b1; --rule:#2d3740; --grid:#222b33;
+  --accent:#f2b84b; --honey:#f5c542; --amber:#f39a3c; --rust:#ff7a3d; --stable:#6c7782; --window:#3a3221; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 var(--body)}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:28px 64px}
+h1,h2,h3{font-family:var(--display);font-weight:600;text-wrap:balance;margin:0}
+h1{font-size:clamp(28px,4.4vw,42px);line-height:1.1}
+h2{font-size:clamp(22px,3vw,28px);margin-top:8px}
+p{margin:0;max-width:72ch}
+.lede{color:var(--muted);font-size:17px;margin-top:10px}
+.eyebrow{font:500 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+section{display:grid;gap:14px;padding-block:34px;border-top:1px solid var(--rule)}
+header{display:grid;gap:6px;padding-bottom:26px}
+a{color:var(--accent)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:14px;display:grid;gap:10px;min-width:0}
+canvas{display:block;width:100%;max-width:100%;border-radius:4px;touch-action:none}
+#cv3{cursor:grab}
+#cv3:active{cursor:grabbing}
+#cv2{cursor:crosshair}
+canvas:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.row .lab{font-size:13px;color:var(--muted);margin-right:2px}
+button{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--rule);border-radius:4px;padding:5px 10px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button[aria-pressed="true"]{border-color:var(--accent);background:var(--panel);font-weight:600;box-shadow:inset 0 -2px 0 var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.checks{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:14px}
+.checks label{display:flex;gap:6px;align-items:center;cursor:pointer}
+.ctl{display:grid;gap:2px;font-size:14px}
+.ctl label{display:flex;justify-content:space-between;gap:8px}
+.ctl output{font:500 13px var(--mono);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--accent)}
+input[type=checkbox]{accent-color:var(--accent)}
+dl.read{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 14px;margin:0;font-size:14px}
+dl.read dt{color:var(--muted)}
+dl.read dt i{font-style:normal;display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--c);margin-right:7px;vertical-align:baseline}
+dl.read dd{margin:0;font:500 13px var(--mono);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+dl.read dd small{color:var(--muted);font-weight:400;margin-left:6px}
+.region{font-family:var(--display);font-size:20px;line-height:1.25}
+.note{font-size:14px;color:var(--muted)}
+.key{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted)}
+.key span::before{content:"";display:inline-block;width:18px;height:0;border-top:2px var(--s,solid) var(--c);margin-right:6px;vertical-align:middle}
+.key.fill span::before{height:9px;border:0;background:var(--c);opacity:.75;width:12px;border-radius:2px}
+.defs{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.defs div{display:grid;gap:4px;align-content:start}
+.defs b{font-family:var(--display);font-size:17px}
+.callout{border-left:3px solid var(--honey);padding:4px 0 4px 12px;font-size:15px;max-width:none}
+ul.plain{margin:0;padding-left:20px;display:grid;gap:6px;max-width:80ch}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important}}
+</style></head><body>
+<div class="wrap">
+<header>
+  <a href="./" style="color:var(--muted);font-size:15px">← Phase transformations</a>
+  <div class="eyebrow" id="eyebrow">Fe–C–X · Thermo-Calc TCFE14 · interactive 3D</div>
+  <h1>The steel corner with a third axis</h1>
+  <p class="lede" id="lede"></p>
+  <div class="row" style="margin-top:10px;font-size:15px;gap:8px 18px">
+    <a href="steel-phase-diagram.html">The flat Fe–C diagram</a>
+    <a href="widmanstatten-transition.html">Planar to Widmanstätten ferrite</a>
+  </div>
+</header>
+
+<section id="block">
+  <div class="eyebrow">1 · The block</div>
+  <h2 id="h2block">Three surfaces through a stack of isopleths</h2>
+  <div class="grid2">
+    <div class="panel">
+      <div class="row"><span class="lab">element</span><span id="els" class="row" style="gap:6px"></span>
+        <span class="lab" style="margin-left:10px">view</span>
+        <button id="p3d" aria-pressed="true">3D</button>
+        <button id="pFront" aria-pressed="false">isopleth</button>
+        <button id="pSide" aria-pressed="false">alloy effect</button>
+        <button id="pTop" aria-pressed="false">from above</button>
+      </div>
+      <canvas id="cv3" tabindex="0" aria-label="3D stack of Fe–C isopleths. Drag or use the arrow keys to turn it."></canvas>
+      <div class="checks">
+        <label><input type="checkbox" id="sAe3" checked> Ae3</label>
+        <label><input type="checkbox" id="sUp" checked> Acm and upper Ae1</label>
+        <label><input type="checkbox" id="sLo" checked> lower Ae1</label>
+        <label><input type="checkbox" id="sSl" checked> chosen slice</label>
+      </div>
+      <div class="key fill" id="key3"></div>
+      <div class="ctl"><label for="zs"><span id="zlab">manganese</span> <output id="zv"></output></label>
+        <input type="range" id="zs" min="0" max="24" step="1" value="12"></div>
+      <div class="ctl"><label for="cs">carbon <output id="cv"></output></label>
+        <input type="range" id="cs" min="0" max="60" step="1" value="16"></div>
+      <p class="note" id="n3">Drag to turn, or use the arrow keys once the block is focused. The dots mark where your steel crosses each surface.</p>
+    </div>
+    <div class="panel" aria-live="polite">
+      <div class="eyebrow">the chosen steel</div>
+      <div class="region" id="rName">–</div>
+      <dl class="read">
+        <dt><i style="--c:var(--stable)"></i>Ae3, ferrite appears</dt><dd id="rAe3">–</dd>
+        <dt><i style="--c:var(--amber)"></i><span id="rUpName">first carbide</span></dt><dd id="rUp">–</dd>
+        <dt><i style="--c:var(--honey)"></i>lower Ae1, last austenite</dt><dd id="rLo">–</dd>
+        <dt>α + γ + carbide band</dt><dd id="rBand">–</dd>
+      </dl>
+      <p class="note" id="nRead">Small numbers are the shift from plain Fe–C at the same carbon.</p>
+      <div class="row" id="sliceRow" style="margin-top:4px"><span class="lab">slice</span>
+        <button id="tSteel" aria-pressed="true">steel corner</button>
+        <button id="tFull" aria-pressed="false">up to liquid</button>
+      </div>
+      <canvas id="cv2" tabindex="0" aria-label="The chosen isopleth. Move over it to pick a carbon content."></canvas>
+      <div class="key" id="key2"></div>
+    </div>
+  </div>
+</section>
+
+<section id="read">
+  <div class="eyebrow">2 · Reading it</div>
+  <h2>What the surfaces are</h2>
+  <div class="defs">
+    <div><b>Ae3</b><p class="note">The temperature where ferrite first appears on slow cooling. Austenite stabilisers such as Mn, Ni, Cu and Co push it down, and ferrite stabilisers such as Si, Cr, Mo, V, Al and W push it up. On the hypereutectoid side it becomes the line where ferrite joins austenite and carbide.</p></div>
+    <div><b>Acm and upper Ae1</b><p class="note">The temperature where the first carbide appears. Below the eutectoid carbon it is the upper Ae1, the top of the three-phase band. Above it, it is Acm, the cementite solubility line.</p></div>
+    <div><b>Lower Ae1</b><p class="note">The temperature where the last austenite disappears. In plain Fe–C the two Ae1 temperatures are one line at 726.5 °C. A third element opens them into a band where ferrite, austenite and carbide coexist.</p></div>
+  </div>
+  <p class="callout" id="callout" hidden></p>
+</section>
+
+<section id="data">
+  <div class="eyebrow">3 · How it was computed</div>
+  <h2>Data and method</h2>
+  <ul class="plain note" id="method"></ul>
+</section>
+</div>
+
+<script>
+const D={"MN":{"z":[0.0,1.5,3.0,4.5,6.0],"wt":[0.0,1.5,3.0,4.5,6.0],"c":[0.05,0.2,0.4,0.6,0.75,0.9,1.1,1.3,1.5],"map":{},"notes":{"acm_filled_from_map":0},"ae3":[[888.7,836.4,787.2,750.5,728.2,726.5,726.5,726.5,726.5],[825.0,800.0,750.0,725.0,725.0,725.0,725.0,725.0,725.0],[800.0,750.0,725.0,700.0,700.0,700.0,700.0,700.0,700.0],[750.0,725.0,700.0,675.0,675.0,700.0,700.0,700.0,700.0],[725.0,700.0,675.0,675.0,675.0,675.0,675.0,675.0,675.0]],"up":[[726.5,726.5,726.5,726.5,726.5,781.5,855.7,924.7,989.3],[675.0,700.0,700.0,700.0,725.0,775.0,850.0,925.0,1000.0],[625.0,675.0,700.0,700.0,725.0,800.0,850.0,925.0,1000.0],[600.0,650.0,675.0,675.0,750.0,800.0,875.0,925.0,1000.0],[550.0,625.0,650.0,675.0,750.0,800.0,875.0,925.0,975.0]],"lo":[[726.5,726.5,726.5,726.5,726.5,726.5,726.5,726.5,726.5],[675.0,675.0,700.0,700.0,700.0,700.0,700.0,700.0,700.0],[600.0,625.0,650.0,675.0,675.0,675.0,675.0,700.0,700.0],[400.0,550.0,600.0,625.0,650.0,650.0,650.0,675.0,675.0],[null,475.0,550.0,575.0,600.0,625.0,625.0,650.0,650.0]]},"SI":{"z":[0.0,1.25,2.5,3.75,5.0],"wt":[0.0,0.64,1.29,1.95,2.62],"c":[0.05,0.2,0.4,0.6,0.75,0.9,1.1,1.3,1.5],"map":{},"notes":{"acm_filled_from_map":0},"ae3":[[888.7,836.4,787.2,750.5,728.2,726.5,726.5,726.5,726.5],[925.0,875.0,800.0,775.0,750.0,750.0,750.0,750.0,750.0],[975.0,900.0,825.0,775.0,750.0,750.0,750.0,750.0,775.0],[1075.0,950.0,850.0,800.0,775.0,775.0,775.0,775.0,775.0],[null,1000.0,900.0,825.0,800.0,800.0,800.0,800.0,800.0]],"up":[[726.5,726.5,726.5,726.5,726.5,781.5,855.7,924.7,989.3],[725.0,725.0,750.0,750.0,750.0,800.0,875.0,950.0,1000.0],[750.0,750.0,750.0,750.0,750.0,825.0,900.0,950.0,1025.0],[750.0,750.0,775.0,775.0,775.0,825.0,900.0,975.0,1025.0],[775.0,775.0,775.0,775.0,800.0,850.0,925.0,975.0,1025.0]],"lo":[[726.5,726.5,726.5,726.5,726.5,726.5,726.5,726.5,726.5],[725.0,725.0,725.0,725.0,725.0,725.0,750.0,750.0,750.0],[750.0,750.0,750.0,750.0,750.0,750.0,750.0,750.0,750.0],[750.0,750.0,750.0,750.0,775.0,775.0,775.0,775.0,775.0],[775.0,775.0,775.0,775.0,775.0,775.0,775.0,800.0,800.0]]},"NI":{"z":[0.0,1.5,3.0,4.5,6.0],"wt":[0.0,1.6,3.19,4.79,6.38],"c":[0.05,0.2,0.4,0.6,0.75,0.9,1.1,1.3,1.5],"map":{},"notes":{"acm_filled_from_map":0},"ae3":[[888.7,836.4,787.2,750.5,728.2,726.5,726.5,726.5,726.5],[825.0,800.0,750.0,725.0,700.0,700.0,700.0,700.0,700.0],[800.0,750.0,725.0,700.0,700.0,700.0,700.0,700.0,700.0],[750.0,725.0,700.0,675.0,675.0,675.0,675.0,675.0,675.0],[725.0,700.0,675.0,675.0,675.0,650.0,650.0,650.0,650.0]],"up":[[726.5,726.5,726.5,726.5,726.5,781.5,855.7,924.7,989.3],[700.0,700.0,700.0,700.0,725.0,800.0,850.0,925.0,1000.0],[650.0,675.0,675.0,700.0,725.0,800.0,875.0,925.0,1000.0],[625.0,650.0,675.0,675.0,750.0,800.0,875.0,950.0,1000.0],[575.0,625.0,650.0,675.0,750.0,800.0,875.0,950.0,1000.0]],"lo":[[726.5,726.5,726.5,726.5,726.5,726.5,726.5,726.5,726.5],[700.0,675.0,675.0,675.0,675.0,675.0,675.0,675.0,675.0],[625.0,625.0,625.0,625.0,625.0,625.0,600.0,600.0,600.0],[400.0,400.0,400.0,400.0,400.0,400.0,400.0,400.0,400.0],[400.0,400.0,400.0,400.0,400.0,400.0,400.0,400.0,400.0]]},"CR":{"z":[0.0,1.5,3.0,4.5,6.0],"wt":[0.0,1.42,2.84,4.26,5.69],"c":[0.05,0.2,0.4,0.6,0.75,0.9,1.1,1.3,1.5],"map":{},"notes":{"acm_filled_from_map":0},"ae3":[[888.7,836.4,787.2,750.5,728.2,726.5,726.5,726.5,726.5],[875.0,825.0,775.0,750.0,750.0,750.0,750.0,750.0,750.0],[850.0,800.0,775.0,775.0,750.0,750.0,750.0,750.0,750.0],[850.0,800.0,800.0,775.0,775.0,775.0,750.0,750.0,750.0],[825.0,800.0,800.0,800.0,800.0,775.0,775.0,750.0,750.0]],"up":[[726.5,726.5,726.5,726.5,726.5,781.5,855.7,924.7,989.3],[775.0,775.0,750.0,775.0,825.0,875.0,925.0,975.0,1025.0],[800.0,800.0,825.0,875.0,900.0,925.0,975.0,1025.0,1075.0],[800.0,800.0,875.0,925.0,975.0,1000.0,1050.0,1075.0,1125.0],[800.0,825.0,925.0,975.0,1025.0,1050.0,1100.0,1150.0,1175.0]],"lo":[[726.5,726.5,726.5,726.5,726.5,726.5,726.5,726.5,726.5],[775.0,750.0,750.0,750.0,750.0,750.0,750.0,725.0,725.0],[800.0,775.0,750.0,750.0,750.0,750.0,750.0,750.0,750.0],[800.0,800.0,775.0,775.0,750.0,750.0,750.0,750.0,750.0],[800.0,800.0,800.0,800.0,775.0,775.0,750.0,750.0,750.0]]},"MO":{"z":[0.0,0.5,1.0,1.5,2.0],"wt":[0.0,0.87,1.73,2.59,3.44],"c":[0.05,0.2,0.4,0.6,0.75,0.9,1.1,1.3,1.5],"map":{},"notes":{"acm_filled_from_map":0},"ae3":[[888.7,836.4,787.2,750.5,728.2,726.5,726.5,726.5,726.5],[925.0,850.0,800.0,775.0,750.0,725.0,725.0,725.0,725.0],[950.0,875.0,800.0,775.0,750.0,725.0,725.0,725.0,725.0],[1000.0,900.0,825.0,775.0,775.0,750.0,725.0,725.0,725.0],[null,900.0,825.0,800.0,775.0,775.0,750.0,725.0,725.0]],"up":[[726.5,726.5,726.5,726.5,726.5,781.5,855.7,924.7,989.3],[775.0,800.0,800.0,825.0,850.0,875.0,875.0,925.0,1000.0],[850.0,875.0,900.0,900.0,925.0,925.0,950.0,975.0,1000.0],[900.0,950.0,975.0,1000.0,1000.0,1000.0,1000.0,1025.0,1025.0],[925.0,1000.0,1050.0,1050.0,1075.0,1075.0,1075.0,1075.0,1075.0]],"lo":[[726.5,726.5,726.5,726.5,726.5,726.5,726.5,726.5,726.5],[775.0,725.0,725.0,725.0,725.0,725.0,725.0,725.0,725.0],[800.0,750.0,725.0,725.0,725.0,725.0,725.0,725.0,725.0],[825.0,775.0,725.0,725.0,725.0,725.0,725.0,725.0,725.0],[875.0,775.0,775.0,725.0,725.0,725.0,725.0,725.0,725.0]]},"V":{"z":[0.0,0.25,0.5,0.75,1.0],"wt":[0.0,0.23,0.46,0.69,0.93],"c":[0.05,0.2,0.4,0.6,0.75,0.9,1.1,1.3,1.5],"map":{},"notes":{"acm_filled_from_map":0},"ae3":[[888.7,836.4,787.2,750.5,728.2,726.5,726.5,726.5,726.5],[900.0,850.0,800.0,750.0,725.0,725.0,725.0,725.0,725.0],[925.0,875.0,800.0,775.0,750.0,725.0,725.0,725.0,725.0],[950.0,875.0,825.0,775.0,750.0,725.0,725.0,725.0,725.0],[975.0,900.0,825.0,800.0,775.0,750.0,725.0,725.0,725.0]],"up":[[726.5,726.5,726.5,726.5,726.5,781.5,855.7,924.7,989.3],[850.0,900.0,950.0,975.0,1000.0,1000.0,1000.0,1025.0,1025.0],[900.0,975.0,1025.0,1050.0,1075.0,1075.0,1100.0,1100.0,1100.0],[925.0,1025.0,1075.0,1100.0,1125.0,1125.0,1150.0,1150.0,1150.0],[950.0,1050.0,1100.0,1150.0,1150.0,1175.0,1175.0,1200.0,1200.0]],"lo":[[726.5,726.5,726.5,726.5,726.5,726.5,726.5,726.5,726.5],[800.0,725.0,725.0,725.0,725.0,725.0,725.0,725.0,725.0],[850.0,725.0,725.0,725.0,725.0,725.0,725.0,725.0,725.0],[875.0,725.0,725.0,725.0,725.0,725.0,725.0,725.0,725.0],[900.0,825.0,725.0,725.0,725.0,725.0,725.0,725.0,725.0]]},"CU":{"z":[0.0,0.5,1.0,1.5,2.0],"wt":[0.0,0.58,1.15,1.73,2.3],"c":[0.05,0.2,0.4,0.6,0.75,0.9,1.1,1.3,1.5],"map":{},"notes":{"acm_filled_from_map":0},"ae3":[[888.7,836.4,787.2,750.5,728.2,726.5,726.5,726.5,726.5],[875.0,825.0,775.0,750.0,725.0,725.0,725.0,725.0,725.0],[850.0,825.0,775.0,725.0,725.0,725.0,725.0,725.0,725.0],[850.0,800.0,750.0,725.0,725.0,725.0,725.0,725.0,725.0],[825.0,800.0,750.0,725.0,725.0,725.0,725.0,725.0,725.0]],"up":[[726.5,726.5,726.5,726.5,726.5,781.5,855.7,924.7,989.3],[725.0,725.0,725.0,725.0,725.0,775.0,850.0,925.0,1000.0],[725.0,725.0,725.0,725.0,725.0,800.0,875.0,925.0,1000.0],[725.0,725.0,725.0,725.0,725.0,800.0,875.0,925.0,1000.0],[725.0,725.0,725.0,725.0,725.0,800.0,875.0,925.0,1000.0]],"lo":[[726.5,726.5,726.5,726.5,726.5,726.5,726.5,726.5,726.5],[725.0,725.0,725.0,725.0,725.0,725.0,725.0,725.0,725.0],[725.0,725.0,725.0,725.0,725.0,725.0,725.0,725.0,725.0],[725.0,725.0,725.0,725.0,725.0,725.0,725.0,725.0,725.0],[725.0,725.0,725.0,725.0,725.0,725.0,725.0,725.0,725.0]]},"AL":{"z":[0.0,1.0,2.0,3.0,4.0],"wt":[0.0,0.49,0.99,1.49,2.0],"c":[0.05,0.2,0.4,0.6,0.75,0.9,1.1,1.3,1.5],"map":{},"notes":{"acm_filled_from_map":0},"ae3":[[888.7,836.4,787.2,750.5,728.2,726.5,726.5,726.5,726.5],[975.0,900.0,825.0,775.0,750.0,750.0,750.0,750.0,750.0],[null,950.0,875.0,800.0,775.0,750.0,750.0,750.0,750.0],[null,1025.0,900.0,850.0,800.0,775.0,750.0,750.0,750.0],[null,null,950.0,875.0,825.0,775.0,750.0,750.0,750.0]],"up":[[726.5,726.5,726.5,726.5,726.5,781.5,855.7,924.7,989.3],[725.0,725.0,725.0,750.0,750.0,750.0,825.0,900.0,975.0],[750.0,750.0,750.0,750.0,750.0,750.0,800.0,875.0,950.0],[750.0,750.0,750.0,750.0,750.0,750.0,800.0,850.0,925.0],[750.0,750.0,750.0,750.0,750.0,750.0,750.0,825.0,900.0]],"lo":[[726.5,726.5,726.5,726.5,726.5,726.5,726.5,726.5,726.5],[725.0,725.0,725.0,725.0,725.0,725.0,725.0,725.0,725.0],[750.0,750.0,750.0,750.0,750.0,750.0,750.0,750.0,750.0],[750.0,750.0,750.0,750.0,750.0,750.0,750.0,750.0,750.0],[750.0,750.0,750.0,750.0,750.0,750.0,750.0,750.0,750.0]]},"CO":{"z":[0.0,1.0,2.0,3.0,4.0],"wt":[0.0,1.07,2.14,3.21,4.27],"c":[0.05,0.2,0.4,0.6,0.75,0.9,1.1,1.3,1.5],"map":{},"notes":{"acm_filled_from_map":0},"ae3":[[888.7,836.4,787.2,750.5,728.2,726.5,726.5,726.5,726.5],[900.0,850.0,800.0,750.0,750.0,725.0,725.0,725.0,725.0],[900.0,850.0,800.0,775.0,750.0,750.0,750.0,750.0,750.0],[900.0,850.0,800.0,775.0,750.0,750.0,750.0,750.0,750.0],[900.0,850.0,825.0,775.0,775.0,750.0,750.0,750.0,750.0]],"up":[[726.5,726.5,726.5,726.5,726.5,781.5,855.7,924.7,989.3],[725.0,725.0,725.0,725.0,725.0,775.0,850.0,925.0,1000.0],[725.0,750.0,750.0,750.0,750.0,775.0,850.0,925.0,1000.0],[750.0,750.0,750.0,750.0,750.0,775.0,850.0,925.0,1000.0],[750.0,750.0,750.0,750.0,750.0,800.0,850.0,925.0,1000.0]],"lo":[[726.5,726.5,726.5,726.5,726.5,726.5,726.5,726.5,726.5],[725.0,725.0,725.0,725.0,725.0,725.0,725.0,725.0,725.0],[725.0,750.0,750.0,750.0,750.0,750.0,750.0,750.0,750.0],[750.0,750.0,750.0,750.0,750.0,750.0,750.0,750.0,750.0],[750.0,750.0,750.0,750.0,750.0,750.0,750.0,750.0,750.0]]},"W":{"z":[0.0,0.25,0.5,0.75,1.0],"wt":[0.0,0.83,1.65,2.46,3.26],"c":[0.05,0.2,0.4,0.6,0.75,0.9,1.1,1.3,1.5],"map":{},"notes":{"acm_filled_from_map":0},"ae3":[[888.7,836.4,787.2,750.5,728.2,726.5,726.5,726.5,726.5],[900.0,850.0,800.0,750.0,725.0,725.0,725.0,725.0,725.0],[925.0,850.0,800.0,775.0,750.0,725.0,725.0,725.0,725.0],[925.0,null,825.0,775.0,750.0,725.0,725.0,725.0,725.0],[null,875.0,825.0,775.0,750.0,725.0,725.0,725.0,725.0]],"up":[[726.5,726.5,726.5,726.5,726.5,781.5,855.7,924.7,989.3],[800.0,825.0,850.0,875.0,900.0,925.0,950.0,950.0,1000.0],[850.0,850.0,900.0,950.0,975.0,1000.0,1025.0,1050.0,1050.0],[875.0,null,950.0,1000.0,1025.0,1050.0,1075.0,1100.0,1125.0],[null,950.0,1000.0,1025.0,1050.0,1075.0,1100.0,1150.0,1150.0]],"lo":[[726.5,726.5,726.5,726.5,726.5,726.5,726.5,726.5,726.5],[775.0,725.0,725.0,725.0,725.0,725.0,725.0,725.0,725.0],[825.0,725.0,725.0,725.0,725.0,725.0,725.0,725.0,725.0],[850.0,null,725.0,725.0,725.0,725.0,725.0,725.0,725.0],[null,775.0,725.0,725.0,725.0,725.0,725.0,725.0,725.0]]}};
+const PUB=true;
+const $=id=>document.getElementById(id);
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const NAME={MN:"manganese",SI:"silicon",NI:"nickel",CR:"chromium",MO:"molybdenum",V:"vanadium",CU:"copper",AL:"aluminium",CO:"cobalt",W:"tungsten"};
+const SYM={MN:"Mn",SI:"Si",NI:"Ni",CR:"Cr",MO:"Mo",V:"V",CU:"Cu",AL:"Al",CO:"Co",W:"W"};
+const ELS=Object.keys(D);
+const T3=[350,1100];
+let el=ELS[0],zi=-1,ci=-1,yaw=-0.62,pitch=0.42,full=false,anim=null;
+const S={ae3:true,up:true,lo:true,sl:true};
+const SURF=[["ae3","--stable"],["up","--amber"],["lo","--honey"]];
+const MAPCOL={BCC:["--ink",[]],FCC:["--honey",[]],CEMENTITE:["--amber",[]],M23C6:["--rust",[5,4]],LIQUID:["--rust",[]]};
+const PRIVNOTE={MN:'With manganese the lower Ae1 drops fast at low carbon and stops at a flat step at 481 °C, where TCFE14 has a four-phase reaction between austenite, ferrite, cementite and M₂₃C₆.',
+  SI:'With silicon the Ae3 at very low carbon climbs steeply and then leaves the block, because silicon closes the austenite loop.',
+  NI:'Nickel acts like manganese but with a wider band: Ae3 about −20 °C and lower Ae1 about −33 °C per at%, and the eutectoid moves to 0.55 wt% C at 6 at%.',
+  CR:'Chromium barely moves Ae3 but lifts the upper line (a chromium carbide solvus, not cementite). The eutectoid shifts to much lower carbon, 0.31 wt% C at 3 at%.',
+  MO:'Molybdenum lifts the first-carbide line by about 176 °C per at% (a Mo carbide, not cementite). The eutectoid falls to 0.19 wt% C at 1 at%. A few points are missing.',
+  V:'Vanadium: the first-carbide line is the VC solvus and rises about 600 °C per at% at 0.4 wt% C. The eutectoid falls below 0.1 wt% C.',
+  CU:'Copper lowers all three surfaces slightly (about −9 to −19 °C per at%) and the band stays essentially closed in the block.',
+  AL:'Aluminium raises Ae3 strongly (about +41 °C per at%) and the eutectoid carbon rises to 0.92 wt% at 2 at%. Ae3 leaves the block at low carbon, a few points are missing.',
+  CO:'Cobalt raises all three surfaces a little (about +6 to +8 °C per at%) and the eutectoid carbon creeps up.',
+  W:'Tungsten: the first-carbide line is a W carbide solvus rising about 365 °C per at%. Some points are missing, so those surfaces have holes.'};
+const PUBNOTE={MN:'Manganese lowers Ae3 and the Ae1 temperatures, and opens a wide band where ferrite, austenite and carbide coexist.',
+  SI:'Silicon raises Ae3 and the Ae1 temperatures. At low carbon it closes the austenite loop, so the Ae3 surface leaves the block.',
+  NI:'Nickel lowers Ae3 and the Ae1 temperatures, a lot like manganese, and widens the band where ferrite, austenite and carbide coexist.',
+  CR:'Chromium hardly changes Ae3 but raises the first-carbide line, because the carbide that forms first is a chromium carbide. The eutectoid moves to much lower carbon.',
+  MO:'Molybdenum raises the first-carbide line steeply, since an alloy carbide forms first. The eutectoid moves to lower carbon and higher temperature.',
+  V:'Vanadium is a very strong carbide former. The first-carbide line is the vanadium carbide solvus and climbs very fast, so the eutectoid moves to almost no carbon.',
+  CU:'Copper lowers all three temperatures slightly and keeps the band narrow.',
+  AL:'Aluminium raises Ae3 strongly and shifts the eutectoid to higher carbon. It closes the austenite loop at low carbon.',
+  CO:'Cobalt raises the three temperatures a little and shifts the eutectoid slightly to higher carbon.',
+  W:'Tungsten is a strong carbide former. The first-carbide line is the tungsten carbide solvus and climbs fast, so the eutectoid moves to low carbon.'};
+const d=()=>D[el];
+const fmt=v=>v==null?null:v.toFixed(1);
+
+/* ---------- canvas sizing ---------- */
+function fit(cv,ratio){const r=cv.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,2);
+  const w=Math.max(260,r.width),h=Math.round(w*ratio);cv.style.height=h+'px';
+  if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr)}
+  const x=cv.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);return {x,w,h}}
+
+/* ---------- 3D projection ---------- */
+function P(wc,z,T,V){const zmax=d().z[d().z.length-1];
+  const X=wc/1.5*2-1,Y=z/zmax*2-1,H=((T-T3[0])/(T3[1]-T3[0]))*1.5-0.75;
+  const cy=Math.cos(yaw),sy=Math.sin(yaw),cp=Math.cos(pitch),sp=Math.sin(pitch);
+  const x1=X*cy-Y*sy,y1=X*sy+Y*cy;const up=H*cp+y1*sp,dep=y1*cp-H*sp;
+  const f=1/(1+dep*0.11);return [V.cx+x1*V.s*f,V.cy-up*V.s*f,dep]}
+
+function draw3(){
+  const {x,w,h}=fit($('cv3'),$('cv3').getBoundingClientRect().width<520?1.0:0.8);const zm=d().z[d().z.length-1];
+  const V0={cx:0,cy:0,s:1},bb=[1e9,1e9,-1e9,-1e9];
+  for(const c of [0,1.5])for(const z of [0,zm])for(const T of T3){const p=P(c,z,T,V0);bb[0]=Math.min(bb[0],p[0]);bb[1]=Math.min(bb[1],p[1]);bb[2]=Math.max(bb[2],p[0]);bb[3]=Math.max(bb[3],p[1])}
+  const pad=Math.max(44,w*0.085),sc=Math.min((w-2*pad)/(bb[2]-bb[0]),(h-2*pad)/(bb[3]-bb[1]));
+  const V={s:sc,cx:w/2-sc*(bb[0]+bb[2])/2,cy:h/2-sc*(bb[1]+bb[3])/2};
+  x.clearRect(0,0,w,h);x.fillStyle=css('--panel');x.fillRect(0,0,w,h);
+  const D0=d(),zmax=D0.z[D0.z.length-1],zst=[0.1,0.25,0.5,1,2].find(q=>zmax/q<=6),ink=css('--ink'),mut=css('--muted'),grid=css('--grid'),rule=css('--rule');
+  x.font='12px '+css('--mono');x.lineWidth=1;
+  const L=(a,b,col,lw=1,dash=[])=>{x.strokeStyle=col;x.lineWidth=lw;x.setLineDash(dash);x.beginPath();x.moveTo(a[0],a[1]);x.lineTo(b[0],b[1]);x.stroke();x.setLineDash([])};
+  // floor grid and back walls
+  for(let c=0;c<=1.5001;c+=0.25)L(P(c,0,T3[0],V),P(c,zmax,T3[0],V),grid);
+  for(let z=0;z<=zmax+1e-6;z+=zst)L(P(0,z,T3[0],V),P(1.5,z,T3[0],V),grid);
+  const corners=[[0,0],[1.5,0],[1.5,zmax],[0,zmax]];
+  const back=corners.map(c=>[c,P(c[0],c[1],T3[0],V)[2]]).sort((a,b)=>b[1]-a[1])[0][0];
+  for(let T=400;T<=T3[1];T+=100){L(P(0,back[1],T,V),P(1.5,back[1],T,V),grid);L(P(back[0],0,T,V),P(back[0],zmax,T,V),grid)}
+  // box edges
+  corners.forEach((c,i)=>{const n=corners[(i+1)%4];L(P(c[0],c[1],T3[0],V),P(n[0],n[1],T3[0],V),rule)});
+  corners.forEach(c=>L(P(c[0],c[1],T3[0],V),P(c[0],c[1],T3[1],V),rule));
+  // surfaces, painter's order
+  const quads=[];const LX=0.35,LY=-0.45,LZ=0.82;
+  SURF.forEach(([k,col])=>{if(!S[k])return;const g=D0[k],cs=D0.c,zs=D0.z;
+    for(let i=0;i<zs.length-1;i++)for(let j=0;j<cs.length-1;j++){
+      const v=[g[i][j],g[i][j+1],g[i+1][j+1],g[i+1][j]];if(v.some(t=>t==null)||v.every(t=>t>T3[1]))continue;for(let k=0;k<4;k++)v[k]=Math.min(v[k],T3[1]);
+      const pts=[[cs[j],zs[i],v[0]],[cs[j+1],zs[i],v[1]],[cs[j+1],zs[i+1],v[2]],[cs[j],zs[i+1],v[3]]];
+      const pr=pts.map(p=>P(p[0],p[1],p[2],V));
+      // normal in scaled world units for shading
+      const ax=(cs[j+1]-cs[j])/1.5*2,ah=((v[1]-v[0])/(T3[1]-T3[0]))*1.5,bz=(zs[i+1]-zs[i])/zmax*2,bh=((v[3]-v[0])/(T3[1]-T3[0]))*1.5;
+      let nx=-ah*bz,ny=-ax*bh,nh=ax*bz;const nl=Math.hypot(nx,ny,nh)||1;
+      const sh=Math.abs((nx*LX+ny*LY+nh*LZ)/nl);
+      quads.push([pr.reduce((s,p)=>s+p[2],0)/4,pr,col,sh])}});
+  quads.sort((a,b)=>b[0]-a[0]);
+  const colv={};SURF.forEach(([k,c])=>colv[c]=css(c));
+  quads.forEach(([_,pr,col,sh])=>{x.beginPath();x.moveTo(pr[0][0],pr[0][1]);for(let k=1;k<4;k++)x.lineTo(pr[k][0],pr[k][1]);x.closePath();
+    x.globalAlpha=0.28+0.5*sh;x.fillStyle=colv[col];x.fill();x.globalAlpha=0.35;x.strokeStyle=colv[col];x.lineWidth=0.6;x.stroke()});
+  x.globalAlpha=1;
+  // chosen slice: plane outline + mapped lines + bisection curves
+  const z=D0.z[zi];
+  if(S.sl&&!window.NOCURSOR){
+    const rust=css('--rust');x.globalAlpha=.55;
+    [[0,T3[0],1.5,T3[0]],[1.5,T3[0],1.5,T3[1]],[1.5,T3[1],0,T3[1]],[0,T3[1],0,T3[0]]].forEach(s=>L(P(s[0],z,s[1],V),P(s[2],z,s[3],V),rust,1,[4,4]));
+    x.globalAlpha=1;
+    SURF.forEach(([k,col])=>{const g=D0[k][zi];x.strokeStyle=rust;x.lineWidth=2.2;x.beginPath();let on=false;
+      D0.c.forEach((c,j)=>{const t=g[j];if(t==null||t>T3[1]){on=false;return}const p=P(c,z,t,V);if(on)x.lineTo(p[0],p[1]);else{x.moveTo(p[0],p[1]);on=true}});x.stroke()});
+  }
+  // steel cursor: vertical guide and crossing dots
+  if(!window.NOCURSOR){const wc=D0.c[ci];L(P(wc,z,T3[0],V),P(wc,z,T3[1],V),css('--accent'),1,[2,3]);
+  SURF.forEach(([k,col])=>{const t=D0[k][zi][ci];if(t==null||t>T3[1])return;const p=P(wc,z,t,V);
+    x.fillStyle=css(col);x.strokeStyle=css('--panel');x.lineWidth=2;x.beginPath();x.arc(p[0],p[1],5,0,7);x.fill();x.stroke()})}
+  // axis labels, pushed outwards from the floor centre by a fixed number of pixels
+  x.fillStyle=mut;x.textAlign='center';x.textBaseline='middle';
+  const ctr=P(0.75,zmax/2,T3[0],V);
+  const out=(p,k)=>{const dx=p[0]-ctr[0],dy=p[1]-ctr[1],n=Math.hypot(dx,dy)||1;return [p[0]+dx/n*k,p[1]+dy/n*k]};
+  const len=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
+  const front=(pairs)=>pairs.map(e=>[e,P(...e[0],T3[0],V)[1]+P(...e[1],T3[0],V)[1]]).sort((a,b)=>b[1]-a[1])[0][0];
+  // carbon axis: the floor edge (z = 0 or z = max) lower on screen
+  const ce=front([[[0,0],[1.5,0]],[[0,zmax],[1.5,zmax]]])[0][1];
+  if(len(P(0,ce,T3[0],V),P(1.5,ce,T3[0],V))>70){
+    for(let c=0.5;c<=1.5001;c+=0.5){const o=out(P(c,ce,T3[0],V),16);x.fillText(c.toFixed(1),o[0],o[1])}
+    const o=out(P(0.75,ce,T3[0],V),36);x.fillStyle=ink;x.fillText('wt% C',o[0],o[1]);x.fillStyle=mut}
+  // alloy axis: the floor edge (C = 0 or C = 1.5) lower on screen
+  const ze=front([[[0,0],[0,zmax]],[[1.5,0],[1.5,zmax]]])[0][0];
+  if(len(P(ze,0,T3[0],V),P(ze,zmax,T3[0],V))>70){
+    for(let k=1;k*zst<=zmax+1e-6;k++){const zz=k*zst,o=out(P(ze,zz,T3[0],V),16);x.fillText(String(+zz.toFixed(2)),o[0],o[1])}
+    const o=out(P(ze,zmax/2,T3[0],V),38);x.fillStyle=ink;x.fillText('at% '+SYM[el],o[0],o[1]);x.fillStyle=mut}
+  // temperature: the vertical edge furthest left on screen
+  const ve=corners.map(c=>[c,P(c[0],c[1],T3[0],V)[0]]).sort((a,b)=>a[1]-b[1])[0][0];
+  x.textAlign='right';
+  if(!PUB)for(let T=500;T<=T3[1];T+=100){const p=P(ve[0],ve[1],T,V);x.fillText(T+'',p[0]-8,p[1])}
+  {const p=P(ve[0],ve[1],T3[1],V);x.fillStyle=ink;if(PUB){x.textAlign='center';x.fillText('temperature ↑',Math.max(p[0],56),p[1]-18)}else x.fillText('°C',p[0]-8,p[1]-18)}
+}
+
+/* ---------- 2D slice ---------- */
+const M2={l:52,r:12,t:12,b:38};
+function v2(){return full?[350,1600]:[350,1100]}
+function draw2pub(){
+  const {x,w,h}=fit($('cv2'),0.82);const Y2=[350,1100],D0=d();
+  const X=c=>M2.l+(c/1.5)*(w-M2.l-M2.r),Y=T=>h-M2.b-((T-Y2[0])/(Y2[1]-Y2[0]))*(h-M2.t-M2.b);
+  x.clearRect(0,0,w,h);x.fillStyle=css('--panel');x.fillRect(0,0,w,h);
+  x.font='12px '+css('--mono');x.strokeStyle=css('--grid');x.lineWidth=1;x.fillStyle=css('--muted');
+  x.textAlign='center';x.textBaseline='top';
+  for(let c=0;c<=1.5001;c+=0.25){x.beginPath();x.moveTo(X(c),M2.t);x.lineTo(X(c),h-M2.b);x.stroke();if(Math.abs(c*2-Math.round(c*2))<1e-6)x.fillText(c.toFixed(1),X(c),h-M2.b+6)}
+  x.strokeStyle=css('--rule');x.beginPath();x.rect(M2.l,M2.t,w-M2.l-M2.r,h-M2.t-M2.b);x.stroke();
+  x.fillStyle=css('--ink');x.textAlign='center';x.textBaseline='bottom';x.fillText('wt% C',(M2.l+w-M2.r)/2,h-2);
+  x.save();x.translate(12,(M2.t+h-M2.b)/2);x.rotate(-Math.PI/2);x.textBaseline='middle';x.fillText('temperature',0,0);x.restore();
+  x.save();x.beginPath();x.rect(M2.l,M2.t,w-M2.l-M2.r,h-M2.t-M2.b);x.clip();
+  x.strokeStyle=css('--muted');x.lineWidth=1;x.setLineDash([2,3]);x.beginPath();x.moveTo(M2.l,Y(726.5));x.lineTo(w-M2.r,Y(726.5));x.stroke();x.setLineDash([]);
+  const path=(arr,col,lw,dash)=>{x.strokeStyle=col;x.lineWidth=lw;x.setLineDash(dash);x.beginPath();let on=false;
+    D0.c.forEach((c,j)=>{const t=arr[j];if(t==null){on=false;return}const px=X(c),py=Y(Math.min(t,Y2[1]));if(on)x.lineTo(px,py);else{x.moveTo(px,py);on=true}});x.stroke();x.setLineDash([])};
+  if(zi>0)SURF.forEach(([k])=>path(D0[k][0],css('--muted'),1.3,[5,4]));
+  SURF.forEach(([k,col])=>path(D0[k][zi],css(col),2,[]));
+  const wc=D0.c[ci];x.strokeStyle=css('--accent');x.setLineDash([3,3]);x.lineWidth=1.2;x.beginPath();x.moveTo(X(wc),M2.t);x.lineTo(X(wc),h-M2.b);x.stroke();x.setLineDash([]);
+  SURF.forEach(([k,col])=>{const t=D0[k][zi][ci];if(t==null)return;x.fillStyle=css(col);x.strokeStyle=css('--panel');x.lineWidth=2;x.beginPath();x.arc(X(wc),Y(Math.min(t,Y2[1])),4.5,0,7);x.fill();x.stroke()});
+  x.restore();
+  {const t='727 °C, plain Fe–C A1',tw=x.measureText(t).width;x.globalAlpha=.85;x.fillStyle=css('--panel');x.fillRect(M2.l+4,Y(726.5)+4,tw+8,16);x.globalAlpha=1;x.fillStyle=css('--muted');x.textAlign='left';x.textBaseline='top';x.fillText(t,M2.l+8,Y(726.5)+6)}
+}
+function draw2(){
+  if(PUB){draw2pub();return}
+  const {x,w,h}=fit($('cv2'),0.82);const Y2=v2();
+  const X=c=>M2.l+(c/1.5)*(w-M2.l-M2.r),Y=T=>h-M2.b-((T-Y2[0])/(Y2[1]-Y2[0]))*(h-M2.t-M2.b);
+  x.clearRect(0,0,w,h);x.fillStyle=css('--panel');x.fillRect(0,0,w,h);
+  x.font='12px '+css('--mono');x.strokeStyle=css('--grid');x.lineWidth=1;x.fillStyle=css('--muted');
+  x.textAlign='center';x.textBaseline='top';
+  for(let c=0;c<=1.5001;c+=0.25){x.beginPath();x.moveTo(X(c),M2.t);x.lineTo(X(c),h-M2.b);x.stroke();if(Math.abs(c*2-Math.round(c*2))<1e-6)x.fillText(c.toFixed(1),X(c),h-M2.b+6)}
+  x.textAlign='right';x.textBaseline='middle';const step=full?200:100;
+  for(let T=Math.ceil(Y2[0]/step)*step;T<=Y2[1];T+=step){x.beginPath();x.moveTo(M2.l,Y(T));x.lineTo(w-M2.r,Y(T));x.stroke();x.fillText(T,M2.l-6,Y(T))}
+  x.fillStyle=css('--ink');x.textAlign='center';x.textBaseline='bottom';x.fillText('wt% C',(M2.l+w-M2.r)/2,h-2);
+  x.save();x.translate(12,(M2.t+h-M2.b)/2);x.rotate(-Math.PI/2);x.textBaseline='middle';x.fillText('T (°C)',0,0);x.restore();
+  x.save();x.beginPath();x.rect(M2.l,M2.t,w-M2.l-M2.r,h-M2.t-M2.b);x.clip();
+  const lines=d().map[String(d().z[zi])]||[];
+  lines.forEach(([ph,xy])=>{const st=MAPCOL[ph]||["--stable",[]];x.strokeStyle=css(st[0]);x.setLineDash(st[1]);x.lineWidth=1.7;x.beginPath();
+    for(let k=0;k<xy.length;k+=2){const px=X(xy[k]),py=Y(xy[k+1]);k?x.lineTo(px,py):x.moveTo(px,py)}x.stroke()});
+  x.setLineDash([]);
+  const wc=d().c[ci];x.strokeStyle=css('--accent');x.setLineDash([3,3]);x.lineWidth=1.2;x.beginPath();x.moveTo(X(wc),M2.t);x.lineTo(X(wc),h-M2.b);x.stroke();x.setLineDash([]);
+  SURF.forEach(([k,col])=>{const t=d()[k][zi][ci];if(t==null)return;x.fillStyle=css(col);x.strokeStyle=css('--panel');x.lineWidth=2;x.beginPath();x.arc(X(wc),Y(t),4.5,0,7);x.fill();x.stroke()});
+  x.restore();
+}
+
+/* ---------- readout ---------- */
+function shift(v,v0){if(v==null||v0==null)return null;const d=v-v0,a=Math.abs(d);
+  if(a<13)return '≈ unchanged';const up=d>0,n=a<40?1:(a<100?2:3);
+  return (up?'↑':'↓').repeat(n)+' '+(up?'raised':'lowered')+' '+['slightly','moderately','strongly'][n-1]}
+function readPub(){
+  const D0=d(),z=D0.z[zi],wc=D0.c[ci];
+  $('zv').textContent=z.toFixed(2)+' at%'+(z>0?' (≈ '+D0.wt[zi].toFixed(2)+' wt%)':'');
+  $('cv').textContent=wc.toFixed(3).replace(/0$/,'')+' wt%';
+  $('rName').textContent=z>0?`Fe–${wc.toFixed(3).replace(/0$/,'')} C–${z.toFixed(2)} at% ${SYM[el]}`:`plain Fe–${wc.toFixed(3).replace(/0$/,'')} C`;
+  const a=D0.ae3[zi][ci],u=D0.up[zi][ci],l=D0.lo[zi][ci],a0=D0.ae3[0][ci],u0=D0.up[0][ci],l0=D0.lo[0][ci];
+  const hyper=a!=null&&u!=null&&u>a;
+  $('rUpName').textContent=hyper?'Acm, cementite appears':(wc<0.03?'carbide solvus':'upper Ae1, first carbide');
+  const show=(v,v0,miss)=>v==null?miss:(z===0?`${fmt(v)} °C`:(shift(v,v0)||'–'));
+  $('rAe3').textContent=show(a,a0,el==='SI'?'no austenite':'–');
+  $('rUp').textContent=show(u,u0,'below the plotted range');
+  $('rLo').textContent=show(l,l0,a==null?'–':'below the plotted range');
+  const bw=hyper?(a!=null&&l!=null?a-l:null):(u!=null&&l!=null&&wc>=0.03?u-l:null);
+  $('rBand').textContent=bw==null?'–':(z===0?'none, one A1 line':(bw<20?'narrow':(bw<60?'moderate':'wide')));
+}
+function read(){
+  if(PUB){readPub();return}
+  const D0=d(),z=D0.z[zi],wc=D0.c[ci];
+  $('zv').textContent=z.toFixed(2)+' at%'+(z>0?' (≈ '+D0.wt[zi].toFixed(2)+' wt%)':'');
+  $('cv').textContent=wc.toFixed(3).replace(/0$/,'')+' wt%';
+  $('rName').textContent=z>0?`Fe–${wc.toFixed(3).replace(/0$/,'')} C–${z.toFixed(2)} at% ${SYM[el]}`:`plain Fe–${wc.toFixed(3).replace(/0$/,'')} C`;
+  const a=D0.ae3[zi][ci],u=D0.up[zi][ci],l=D0.lo[zi][ci];
+  const a0=D0.ae3[0][ci],u0=D0.up[0][ci],l0=D0.lo[0][ci];
+  const dl=(v,v0)=>v==null?'':(z>0&&v0!=null?`<small>${v-v0>=0?'+':'−'}${Math.abs(v-v0).toFixed(1)}</small>`:'');
+  const hyper=a!=null&&u!=null&&u>a;
+  $('rUpName').textContent=hyper?'Acm, cementite appears':(wc<0.03?'carbide solvus':'upper Ae1, first carbide');
+  $('rAe3').innerHTML=a!=null?`${fmt(a)} °C${dl(a,a0)}`:(el==='SI'?'no austenite':'–');
+  $('rUp').innerHTML=u!=null?`${fmt(u)} °C${dl(u,u0)}`:'below 350 °C';
+  $('rLo').innerHTML=l!=null?`${fmt(l)} °C${dl(l,l0)}`:(a==null?'–':'below 350 °C');
+  $('rBand').textContent=(u!=null&&l!=null&&!hyper&&wc>=0.03)?`${(u-l).toFixed(1)} K`:(hyper&&a!=null&&l!=null?`${(a-l).toFixed(1)} K`:'–');
+}
+
+/* ---------- wiring ---------- */
+function all(){read();draw3();draw2()}
+let raf=0;function soon(){if(!raf)raf=requestAnimationFrame(()=>{raf=0;all()})}
+function setEl(e){el=e;ELS.forEach(k=>$('e'+k).setAttribute('aria-pressed',k===e));
+  $('zlab').textContent=NAME[e];const n=d().z.length-1;$('zs').max=n;zi=zi<0?Math.round(n*(PUB?0.5:0.5)):Math.min(zi,n);$('zs').value=zi;
+  const nc=d().c.length-1;$('cs').max=nc;if(ci<0)ci=Math.max(0,d().c.indexOf(0.4));ci=Math.min(ci,nc);$('cs').value=ci;
+  const cl=(PUB?PUBNOTE:PRIVNOTE)[e];$('callout').hidden=!cl;$('callout').textContent=cl||'';soon()}
+$('els').innerHTML=ELS.map(k=>`<button id="e${k}" aria-pressed="false">${SYM[k]}</button>`).join('');
+ELS.forEach(k=>$('e'+k).onclick=()=>setEl(k));
+$('zs').oninput=e=>{zi=+e.target.value;soon()};$('cs').oninput=e=>{ci=+e.target.value;soon()};
+[['sAe3','ae3'],['sUp','up'],['sLo','lo'],['sSl','sl']].forEach(([id,k])=>$(id).onchange=e=>{S[k]=e.target.checked;soon()});
+const PRESET={p3d:[-0.62,0.42],pFront:[0,0],pSide:[-Math.PI/2,0],pTop:[0,Math.PI/2-0.001]};
+function press(id){Object.keys(PRESET).forEach(k=>$(k).setAttribute('aria-pressed',k===id))}
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+Object.entries(PRESET).forEach(([id,[ty,tp]])=>$(id).onclick=()=>{press(id);cancelAnimationFrame(anim);
+  if(reduce){yaw=ty;pitch=tp;soon();return}
+  const y0=yaw,p0=pitch,t0=performance.now();const step=t=>{const k=Math.min(1,(t-t0)/450),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+    yaw=y0+(ty-y0)*e;pitch=p0+(tp-p0)*e;all();if(k<1)anim=requestAnimationFrame(step)};anim=requestAnimationFrame(step)});
+$('tSteel').onclick=()=>{full=false;$('tSteel').setAttribute('aria-pressed',true);$('tFull').setAttribute('aria-pressed',false);soon()};
+$('tFull').onclick=()=>{full=true;$('tFull').setAttribute('aria-pressed',true);$('tSteel').setAttribute('aria-pressed',false);soon()};
+let drag=null;const cv3=$('cv3');
+cv3.addEventListener('pointerdown',e=>{drag=[e.clientX,e.clientY,yaw,pitch];cv3.setPointerCapture(e.pointerId);press('')});
+cv3.addEventListener('pointermove',e=>{if(!drag)return;yaw=drag[2]+(e.clientX-drag[0])*0.008;pitch=Math.max(-0.15,Math.min(Math.PI/2-0.001,drag[3]+(e.clientY-drag[1])*0.006));soon()});
+cv3.addEventListener('pointerup',()=>drag=null);cv3.addEventListener('pointercancel',()=>drag=null);
+cv3.addEventListener('keydown',e=>{const k={ArrowLeft:[-.08,0],ArrowRight:[.08,0],ArrowUp:[0,-.06],ArrowDown:[0,.06]}[e.key];if(!k)return;e.preventDefault();press('');
+  yaw+=k[0];pitch=Math.max(-0.15,Math.min(Math.PI/2-0.001,pitch+k[1]));soon()});
+const cv2=$('cv2');
+function pick2(e){const r=cv2.getBoundingClientRect(),w=r.width;const c=((e.clientX-r.left)-M2.l)/(w-M2.l-M2.r)*1.5;
+  if(c<0||c>1.5)return;const cs=d().c;let b=0;cs.forEach((v,j)=>{if(Math.abs(v-c)<Math.abs(cs[b]-c))b=j});ci=b;$('cs').value=ci;soon()}
+cv2.addEventListener('pointermove',e=>{if(e.pointerType==='mouse'||e.buttons)pick2(e)});cv2.addEventListener('pointerdown',pick2);
+cv2.addEventListener('keydown',e=>{const k={ArrowLeft:-1,ArrowRight:1}[e.key];if(!k)return;e.preventDefault();ci=Math.max(0,Math.min(d().c.length-1,ci+k));$('cs').value=ci;soon()});
+$('key3').innerHTML=`<span style="--c:var(--stable)">Ae3</span><span style="--c:var(--amber)">Acm / upper Ae1</span><span style="--c:var(--honey)">lower Ae1</span><span style="--c:var(--rust)">chosen slice</span>`;
+$('key2').innerHTML=`<span style="--c:var(--ink)">ferrite</span><span style="--c:var(--honey)">austenite</span><span style="--c:var(--amber)">cementite</span><span style="--c:var(--rust);--s:dashed">M₂₃C₆</span><span style="--c:var(--rust)">liquid</span>`;
+new ResizeObserver(soon).observe($('cv3'));
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',soon);
+new MutationObserver(soon).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+const nz=Math.max(...ELS.map(k=>D[k].z.length)),nzm=Math.min(...ELS.map(k=>D[k].z.length));
+const list=ELS.map(k=>SYM[k]).join(', ').replace(/, ([^,]*)$/,' and $1');
+$('eyebrow').textContent='Fe–C–'+ELS.map(k=>SYM[k]).join(' · Fe–C–')+' · Thermo-Calc TCFE14 · interactive 3D';
+$('h2block').textContent=PUB?'Three surfaces through a stack of Fe–C diagrams':`Three surfaces through ${nzm===nz?nz:nzm+' to '+nz} isopleths`;
+if(PUB){
+  $('lede').textContent=`How ${list} move the steel corner of the Fe–C diagram. The block stacks Fe–C diagrams for increasing alloy content: carbon runs left to right, temperature runs up and the alloying element runs into the page. Plain Fe–C is exact. For the alloyed steels the page shows only the direction and rough size of each shift, as arrows and words.`;
+  $('sliceRow').hidden=true;$('pFront').textContent='diagram';
+  $('nRead').textContent='Arrows give the direction and rough size of the shift from plain Fe–C at the same carbon: ↑ raised, ↓ lowered. Plain Fe–C is shown with numbers.';
+  $('n3').textContent='Drag to turn, or use the arrow keys once the block is focused. In the diagram on the right, the dashed grey lines are plain Fe–C.';
+  $('key2').innerHTML=`<span style="--c:var(--stable)">Ae3</span><span style="--c:var(--amber)">Acm / upper Ae1</span><span style="--c:var(--honey)">lower Ae1</span><span style="--c:var(--muted);--s:dashed">plain Fe–C</span>`;
+  $('method').innerHTML=`<li>Calculated with Thermo-Calc, TCFE14 database, metastable Fe–Fe₃C (graphite suspended). Calculations by the page author; Thermo-Calc Software is acknowledged for the program and database.</li>
+    <li>This is a schematic. The alloyed surfaces are drawn from a few compositions and carbon contents with temperatures rounded to 25 °C, so they show the pattern and not exact values. Plain Fe–C is exact at the plotted carbon contents.</li>
+    <li>Everything is equilibrium. Below about 500 °C, substitutional diffusion is too slow for these temperatures to matter in practice.</li>`;
+}else{
+  $('lede').textContent=`An Fe–C isopleth at every step of ${list}, stacked into a block. Carbon runs left to right, temperature runs up, and the alloying element runs into the page. Drag the block to turn it, then pick a slice to read its numbers.`;
+  const nfill=ELS.map(k=>`${D[k].notes.acm_filled_from_map} ${SYM[k]}`).join(', ');
+  $('method').innerHTML=`<li>Thermo-Calc with TCFE14, metastable Fe–Fe₃C (graphite suspended). Carbon from 0.01 to 1.5 wt% in 0.025 wt% steps; the alloy ranges and steps are per element.</li>
+    <li>Each surface point is a bisection on single equilibria to 0.5 °C, with ferrite, austenite and carbide told apart by phase and carbon content. The slice on the right is Thermo-Calc's own isopleth mapping of the same section.</li>
+    <li>The plain Fe–C row (0 at%) is read off the binary mapping. Where the bisection could not find Acm because the hot end of its window was partly liquid, the points (${nfill}) come from the mapped cementite line. Nothing was smoothed, and the few points where a bisection failed are left as small gaps.</li>
+    <li>Everything is equilibrium. Below about 500 °C, substitutional diffusion is too slow for these temperatures to matter in practice.</li>`;
+}
+setEl(ELS[0]);
+</script>
+</body></html>
