@@ -249,7 +249,7 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var
       <p class="note"><b>Which pixel size to use.</b> The sensor pixel is a physical size on the chip, from the camera's data sheet. The saved image can have fewer pixels than the sensor, when the software bins (adds 2 × 2 pixels into one) or resizes, and then each saved pixel covers more of the specimen. Enter the width of the file you save, for example 1800 for an 1800 × 1000 image. If your software already reports µm per pixel for each objective (LAS EZ and most others do), that number is the "one image pixel at the specimen" line and you can check it here. A phone held to the eyepiece is not on a C-mount: its magnification onto the sensor is the phone lens focal length divided by the eyepiece focal length (250 mm ÷ eyepiece magnification), so use the software or a stage micrometer to calibrate it. Apple does not publish pixel sizes for its newer iPhones; the iPhone 14 Pro figures are from its launch.</p>
       <div class="stats" style="margin-top:12px">
         <div><span>Total visual magnification</span><b id="kMt"></b></div>
-        <div><span>Useful range, 500–1000 × NA</span><b id="kUse"></b></div>
+        <div><span>Useful range, 550–1000 × NA (to 2200)</span><b id="kUse"></b></div>
         <div><span>Saved pixel, from binning or resizing</span><b id="kBin"></b></div>
         <div><span>One image pixel at the specimen</span><b id="kPS"></b></div>
         <div><span>Scale bar in the camera image</span><b id="kBpx"></b></div>
@@ -259,7 +259,7 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var
       </div>
       <p id="kVerdict" class="callout a" style="margin-top:12px"></p>
       <div class="scrollx"><canvas id="cSim" aria-label="A row of dark particles of the chosen size: the specimen, the optical image, and the camera image"></canvas></div>
-      <p class="note">The strip shows dark particles of the chosen size on a bright matrix, spaced one diameter apart, plus one isolated particle on the right. The left panel is the specimen, the middle is the optical image (Gaussian point spread with the same width as the resolution above), and the right is what the camera pixels record. The eyepiece only enlarges the optical image: it adds no detail, which is why magnification above about 1000 × NA is called empty. The feature sizes in the list are illustrative orders of magnitude, not measured values; type your own. Contrast decides detection: a sparse, high-contrast particle smaller than the resolution can still show as a spot one resolution length wide, most readily in dark field, but its size cannot be read from the image.</p>
+      <p class="note">The strip shows dark particles of the chosen size on a bright matrix, spaced one diameter apart, plus one isolated particle on the right. The left panel is the specimen, the middle is the optical image (Gaussian point spread with the same width as the resolution above), and the right is what the camera pixels record. The eyepiece only enlarges the optical image: it adds no detail, which is why magnification far above the useful range is called empty: the classic limit is 1000 × NA, and Vander Voort argues for up to about 2200 × NA at the low contrast typical of etched metals (ref. 9). The feature sizes in the list are illustrative orders of magnitude, not measured values; type your own. Contrast decides detection: a sparse, high-contrast particle smaller than the resolution can still show as a spot one resolution length wide, most readily in dark field, but its size cannot be read from the image.</p>
     </div>
     <p class="note">The specimens are synthetic: a procedural surface (grains, grooves, facets, lamellae, inclusions, scratches, relief) rendered with a geometric-optics model of reflection into the objective cone. Detail finer than the resolution uses a partially coherent transfer function. The model is meant to show the right trends with the controls, not to predict real grey levels. The brightness is auto-exposed, as a camera would be.</p>
   </div>
@@ -293,7 +293,7 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var
 <section id="kohler">
   <div class="eyebrow">3 · Key concept: Köhler illumination, and critical illumination for contrast</div>
   <h2>Two interleaved sets of planes: one images the lamp, the other images the specimen</h2>
-  <p>Köhler illumination is the arrangement every good microscope uses. The lamp is never focused on the specimen. Instead the collector focuses the lamp onto the aperture diaphragm, and the illuminator lens relays that image to the objective's back focal plane. Each point of the lamp therefore lights the whole field with a parallel bundle, which is why the field stays even with a coiled filament (ref. 2). The field diaphragm is focused on the specimen, and the specimen in turn on the camera sensor and the eyepiece field stop. The drawing unfolds the path at the specimen, which acts as a mirror, so the two passes through the objective sit side by side.</p>
+  <p>Köhler illumination is the arrangement every good microscope uses. The lamp is never focused on the specimen. Instead the collector focuses the lamp onto the aperture diaphragm, and the illuminator lens relays that image to the objective's back focal plane. Each point of the lamp therefore lights the whole field with a parallel bundle, which is why the field stays even with a coiled filament (refs. 2, 12). The field diaphragm is focused on the specimen, and the specimen in turn on the camera sensor and the eyepiece field stop. The drawing unfolds the path at the specimen, which acts as a mirror, so the two passes through the objective sit side by side.</p>
   <p>The older alternative is critical (Nelson) illumination: the collector focuses the lamp straight onto the specimen, here by way of the field diaphragm plane, which is conjugate with it. It is simpler and very bright, but the image of the lamp is superimposed on the image of the specimen, so a coiled filament or an LED die shows up as uneven bands and patches (ref. 7). Switch between the two below and watch the ray diagram, the back focal plane and the small eyepiece view change together.</p>
   <div class="panel">
     <div class="row" role="group" aria-label="Illumination">
@@ -324,7 +324,7 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var
     </div>
     <div class="panel">
       <h3>Looking at the back focal plane</h3>
-      <p>Pull out an eyepiece (or use a Bertrand lens) and you see the objective's back focal plane: a bright disc, the lamp image, inside the dark rim of the objective pupil. The aperture diaphragm sets how much of the pupil the lamp fills. Evident recommends 60 to 95 % open, smaller for highly reflective specimens to cut glare (ref. 2). In reflected light the objective is its own condenser, so one aperture setting works across objectives.</p>
+      <p>Pull out an eyepiece (or use a Bertrand lens) and you see the objective's back focal plane: a bright disc, the lamp image, inside the dark rim of the objective pupil. The aperture diaphragm sets how much of the pupil the lamp fills. Evident recommends 60 to 95 % open, smaller for highly reflective specimens to cut glare (ref. 2). Vander Voort gives 80 to 90 % of the objective aperture in his book and about 75 % in the ASM Handbook, stopping down further as magnification rises (refs. 9, 12). In reflected light the objective is its own condenser, so one aperture setting works across objectives.</p>
       <p class="note">In dark field the light arrives through the outer ring of a BD objective, outside the pupil. In oblique light it is a small disc pushed to one side. A flat mirror sends each illumination direction back to the opposite side of the pupil.</p>
     </div>
   </div>
@@ -399,10 +399,10 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var
         <dt>Finest spacing the camera samples</dt><dd id="mNyq"></dd>
         <dt>Acceptance half-angle α</dt><dd id="mAlpha"></dd>
         <dt>Steepest facet still bright in axial bright field</dt><dd id="mFacet"></dd>
-        <dt>Useful visual magnification, 500–1000 NA</dt><dd id="mUse"></dd>
+        <dt>Useful visual magnification, 550–1000 NA (up to 2200 NA)</dt><dd id="mUse"></dd>
         <dt>Visual magnification with 10× eyepieces</dt><dd id="mVis"></dd>
       </dl>
-      <p class="note">With the aperture closed, transfer stays at 1 for coarse detail and then drops sharply, as in coherent imaging. With it fully open, the cut-off moves to finer spacings, but mid-range contrast falls. Blue light improves resolution by about 18 % over green. That matters for fine pearlite and bainite, but most objectives are corrected best in the green. Magnification beyond about 1000 NA is "empty": the image gets bigger but no new detail appears.</p>
+      <p class="note">With the aperture closed, transfer stays at 1 for coarse detail and then drops sharply, as in coherent imaging. With it fully open, the cut-off moves to finer spacings, but mid-range contrast falls. Blue light improves resolution by about 18 % over green. That matters for fine pearlite and bainite, but most objectives are corrected best in the green. The classic rule calls magnification beyond about 1000 NA "empty": the image gets bigger but no new detail appears. Vander Voort, following Van Duijn, points out that Abbe assumed ideal contrast and an eye resolving 0.3 mm at 250 mm. For real metallographic contrast he puts the useful range at 550 to 2200 NA, and calls magnification empty only when raising it shows nothing new (ref. 9).</p>
     </div>
   </div>
   <h3>Reading the barrel</h3>
@@ -595,9 +595,10 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var
     <li>Museu Faraday, Instituto Superior Técnico, “Microscópio de Le Chatelier”. <a href="https://museufaraday.tecnico.ulisboa.pt/~museufaraday.daemon/HistTecnology/Microsc%c3%b3pio%20de%20Le%20Chatelier.pdf">pdf</a>. The 1897 inverted metallograph.</li>
     <li>D. B. Murphy, M. W. Davidson, <i>Fundamentals of Light Microscopy and Electronic Imaging</i>, 2nd ed., Wiley-Blackwell (2013). Depth of field, useful magnification and conjugate planes. Cited from general knowledge, not reread for this page.</li>
     <li>Edmund Optics, “Mitutoyo infinity-corrected long working distance objectives”. <a href="https://www.edmundoptics.co.uk/f/mitutoyo-infinity-corrected-long-working-distance-objectives/12298/">link</a>.</li>
-    <li>G. F. Vander Voort, <i>Metallography: Principles and Practice</i>, McGraw-Hill (1984), reprinted by ASM International (1999), chapter on light microscopy; and <i>ASM Handbook Vol. 9, Metallography and Microstructures</i>, ASM International (2004). Specimen levelling, polarised light on anisotropic metals, contrast methods. Cited from general knowledge, not reread for this page.</li>
-    <li>Camera pixel sizes: Framos, Sony IMX264 data <a href="https://framos.com/products/sensors/area-sensors/imx264llr-c-18253/">link</a>; Leica DMC4500 data sheet <a href="https://admin.jhtechnologies.com/sites/default/files/Leica_DMC4500_EN_0.pdf">pdf</a>; Leica Flexacam C3 flyer <a href="https://admin.jhtechnologies.com/sites/default/files/Flexacam%20C3_flyer_EN_MC-0002945_22.07.2021.pdf">pdf</a>; Raspberry Pi camera documentation <a href="https://www.raspberrypi.com/documentation/accessories/camera.html">link</a>; PetaPixel on the iPhone 14 Pro main camera, 2.44 µm quad pixel <a href="https://petapixel.com/2022/09/07/the-iphone-14-pro-and-pro-max-ditch-the-notch-upgrade-main-camera">link</a>.</li>
+    <li>G. F. Vander Voort, <i>Metallography: Principles and Practice</i>, McGraw-Hill (1984), reprinted by ASM International (1999), chapter 4, “Light Microscopy”. Checked against a copy for the aperture setting (80 to 90 %), the useful magnification of 550 to 2200 NA after Van Duijn, the eye's 150 µm at 250 mm, and the detection of particles smaller than the resolution.</li>
     <li>ISO 8578, Microscopes: marking of objectives and eyepieces. Colour code for magnification. Cited from general knowledge, not reread for this page.</li>
+    <li>Camera pixel sizes: Framos, Sony IMX264 data <a href="https://framos.com/products/sensors/area-sensors/imx264llr-c-18253/">link</a>; Leica DMC4500 data sheet <a href="https://admin.jhtechnologies.com/sites/default/files/Leica_DMC4500_EN_0.pdf">pdf</a>; Leica Flexacam C3 flyer <a href="https://admin.jhtechnologies.com/sites/default/files/Flexacam%20C3_flyer_EN_MC-0002945_22.07.2021.pdf">pdf</a>; Raspberry Pi camera documentation <a href="https://www.raspberrypi.com/documentation/accessories/camera.html">link</a>; PetaPixel on the iPhone 14 Pro main camera, 2.44 µm quad pixel <a href="https://petapixel.com/2022/09/07/the-iphone-14-pro-and-pro-max-ditch-the-notch-upgrade-main-camera">link</a>.</li>
+    <li>G. F. Vander Voort, “Light Microscopy”, in <i>ASM Handbook Vol. 9, Metallography and Microstructures</i>, G. F. Vander Voort (ed.), ASM International (2004), p. 332–354. Checked against a copy for the Köhler principle with a coiled filament, the aperture diaphragm at about 75 %, the 1000 NA rule and its limits, and the list of optically anisotropic metals.</li>
   </ol>
   <p class="note">Tube lens focal lengths and parfocal distances are the makers' usual values. The simulated micrographs are synthetic and qualitative: grain sizes, lamellar spacings, groove widths and relief tilts were chosen to show the trends and are not measured values for any real alloy.</p>
 </section>
@@ -784,7 +785,7 @@ function objective(X,cx,y,dir,C){const L=40,wf=10,wb=26;X.fillStyle=hexA(C.muted
 const PARTS=[
  {id:'lamp',n:'Lamp',d:'A 12 V tungsten-halogen bulb of 20 to 100 W, or now more often a white LED (ref. 1). In Köhler illumination the lamp is imaged into the aperture diaphragm and the objective’s back focal plane, never onto the specimen, so a coiled filament still gives an even field.',m:'An LED gives a stable colour temperature, which keeps etched colours and grey levels comparable from session to session.'},
  {id:'col',n:'Collector lens',d:'Gathers light from the lamp and focuses an image of the filament or LED die onto the aperture diaphragm. On older lamphouses it can be focused and centred, which is the first alignment step.',m:'If the lamp image is off-centre in the back focal plane, the illumination is oblique without you meaning it to be, and relief appears one-sided.'},
- {id:'as',n:'Aperture diaphragm',d:'An iris conjugate to the objective’s back focal plane. Its opening sets the illumination NA: the range of angles that reach the specimen. Closing it raises contrast and depth of field but lowers resolution. Evident gives 60 to 95 % open as the usual range (ref. 2).',m:'It is not a brightness control. Dim with the lamp or a neutral density filter instead.'},
+ {id:'as',n:'Aperture diaphragm',d:'An iris conjugate to the objective’s back focal plane. Its opening sets the illumination NA: the range of angles that reach the specimen. Closing it raises contrast and depth of field but lowers resolution. Evident gives 60 to 95 % open as the usual range (ref. 2); Vander Voort gives 80 to 90 % in his book and about 75 % in the ASM Handbook (refs. 9, 12).',m:'It is not a brightness control. Dim with the lamp or a neutral density filter instead.'},
  {id:'flt',n:'Filters and polariser',d:'Neutral density, green interference or blue filters, and the polariser for polarised light and DIC, slide into the illuminator where the beam is nearly parallel.',m:'Green (about 546 nm) is the default for monochrome work, because objectives are best corrected there and the eye is most sensitive there.'},
  {id:'fs',n:'Field diaphragm',d:'An iris conjugate to the specimen. Focus and centre its image, then open it just beyond the edge of the field (ref. 2). Opened further, it lights specimen areas you cannot see, and that light returns as glare.',m:'For photomicrographs open it only enough to clear the camera frame.'},
  {id:'rel',n:'Illuminator lens',d:'Relays the aperture diaphragm onto the objective’s back focal plane and sends the field diaphragm image to infinity, so the objective focuses it on the specimen.',m:''},
@@ -915,7 +916,7 @@ function drawMTF(){const c=$('cMTF'),{x:X,w,h}=fit(c,0.62,240),C=col(),d=D();X.c
   const fm=finest(d.lam,d.NAo,S.ap),fo=finest(d.lam,d.NAo,1);
   $('mMin').textContent=fmtL(fm);$('mMinOpen').textContent=fmtL(fo);$('mNyq').textContent=fmtL(ny);
   $('mAlpha').textContent=(d.ao/deg).toFixed(1)+'°';$('mFacet').textContent=((d.ao-d.ai)/2/deg).toFixed(1)+'° to '+((d.ao+d.ai)/2/deg).toFixed(1)+'°';
-  $('mUse').textContent=Math.round(500*d.NAo)+'–'+Math.round(1000*d.NAo)+'×';const vis=d.o.m*10;$('mVis').textContent=vis+'×'+(vis>1000*d.NAo?' (empty)':'')}
+  $('mUse').textContent=Math.round(550*d.NAo)+'–'+Math.round(1000*d.NAo)+'× (up to '+Math.round(2200*d.NAo)+'×)';const vis=d.o.m*10;$('mVis').textContent=vis+'×'+(vis>2200*d.NAo?' (empty)':vis>1000*d.NAo?' (above 1000 NA)':'')}
 
 /* ---------- section 5: beamsplitter ---------- */
 function drawBS(){const c=$('cBS'),C=col();const narrow=(c.clientWidth||300)<560;const {x:X,w,h}=fit(c,narrow?1.15:0.5,260);X.clearRect(0,0,w,h);
@@ -1010,11 +1011,11 @@ function stats(){const d=D();
 
 /* ---------- wiring ---------- */
 /* ---------- shared settings: scale and visibility calculator ---------- */
-function calc(){const d=D(),C=col(),Mt=d.o.m*S.eye,lo=500*d.NAo,hi=1000*d.NAo,s=S.fsz/1000;
+function calc(){const d=D(),C=col(),Mt=d.o.m*S.eye,lo=550*d.NAo,hi=1000*d.NAo,top=2200*d.NAo,s=S.fsz/1000;
   for(const [id,v] of [['kPix',S.pix],['kSenW',S.senW],['kSave',S.saveW]])if(document.activeElement!==$(id))$(id).value=v;$('kAd').value=String(S.ad);$('kCam').value=S.cam;
   $('kBin').textContent=d.bin>1.001?d.bin.toFixed(2)+' sensor pixels across':d.bin<0.999?'upsampled ×'+(1/d.bin).toFixed(2):'1 sensor pixel (full size)';
   $('kMt').textContent=d.o.m+' × '+S.eye+' = '+Math.round(Mt)+'×';
-  $('kUse').textContent=Math.round(lo)+'–'+Math.round(hi)+'×'+(Mt>hi?' · empty':Mt<lo?' · eye limits':' · good');
+  $('kUse').textContent=Math.round(lo)+'–'+Math.round(hi)+'×'+(Mt>top?' · empty':Mt>hi?' · above 1000 NA':Mt<lo?' · eye limits':' · good');
   $('kPS').textContent=fmtL(d.pS);$('kBpx').textContent=fmtL(S.bar)+' = '+(S.bar/d.pS).toFixed(S.bar/d.pS<10?1:0)+' px';
   $('kFpx').textContent=(s/d.pS).toFixed(s/d.pS<10?1:0);$('kFr').textContent=(s/d.dR).toFixed(2);
   const app=s*Mt/1000;$('kEyeS').textContent=(app<0.1?app.toFixed(3):app.toFixed(2))+' mm at 250 mm';
@@ -1022,9 +1023,10 @@ function calc(){const d=D(),C=col(),Mt=d.o.m*S.eye,lo=500*d.NAo,hi=1000*d.NAo,s=
   if(s>=2*d.dR)v.push('Resolved: at '+fmtL(s)+' the feature is at least twice the Rayleigh limit ('+fmtL(d.dR)+'), so its size and shape can be measured.');
   else if(s>=d.dR)v.push('Just resolved: '+fmtL(s)+' is 1 to 2 times the Rayleigh limit ('+fmtL(d.dR)+'). Neighbours one diameter apart separate, but edges are blurred by about half a resolution length, so sizes read from the image come out too large and shapes round off.');
   else if(s>=0.1*d.lam)v.push('Below resolution: '+fmtL(s)+' is smaller than the Rayleigh limit ('+fmtL(d.dR)+'). A sparse particle with strong contrast may still be detected as a blurred spot about '+fmtL(d.dR)+' across, but dense ones merge into a grey tone and no size can be measured. Use SEM, TEM or APT.');
-  else v.push('Out of reach in practice: '+fmtL(s)+' is far below the wavelength. In bright field the particles give almost no contrast; in dark field a sparse, strongly scattering one can at best give a faint spot. Use SEM, TEM or APT; the light microscope can still show the grains or boundaries they decorate.');
-  if(Mt>hi)v.push('Total magnification '+Math.round(Mt)+'× is above 1000 × NA = '+Math.round(hi)+'×: empty magnification, a bigger blur with no new detail.');
-  else if(app<0.15&&s>=d.dR)v.push('The optics resolve it, but at '+Math.round(Mt)+'× it appears only '+app.toFixed(2)+' mm across to the eye, near the eye\'s own limit of about 0.1 mm at 250 mm: use a stronger eyepiece or the camera.');
+  else v.push('Far below the wavelength: '+fmtL(s)+'. Bright field will not show it. Dark field and interference contrast can still detect sparse particles of a few tens of nanometres, as spots one resolution length wide; Vander Voort quotes 0.02 to 0.05 µm for interference methods (ref. 9). Size, shape and number density need SEM, TEM or APT.');
+  if(Mt>top)v.push('Total magnification '+Math.round(Mt)+'× is above 2200 × NA = '+Math.round(top)+'×: empty magnification, a bigger blur with no new detail.');
+  else if(Mt>hi)v.push('Total magnification '+Math.round(Mt)+'× is above the classic 1000 × NA rule ('+Math.round(hi)+'×) but below 2200 × NA. Vander Voort, after Van Duijn, argues this can still help the eye at the low contrast of etched metals (ref. 9).');
+  else if(app<0.15&&s>=d.dR)v.push('The optics resolve it, but at '+Math.round(Mt)+'× it appears only '+app.toFixed(2)+' mm across to the eye, near the 0.15 mm that 20/20 vision separates at 250 mm (ref. 9): use a stronger eyepiece or the camera.');
   const ratio=d.dA/d.pS;if(ratio<2)v.push('The camera undersamples: '+ratio.toFixed(1)+' pixels per resolution length, below the 2 needed. A higher adapter or smaller pixels helps.');
   $('kVerdict').textContent=v.join(' ');
   drawSim(d,s,C)}
