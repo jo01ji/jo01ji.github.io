@@ -211,6 +211,40 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var
         <p id="vWarn" class="warn" hidden></p>
       </div>
     </div>
+    <div class="panel" id="calc">
+      <h3>Scale and visibility calculator: can this setup see my feature?</h3>
+      <p class="note">Uses the objective, filter and aperture diaphragm chosen above. The camera pixel and adapter are the same settings as in section 7; changing them here changes them there.</p>
+      <div class="controls">
+        <div class="ctl"><label for="kEye">Eyepiece</label><select id="kEye">
+          <option value="10" selected>10×</option><option value="12.5">12.5×</option><option value="15">15×</option><option value="20">20×</option><option value="25">25×</option><option value="100">100× (not made; for comparison)</option>
+        </select></div>
+        <div class="ctl"><label for="kPix">Camera pixel size, µm</label><input id="kPix" type="number" min="0.5" max="20" step="0.05" value="3.45"></div>
+        <div class="ctl"><label for="kAd">C-mount adapter</label><select id="kAd"><option value="0.5">0.5×</option><option value="0.7">0.7×</option><option value="1" selected>1×</option></select></div>
+        <div class="ctl"><label for="kBar">Scale bar length, µm</label><input id="kBar" type="number" min="0.1" max="5000" step="any" value="10"></div>
+        <div class="ctl"><label for="kPre">Feature</label><select id="kPre">
+          <option value="500" selected>Precipitate, 500 nm (your example)</option>
+          <option value="20">Nanoprecipitate, 20 nm</option>
+          <option value="200">Fine lamella or lath, 200 nm</option>
+          <option value="1000">Coarse lamella or thin plate, 1 µm</option>
+          <option value="5000">Inclusion, 5 µm</option>
+          <option value="20000">Grain, 20 µm</option>
+          <option value="">Type my own size</option>
+        </select></div>
+        <div class="ctl"><label for="kSize">Feature size, nm</label><input id="kSize" type="number" min="1" max="200000" step="any" value="500"></div>
+      </div>
+      <div class="stats" style="margin-top:12px">
+        <div><span>Total visual magnification</span><b id="kMt"></b></div>
+        <div><span>Useful range, 500–1000 × NA</span><b id="kUse"></b></div>
+        <div><span>One image pixel at the specimen</span><b id="kPS"></b></div>
+        <div><span>Scale bar in the camera image</span><b id="kBpx"></b></div>
+        <div><span>Pixels across the feature</span><b id="kFpx"></b></div>
+        <div><span>Feature ÷ Rayleigh limit</span><b id="kFr"></b></div>
+        <div><span>Apparent size to the eye</span><b id="kEyeS"></b></div>
+      </div>
+      <p id="kVerdict" class="callout a" style="margin-top:12px"></p>
+      <div class="scrollx"><canvas id="cSim" aria-label="A row of dark particles of the chosen size: the specimen, the optical image, and the camera image"></canvas></div>
+      <p class="note">The strip shows dark particles of the chosen size on a bright matrix, spaced one diameter apart, plus one isolated particle on the right. The left panel is the specimen, the middle is the optical image (Gaussian point spread with the same width as the resolution above), and the right is what the camera pixels record. The eyepiece only enlarges the optical image: it adds no detail, which is why magnification above about 1000 × NA is called empty. The feature sizes in the list are illustrative orders of magnitude, not measured values; type your own. Contrast decides detection: a sparse, high-contrast particle smaller than the resolution can still show as a spot one resolution length wide, most readily in dark field, but its size cannot be read from the image.</p>
+    </div>
     <p class="note">The specimens are synthetic: a procedural surface (grains, grooves, facets, lamellae, inclusions, scratches, relief) rendered with a geometric-optics model of reflection into the objective cone. Detail finer than the resolution uses a partially coherent transfer function. The model is meant to show the right trends with the controls, not to predict real grey levels. The brightness is auto-exposed, as a camera would be.</p>
   </div>
 </section>
@@ -241,10 +275,16 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var
 </section>
 
 <section id="kohler">
-  <div class="eyebrow">3 · Key concept: Köhler illumination</div>
+  <div class="eyebrow">3 · Key concept: Köhler illumination, and critical illumination for contrast</div>
   <h2>Two interleaved sets of planes: one images the lamp, the other images the specimen</h2>
   <p>Köhler illumination is the arrangement every good microscope uses. The lamp is never focused on the specimen. Instead the collector focuses the lamp onto the aperture diaphragm, and the illuminator lens relays that image to the objective's back focal plane. Each point of the lamp therefore lights the whole field with a parallel bundle, which is why the field stays even with a coiled filament (ref. 2). The field diaphragm is focused on the specimen, and the specimen in turn on the camera sensor and the eyepiece field stop. The drawing unfolds the path at the specimen, which acts as a mirror, so the two passes through the objective sit side by side.</p>
+  <p>The older alternative is critical (Nelson) illumination: the collector focuses the lamp straight onto the specimen, here by way of the field diaphragm plane, which is conjugate with it. It is simpler and very bright, but the image of the lamp is superimposed on the image of the specimen, so a coiled filament or an LED die shows up as uneven bands and patches (ref. 7). Switch between the two below and watch the ray diagram, the back focal plane and the small eyepiece view change together.</p>
   <div class="panel">
+    <div class="row" role="group" aria-label="Illumination">
+      <span class="note">Illumination:</span>
+      <button type="button" id="ilK" aria-pressed="true">Köhler</button>
+      <button type="button" id="ilC" aria-pressed="false">Critical</button>
+    </div>
     <div class="row" role="group" aria-label="Rays to draw">
       <button type="button" id="rIl" style="--c:var(--honey)" aria-pressed="true">Illuminating rays</button>
       <button type="button" id="rIm" style="--c:var(--rust)" aria-pressed="false">Image-forming rays</button>
@@ -252,10 +292,10 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var
     </div>
     <div class="scrollx"><canvas id="cRays" aria-label="Unfolded ray diagram of Köhler epi-illumination with the aperture and field conjugate planes marked"></canvas></div>
     <div class="key">
-      <span class="dash" style="--c:var(--amber)">aperture set: lamp, aperture diaphragm, objective back focal plane</span>
-      <span class="dash" style="--c:var(--gold)">field set: field diaphragm, specimen, sensor</span>
+      <span class="dash" style="--c:var(--amber)" id="kA">aperture set: lamp, aperture diaphragm, objective back focal plane</span>
+      <span class="dash" style="--c:var(--gold)" id="kF">field set: field diaphragm, specimen, sensor</span>
     </div>
-    <p class="note">Schematic, not to scale; the objective is drawn as one thin lens. The aperture and field diaphragm sliders in the shared settings move the stops here, and the objective's NA sets the size of its back focal plane. Lamp rays from the top, middle and bottom of the filament are drawn in three warm tints: each tint fills the whole specimen field.</p>
+    <p class="note">Schematic, not to scale; the objective is drawn as one thin lens. The aperture and field diaphragm sliders in the shared settings move the stops here, and the objective's NA sets the size of its back focal plane. <span id="raysNote">Lamp rays from the top, middle and bottom of the filament are drawn in three warm tints: each tint fills the whole specimen field.</span></p>
   </div>
   <div class="grid2">
     <div class="panel">
@@ -270,6 +310,29 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var
       <h3>Looking at the back focal plane</h3>
       <p>Pull out an eyepiece (or use a Bertrand lens) and you see the objective's back focal plane: a bright disc, the lamp image, inside the dark rim of the objective pupil. The aperture diaphragm sets how much of the pupil the lamp fills. Evident recommends 60 to 95 % open, smaller for highly reflective specimens to cut glare (ref. 2). In reflected light the objective is its own condenser, so one aperture setting works across objectives.</p>
       <p class="note">In dark field the light arrives through the outer ring of a BD objective, outside the pupil. In oblique light it is a small disc pushed to one side. A flat mirror sends each illumination direction back to the opposite side of the pupil.</p>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="panel">
+      <canvas id="cView3" class="drag" aria-label="Small copy of the simulated eyepiece view, showing how even the illumination is"></canvas>
+      <p class="note">The same eyepiece view as the shared settings. Use bright field on the ferrite–pearlite or unetched specimen to see the filament most clearly.</p>
+    </div>
+    <div class="panel">
+      <h3>Köhler and critical side by side</h3>
+      <div class="tablewrap">
+      <table>
+        <thead><tr><th></th><th>Köhler</th><th>Critical</th></tr></thead>
+        <tbody>
+          <tr><td>Lamp is imaged on</td><td>the aperture diaphragm and the objective back focal plane</td><td>the field diaphragm and the specimen</td></tr>
+          <tr><td>Each specimen point is lit by</td><td>light from every point of the lamp</td><td>light from one point of the lamp</td></tr>
+          <tr><td>Evenness of the field</td><td>even, whatever the lamp looks like</td><td>only as even as the lamp; filament coils and LED dies show</td></tr>
+          <tr><td>Field and aperture control</td><td>independent: one iris each</td><td>coupled: the irises are no longer in clean conjugate planes</td></tr>
+          <tr><td>Back focal plane</td><td>holds the lamp image</td><td>evenly lit</td></tr>
+          <tr><td>Used today</td><td>every research and production metallograph</td><td>simple scopes with a ground-glass or fibre source; scanning confocal, which focuses its laser to a spot on the specimen</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p class="note">Critical illumination works if the source is itself uniform: a frosted bulb, a diffuser, or the face of a liquid light guide. A diffuser in a Köhler path does the same job at the cost of brightness. For quantitative work on intensity, such as image analysis of phase fractions or DRM reflectance, Köhler plus a flat-field correction is the safe choice.</p>
     </div>
   </div>
   <div class="pair">
@@ -538,7 +601,7 @@ function col(){return {ink:css('--ink'),muted:css('--muted'),rule:css('--rule'),
 const OBJ=[{m:5,na:0.15},{m:10,na:0.30},{m:20,na:0.45},{m:50,na:0.80},{m:100,na:0.90}]; // typical dry plan metallurgical objectives
 const LAM={w:550,g:546,b:450,r:650};
 const TINT={w:[1,1,1],g:[0.80,1,0.74],b:[0.70,0.82,1],r:[1,0.70,0.64]};
-const S={view:'eye',o:3,mode:'BF',ap:0.75,fd:1.05,samp:'fp',filt:'g',cx:0,cy:0,tilt:0.6,stand:'inv',part:'bs',rays:'il',fac:8,obAz:45,obT:0.92,poR:20,poA:2,diB:110,bsR:0.5,bsS:0.6,bsPol:false,pix:3.45,ad:1};
+const S={view:'eye',o:3,mode:'BF',ap:0.75,fd:1.05,samp:'fp',filt:'g',cx:0,cy:0,tilt:0.6,stand:'inv',part:'bs',rays:'il',fac:8,obAz:45,obT:0.92,poR:20,poA:2,diB:110,bsR:0.5,bsS:0.6,bsPol:false,pix:3.45,ad:1,illum:'K',eye:10,bar:10,fsz:500};
 const FN=22, SENSOR=[8.8,6.6];
 function D(){const o=OBJ[S.o],lam=LAM[S.filt]/1000,NAo=o.na,NAi=S.ap*NAo;
   const ao=Math.asin(NAo),ai=Math.asin(NAi);const Mc=o.m*S.ad;
@@ -628,6 +691,11 @@ function pixMA(x,y,p,d){const v=vor(x,y,35),gi=v.gi,gj=v.gj,res=d.dA,R=0.6;
   const t1=shade(sg*ta*cx,sg*ta*sy,0,0),t2=shade(-sg*ta*cx,-sg*ta*sy,0,0),fr=clamp(((P/2)/Math.max(res,1.2*p)-0.5)/0.7,0,1);
   return R*(fr*t1+(1-fr)*(t1+t2)/2)}
 const PIX={fp:pixFP,un:pixUN,ti:pixTI,ma:pixMA};
+/* critical illumination: a magnified image of a coiled filament lies on the specimen. x,y in units of the field radius */
+function lampOn(x,y){if(S.illum!=='C')return 1;
+  const u=x/0.78,v=(y+0.04*x)/0.42,eu=clamp((1-Math.abs(u))/0.08,0,1),ev=clamp((1-Math.abs(v))/0.12,0,1);
+  const c=Math.cos(Math.PI*(u+0.12*v)/0.17),coil=0.22+0.78*c*c*(0.9+0.1*Math.cos(Math.PI*v));
+  return 0.06+0.94*eu*ev*coil}
 
 /* ---------- render the eyepiece view once per state change, blit to every view canvas ---------- */
 const N=400;const off=document.createElement('canvas');off.width=N;off.height=N;const offx=off.getContext('2d');const img=offx.createImageData(N,N);const buf=new Float32Array(N*N),lit=new Float32Array(N*N);
@@ -642,7 +710,7 @@ function renderView(){const d=D();MP=modeParams(d);const R=d.fov/2;
     const L=clamp((ap8-m)/soft+0.5,0,1);lit[k]=L;
     if(L<=0){buf[k]=0;continue}
     let X=x+S.cx,Y=y+S.cy;if(q){X=(Math.floor(X/q)+0.5)*q;Y=(Math.floor(Y/q)+0.5)*q}
-    const I=f(X,Y,p,d);buf[k]=I;sum+=I;n++;if((k&7)===0)vals.push(I)}}
+    const I=f(X,Y,p,d)*lampOn(x/R,y/R);buf[k]=I;sum+=I;n++;if((k&7)===0)vals.push(I)}}
   vals.sort((a,b)=>a-b);const p98=vals.length?vals[Math.floor(vals.length*0.985)]:1,mean=n?sum/n:0;
   const gmax=S.mode==='DF'?80:S.mode==='PO'?60:30,gain=Math.min(gmax,0.9/Math.max(p98,1e-6));
   const veil=(0.03+0.16*Math.max(0,S.fd-1)+0.10*Math.max(0,S.ap-0.85)/0.15)*mean;
@@ -659,7 +727,7 @@ function blit(cv){const {x:X,w}=fit(cv,1);const C=col(),d=viewInfo.d,span=viewIn
   const ext=S.view==='eye'?d.fov/2*k:Math.min(span/2*k,d.camH/2*k),bx=w/2-(S.view==='eye'?ext*0.62:w*0.42),by=w/2+ext*(S.view==='eye'?0.72:0.85),bw=L*k;
   X.fillStyle='rgba(0,0,0,0.55)';X.fillRect(bx-6,by-22,Math.max(bw,64)+12,30);X.fillStyle='#fff';X.fillRect(bx,by,bw,4);
   X.font='500 12px '+C.mono;X.textAlign='left';X.fillText(L>=1000?(L/1000)+' mm':L+' µm',bx,by-7);
-  X.fillStyle='rgba(255,255,255,0.8)';X.font='12px '+C.body;X.textAlign='right';X.fillText({eye:'eyepiece',cam:'camera',crop:'camera 4× crop'}[S.view]+' · '+d.o.m+'× / '+d.o.na.toFixed(2)+' · '+{BF:'bright field',DF:'dark field',OB:'oblique',PO:'crossed polars',DI:'DIC'}[S.mode],w-8,16)}
+  X.fillStyle='rgba(255,255,255,0.8)';X.font='12px '+C.body;X.textAlign='right';X.fillText({eye:'eyepiece',cam:'camera',crop:'camera 4× crop'}[S.view]+' · '+d.o.m+'× / '+d.o.na.toFixed(2)+' · '+{BF:'bright field',DF:'dark field',OB:'oblique',PO:'crossed polars',DI:'DIC'}[S.mode]+(S.illum==='C'?' · critical':''),w-8,16)}
 
 /* ---------- section 1: tilt ---------- */
 function drawTilt(){const c=$('cTilt'),{x:X,w,h}=fit(c,0.5,250),C=col(),d=D();
@@ -770,11 +838,12 @@ function drawRays(){const c=$('cRays'),{x:X,w,h}=fit(c,0.42,240),C=col(),d=D();X
   const Z=670,mx=24,sx=(w-2*mx)/Z,ymax=28,sy=(h/2-34)/ymax,cy=h/2+6;
   const P=(z,y)=>[mx+z*sx,cy-y*sy];
   const rp=20*d.NAo,asR=S.ap*rp/1.5,fsR=S.fd*15;
-  const E=[{z:40,t:'L',f:30,r:14},{z:160,t:'S',r:asR},{z:200,t:'S',r:fsR},{z:260,t:'L',f:60,r:24},{z:410,t:'S',r:rp},{z:430,t:'L',f:20,r:rp+3},{z:450,t:'M'},{z:470,t:'L',f:20,r:rp+3},{z:490,t:'S',r:rp},{z:560,t:'L',f:100,r:27},{z:660,t:'E'}];
+  const crit=S.illum==='C';
+  const E=[{z:40,t:'L',f:crit?32:30,r:14},{z:160,t:'S',r:asR},{z:200,t:'S',r:fsR},{z:260,t:'L',f:60,r:24},{z:410,t:'S',r:rp},{z:430,t:'L',f:20,r:rp+3},{z:450,t:'M'},{z:470,t:'L',f:20,r:rp+3},{z:490,t:'S',r:rp},{z:560,t:'L',f:100,r:27},{z:660,t:'E'}];
   // planes
   const plane=(z,label,color,row)=>{const a=P(z,ymax),b=P(z,-ymax);X.strokeStyle=hexA(color,0.9);X.setLineDash([4,4]);X.lineWidth=1;X.beginPath();X.moveTo(a[0],a[1]);X.lineTo(b[0],b[1]);X.stroke();X.setLineDash([]);
     X.fillStyle=color;X.font='11px '+C.body;X.textAlign='center';X.fillText(label,a[0],row?h-6:14)};
-  plane(0,'lamp',C.amber,0);plane(160,'aperture diaphragm',C.amber,1);plane(200,'field diaphragm',C.gold,0);plane(410,'back focal plane',C.amber,1);plane(450,'specimen',C.gold,0);plane(490,'back focal plane',C.amber,1);plane(660,'sensor',C.gold,0);
+  plane(0,'lamp',crit?C.gold:C.amber,0);plane(160,'aperture diaphragm',crit?C.muted:C.amber,1);plane(200,crit?'field diaphragm = lamp image':'field diaphragm',C.gold,0);plane(410,'back focal plane',C.amber,1);plane(450,'specimen',C.gold,0);plane(490,'back focal plane',C.amber,1);plane(660,'sensor',C.gold,0);
   X.fillStyle=C.muted;X.font='11px '+C.body;X.textAlign='center';{const q=P(340,0);X.fillText('beamsplitter',q[0],cy-ymax*sy-2)}{const q=P(525,0);X.fillText('beamsplitter',q[0],cy-ymax*sy-2)}
   // axis
   X.strokeStyle=C.rule;X.lineWidth=1;{const a=P(0,0),b=P(Z,0);X.beginPath();X.moveTo(a[0],a[1]);X.lineTo(b[0],b[1]);X.stroke()}
@@ -793,14 +862,14 @@ function drawRays(){const c=$('cRays'),{x:X,w,h}=fit(c,0.42,240),C=col(),d=D();X
   const showIl=S.rays!=='im',showIm=S.rays!=='il';
   if(showIl){const tints=[C.honey,C.amber,C.gold];[-2.5,0,2.5].forEach((y0,i)=>{for(let k=-6;k<=6;k++)trace(y0,k*0.05,0,tints[i],0.75)})}
   if(showIm){[-fsR,0,fsR].forEach(y0=>{for(let k=-6;k<=6;k++)trace(y0,k*0.03,200,C.rust,0.8)})}
-  X.fillStyle=C.muted;X.font='11px '+C.body;X.textAlign='left';X.fillText('unfolded at the specimen, which acts as a mirror',mx,h-20)}
+  X.fillStyle=C.muted;X.font='11px '+C.body;X.textAlign='left';X.fillText(crit?'critical: the collector focuses the lamp into the field plane, so onto the specimen':'unfolded at the specimen, which acts as a mirror',mx,h-20)}
 
 /* ---------- section 3: back focal plane view ---------- */
 function drawPupil(){const c=$('cPupil'),{x:X,w,h}=fit(c,0.8,220),C=col(),d=D();X.clearRect(0,0,w,h);
   const cx=w/2,cy=h/2,R=Math.min(w,h)*0.32;
   X.fillStyle='#000';X.beginPath();X.arc(cx,cy,R*1.42,0,2*Math.PI);X.fill();
   const lampFill=(clipR,ox,oy)=>{X.save();X.beginPath();X.arc(cx+ox,cy+oy,clipR,0,2*Math.PI);X.clip();X.fillStyle=hexA(C.honey,0.25);X.fillRect(cx-R*1.5,cy-R*1.5,R*3,R*3);
-    X.fillStyle=C.honey;for(let i=-4;i<=4;i++){X.fillRect(cx-R*1.2,cy+i*R*0.22-R*0.07,R*2.4,R*0.12)}X.restore()};
+    if(S.illum==='C'){X.fillStyle=hexA(C.honey,0.85);X.fillRect(cx-R*1.5,cy-R*1.5,R*3,R*3)}else{X.fillStyle=C.honey;for(let i=-4;i<=4;i++){X.fillRect(cx-R*1.2,cy+i*R*0.22-R*0.07,R*2.4,R*0.12)}}X.restore()};
   if(S.mode==='DF'){X.save();X.beginPath();X.arc(cx,cy,R*1.32,0,2*Math.PI);X.arc(cx,cy,R*1.1,0,2*Math.PI,true);X.clip();X.fillStyle=C.honey;X.fillRect(0,0,w,h);X.restore()}
   else if(S.mode==='OB'){const t=S.obT*R,ox=t*Math.cos(S.obAz*deg),oy=-t*Math.sin(S.obAz*deg);lampFill(R*0.14,ox,oy);
     X.strokeStyle=C.rust;X.setLineDash([4,3]);X.lineWidth=1.5;X.beginPath();X.arc(cx-ox,cy-oy,R*0.14,0,2*Math.PI);X.stroke();X.setLineDash([])}
@@ -809,7 +878,7 @@ function drawPupil(){const c=$('cPupil'),{x:X,w,h}=fit(c,0.8,220),C=col(),d=D();
   X.strokeStyle='#fff';X.lineWidth=2;X.beginPath();X.arc(cx,cy,R,0,2*Math.PI);X.stroke();
   X.fillStyle=C.muted;X.font='12px '+C.body;X.textAlign='center';
   X.fillText('objective pupil, NA '+d.NAo.toFixed(2),cx,cy+R*1.42+16);
-  X.fillText(S.mode==='DF'?'dark field: light arrives outside the pupil':S.mode==='OB'?'oblique: a small disc off to one side':'lamp fills '+Math.round(S.ap*100)+' % of the pupil radius',cx,14)}
+  X.fillText(S.mode==='DF'?'dark field: light arrives outside the pupil':S.mode==='OB'?'oblique: a small disc off to one side':(S.illum==='C'?'critical: pupil evenly lit, ':'lamp fills ')+Math.round(S.ap*100)+' % of the pupil radius',cx,14)}
 
 /* ---------- section 4: transfer chart ---------- */
 function drawMTF(){const c=$('cMTF'),{x:X,w,h}=fit(c,0.62,240),C=col(),d=D();X.clearRect(0,0,w,h);
@@ -905,6 +974,7 @@ function stats(){const d=D();
   if(S.ap>0.95)notes.push('The aperture diaphragm is wide open: the image starts to lose contrast to glare.');
   if(S.fd>1.15)notes.push('The field diaphragm is open beyond the field of view, so stray light veils the image. Close it to just outside the field.');
   if(S.fd<0.95)notes.push('The field diaphragm is inside the field of view: its leaves are visible. Open it until they just disappear.');
+  if(S.illum==='C')notes.push('Critical illumination: the coiled filament is imaged onto the specimen, so the bright bands are the lamp, not the microstructure. Switch back to Köhler for an even field.');
   if(S.samp==='ti'&&S.mode==='BF')notes.push('α-Ti in bright field is nearly featureless: the grains differ in orientation, not in reflectance or slope. Try crossed polars.');
   if(S.samp==='ma'&&(S.mode==='BF'))notes.push('The martensite relief tilts are only a few degrees, inside the acceptance cone, so bright field hardly shows them. Try oblique light or DIC.');
   if(S.mode==='PO'&&(S.samp==='fp'||S.samp==='un'))notes.push('Steel is cubic and optically isotropic, so under crossed polars it stays dark. Only inclusions and edges show.');
@@ -920,9 +990,47 @@ function stats(){const d=D();
   document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===S.mode)))}
 
 /* ---------- wiring ---------- */
-function views(){renderView();blit($('cView'));blit($('cView2'))}
-function all(){stats();views();drawTilt();drawPath();drawRays();drawPupil();drawMTF();drawBS();drawFacet()}
-let raf=0,pend={};function sched(k){pend[k||'all']=1;if(!raf)raf=requestAnimationFrame(()=>{raf=0;const p=pend;pend={};if(p.all)return all();stats();if(p.view)views();if(p.tilt)drawTilt();if(p.path)drawPath();if(p.rays)drawRays();if(p.pupil)drawPupil();if(p.mtf)drawMTF();if(p.bs)drawBS();if(p.facet)drawFacet()})}
+/* ---------- shared settings: scale and visibility calculator ---------- */
+function calc(){const d=D(),C=col(),Mt=d.o.m*S.eye,lo=500*d.NAo,hi=1000*d.NAo,s=S.fsz/1000;
+  if(document.activeElement!==$('kPix'))$('kPix').value=S.pix;$('kAd').value=String(S.ad);
+  $('kMt').textContent=d.o.m+' × '+S.eye+' = '+Math.round(Mt)+'×';
+  $('kUse').textContent=Math.round(lo)+'–'+Math.round(hi)+'×'+(Mt>hi?' · empty':Mt<lo?' · eye limits':' · good');
+  $('kPS').textContent=fmtL(d.pS);$('kBpx').textContent=fmtL(S.bar)+' = '+(S.bar/d.pS).toFixed(S.bar/d.pS<10?1:0)+' px';
+  $('kFpx').textContent=(s/d.pS).toFixed(s/d.pS<10?1:0);$('kFr').textContent=(s/d.dR).toFixed(2);
+  const app=s*Mt/1000;$('kEyeS').textContent=(app<0.1?app.toFixed(3):app.toFixed(2))+' mm at 250 mm';
+  const v=[];
+  if(s>=2*d.dR)v.push('Resolved: at '+fmtL(s)+' the feature is at least twice the Rayleigh limit ('+fmtL(d.dR)+'), so its size and shape can be measured.');
+  else if(s>=d.dR)v.push('Just resolved: '+fmtL(s)+' is 1 to 2 times the Rayleigh limit ('+fmtL(d.dR)+'). Neighbours one diameter apart separate, but edges are blurred by about half a resolution length, so sizes read from the image come out too large and shapes round off.');
+  else if(s>=0.1*d.lam)v.push('Below resolution: '+fmtL(s)+' is smaller than the Rayleigh limit ('+fmtL(d.dR)+'). A sparse particle with strong contrast may still be detected as a blurred spot about '+fmtL(d.dR)+' across, but dense ones merge into a grey tone and no size can be measured. Use SEM, TEM or APT.');
+  else v.push('Out of reach in practice: '+fmtL(s)+' is far below the wavelength. In bright field the particles give almost no contrast; in dark field a sparse, strongly scattering one can at best give a faint spot. Use SEM, TEM or APT; the light microscope can still show the grains or boundaries they decorate.');
+  if(Mt>hi)v.push('Total magnification '+Math.round(Mt)+'× is above 1000 × NA = '+Math.round(hi)+'×: empty magnification, a bigger blur with no new detail.');
+  else if(app<0.15&&s>=d.dR)v.push('The optics resolve it, but at '+Math.round(Mt)+'× it appears only '+app.toFixed(2)+' mm across to the eye, near the eye\'s own limit of about 0.1 mm at 250 mm: use a stronger eyepiece or the camera.');
+  const ratio=d.dA/d.pS;if(ratio<2)v.push('The camera undersamples: '+ratio.toFixed(1)+' pixels per resolution length, below the 2 needed. A higher adapter or smaller pixels helps.');
+  $('kVerdict').textContent=v.join(' ');
+  drawSim(d,s,C)}
+function drawSim(d,s,C){const c=$('cSim'),{x:X,w,h}=fit(c,0.3,170);X.clearRect(0,0,w,h);
+  const M=144,W=Math.max(12*s,8*d.dR),dx=W/M,sig=0.43*d.dA/dx,obj=new Float32Array(M*M);
+  const parts=[];for(let k=0;k<3;k++)parts.push([W*0.12+k*2*s,W*0.5]);parts.push([W*0.85,W*0.5]);
+  for(let j=0;j<M;j++)for(let i=0;i<M;i++){const x=(i+0.5)*dx,y=(j+0.5)*dx;let v=1;for(const [px,py] of parts)if(Math.hypot(x-px,y-py)<s/2)v=0.25;obj[j*M+i]=v}
+  // separable Gaussian blur
+  const blur=a=>{const r=Math.max(1,Math.ceil(3*sig)),kk=[];let sm=0;for(let t=-r;t<=r;t++){const g=Math.exp(-t*t/(2*sig*sig));kk.push(g);sm+=g}
+    const t1=new Float32Array(M*M),t2=new Float32Array(M*M);
+    for(let j=0;j<M;j++)for(let i=0;i<M;i++){let acc=0;for(let t=-r;t<=r;t++){const ii=clamp(i+t,0,M-1);acc+=a[j*M+ii]*kk[t+r]}t1[j*M+i]=acc/sm}
+    for(let j=0;j<M;j++)for(let i=0;i<M;i++){let acc=0;for(let t=-r;t<=r;t++){const jj=clamp(j+t,0,M-1);acc+=t1[jj*M+i]*kk[t+r]}t2[j*M+i]=acc/sm}return t2};
+  const opt=blur(obj),cam=new Float32Array(M*M),q=d.pS/dx;
+  if(q<=1)cam.set(opt);else{for(let j=0;j<M;j++)for(let i=0;i<M;i++){const bi=Math.floor(i/q),bj=Math.floor(j/q);const i0=Math.floor(bi*q),i1=Math.min(M,Math.floor((bi+1)*q)),j0=Math.floor(bj*q),j1=Math.min(M,Math.floor((bj+1)*q));
+    let acc=0,n=0;for(let jj=j0;jj<Math.max(j1,j0+1);jj++)for(let ii=i0;ii<Math.max(i1,i0+1);ii++){acc+=opt[jj*M+ii];n++}cam[j*M+i]=acc/n}}
+  const gap=12,pw=Math.min((w-2*gap)/3,h-34),y0=20,tn=TINT[S.filt];
+  const panel=(a,k,label)=>{const o=document.createElement('canvas');o.width=M;o.height=M;const ox=o.getContext('2d'),im=ox.createImageData(M,M);
+    for(let t=0;t<M*M;t++){const g=Math.pow(clamp(a[t],0,1),1/1.8)*255;im.data[4*t]=g*tn[0];im.data[4*t+1]=g*tn[1];im.data[4*t+2]=g*tn[2];im.data[4*t+3]=255}
+    ox.putImageData(im,0,0);const x0=k*(pw+gap);X.imageSmoothingEnabled=k!==2;X.drawImage(o,x0,y0,pw,pw);
+    X.fillStyle=C.ink;X.font='12px '+C.body;X.textAlign='left';X.fillText(label,x0,14)};
+  panel(obj,0,'specimen');panel(opt,1,'optical image');panel(cam,2,'camera pixels');
+  X.fillStyle=C.muted;X.font='11px '+C.mono;X.textAlign='left';X.fillText('field '+fmtL(W)+' wide · Rayleigh '+fmtL(d.dR)+' · pixel '+fmtL(d.pS),0,y0+pw+13)}
+
+function views(){renderView();blit($('cView'));blit($('cView2'));blit($('cView3'))}
+function all(){stats();calc();views();drawTilt();drawPath();drawRays();drawPupil();drawMTF();drawBS();drawFacet()}
+let raf=0,pend={};function sched(k){pend[k||'all']=1;if(!raf)raf=requestAnimationFrame(()=>{raf=0;const p=pend;pend={};if(p.all)return all();stats();calc();if(p.view)views();if(p.tilt)drawTilt();if(p.path)drawPath();if(p.rays)drawRays();if(p.pupil)drawPupil();if(p.mtf)drawMTF();if(p.bs)drawBS();if(p.facet)drawFacet()})}
 const bind=(id,key,parse,groups)=>$(id).addEventListener('input',e=>{S[key]=parse(e.target.value);groups.forEach(g=>sched(g))});
 bind('tilt','tilt',Number,['tilt']);
 bind('ap','ap',Number,['view','rays','pupil','mtf','facet']);
@@ -934,21 +1042,31 @@ bind('obAz','obAz',Number,['view','facet','pupil']);bind('obT','obT',Number,['vi
 bind('poR','poR',Number,['view']);bind('poA','poA',Number,['view']);bind('diB','diB',Number,['view']);
 bind('bsR','bsR',Number,['bs']);bind('bsS','bsS',Number,['bs']);
 bind('pix','pix',Number,['view','mtf','tilt']);bind('ad','ad',Number,['view','mtf','tilt']);
+bind('kEye','eye',Number,['calc']);bind('kBar','bar',v=>Math.max(0.01,+v||10),['calc']);
+$('kPix').addEventListener('input',e=>{const v=+e.target.value;if(v>=0.5&&v<=20){S.pix=v;$('pix').value=v;['view','mtf','tilt'].forEach(g=>sched(g))}});
+$('kAd').addEventListener('input',e=>{S.ad=+e.target.value;$('ad').value=e.target.value;['view','mtf','tilt'].forEach(g=>sched(g))});
+$('kPre').addEventListener('input',e=>{if(e.target.value){S.fsz=+e.target.value;$('kSize').value=e.target.value}else $('kSize').focus();sched('calc')});
+$('kSize').addEventListener('input',e=>{const v=+e.target.value;if(v>0){S.fsz=v;$('kPre').value=[...$('kPre').options].some(o=>o.value===String(v))?String(v):'';sched('calc')}});
 document.querySelectorAll('[data-obj]').forEach(b=>b.addEventListener('click',()=>{S.o=+b.dataset.obj;sched('all')}));
 document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{S.mode=b.dataset.mode;sched('all')}));
 document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>{S.view=b.dataset.view;document.querySelectorAll('[data-view]').forEach(e=>e.setAttribute('aria-pressed',String(e===b)));sched('view')}));
 [['stInv','inv'],['stUp','up']].forEach(([id,v])=>$(id).addEventListener('click',()=>{S.stand=v;$('stInv').setAttribute('aria-pressed',String(v==='inv'));$('stUp').setAttribute('aria-pressed',String(v==='up'));sched('path')}));
 [['rIl','il'],['rIm','im'],['rBo','bo']].forEach(([id,v])=>$(id).addEventListener('click',()=>{S.rays=v;['rIl','rIm','rBo'].forEach(j=>$(j).setAttribute('aria-pressed',String(j===id)));sched('rays')}));
+[['ilK','K'],['ilC','C']].forEach(([id,v])=>$(id).addEventListener('click',()=>{S.illum=v;$('ilK').setAttribute('aria-pressed',String(v==='K'));$('ilC').setAttribute('aria-pressed',String(v==='C'));
+  $('kA').textContent=v==='C'?'aperture diaphragm: no longer conjugate with the lamp':'aperture set: lamp, aperture diaphragm, objective back focal plane';
+  $('kF').textContent=v==='C'?'field set: lamp, field diaphragm, specimen, sensor':'field set: field diaphragm, specimen, sensor';
+  $('raysNote').textContent=v==='C'?'Each warm tint now converges to one spot on the specimen: the top, middle and bottom of the filament light different parts of the field.':'Lamp rays from the top, middle and bottom of the filament are drawn in three warm tints: each tint fills the whole specimen field.';
+  sched('view');sched('rays');sched('pupil')}));
 [['bsN',false],['bsP',true]].forEach(([id,v])=>$(id).addEventListener('click',()=>{S.bsPol=v;$('bsN').setAttribute('aria-pressed',String(!v));$('bsP').setAttribute('aria-pressed',String(v));$('bsR').disabled=v;sched('bs')}));
 {const pl=$('partList');for(const p of PARTS){const b=document.createElement('button');b.type='button';b.textContent=p.n;b.dataset.part=p.id;b.addEventListener('click',()=>{S.part=p.id;sched('path')});pl.appendChild(b)}}
 $('cPath').addEventListener('click',e=>{const r=$('cPath').getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
   let best=null,ba=1e9;for(const b of pathBoxes){if(x>=b.x&&x<=b.x+b.w&&y>=b.y&&y<=b.y+b.h){const a=b.w*b.h;if(a<ba){ba=a;best=b}}}if(best){S.part=best.id;sched('path')}});
-for(const id of ['cView','cView2']){const cv=$(id);let drag=null;
+for(const id of ['cView','cView2','cView3']){const cv=$(id);let drag=null;
   cv.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,cx:S.cx,cy:S.cy};cv.setPointerCapture(e.pointerId)});
   cv.addEventListener('pointermove',e=>{if(!drag)return;const k=viewInfo.span/cv.clientWidth;S.cx=drag.cx-(e.clientX-drag.x)*k;S.cy=drag.cy-(e.clientY-drag.y)*k;sched('view')});
   const end=()=>drag=null;cv.addEventListener('pointerup',end);cv.addEventListener('pointercancel',end)}
-let rw=0;window.addEventListener('resize',()=>{clearTimeout(rw);rw=setTimeout(()=>{stats();blit($('cView'));blit($('cView2'));drawTilt();drawPath();drawRays();drawPupil();drawMTF();drawBS();drawFacet()},120)});
-const redrawTheme=()=>{stats();blit($('cView'));blit($('cView2'));drawTilt();drawPath();drawRays();drawPupil();drawMTF();drawBS();drawFacet()};
+let rw=0;window.addEventListener('resize',()=>{clearTimeout(rw);rw=setTimeout(()=>{stats();blit($('cView'));blit($('cView2'));blit($('cView3'));calc();drawTilt();drawPath();drawRays();drawPupil();drawMTF();drawBS();drawFacet()},120)});
+const redrawTheme=()=>{stats();blit($('cView'));blit($('cView2'));blit($('cView3'));calc();drawTilt();drawPath();drawRays();drawPupil();drawMTF();drawBS();drawFacet()};
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',redrawTheme);
 new MutationObserver(redrawTheme).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(redrawTheme);
