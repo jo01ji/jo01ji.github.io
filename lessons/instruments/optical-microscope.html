@@ -38,6 +38,7 @@ canvas.pick{cursor:pointer}
 .controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 18px}
 .ctl{display:grid;gap:2px;font-size:14px}
 .ctl label{display:flex;justify-content:space-between;gap:8px}
+.ctl select,.ctl input[type=number]{width:100%;min-width:0}
 .ctl output{font:500 13px var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
 input[type=range]{width:100%;accent-color:var(--gold)}
 select,button{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--rule);border-radius:4px;padding:5px 10px}
@@ -190,7 +191,7 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var
         </div>
         <canvas id="cView" class="drag" aria-label="Simulated eyepiece view of the selected specimen. Drag to move the stage."></canvas>
         <div class="key">
-          <span class="dash" style="--c:var(--amber)">camera frame (2/3-inch sensor)</span>
+          <span class="dash" style="--c:var(--amber)">camera frame (sensor of the camera chosen in the calculator)</span>
           <span style="--c:var(--ink)">scale bar</span>
         </div>
         <p class="note">Drag the view to move the stage. The round edge is the eyepiece field stop, field number 22 mm. Close the field diaphragm below 100 % and you will see its eight leaves. The eyepiece view is drawn at 400 points across, so detail finer than about 1/400 of the field only shows in the camera views; the 4× crop shows the camera's own pixels when they are coarse.</p>
@@ -218,7 +219,20 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var
         <div class="ctl"><label for="kEye">Eyepiece</label><select id="kEye">
           <option value="10" selected>10×</option><option value="12.5">12.5×</option><option value="15">15×</option><option value="20">20×</option><option value="25">25×</option><option value="100">100× (not made; for comparison)</option>
         </select></div>
-        <div class="ctl"><label for="kPix">Camera pixel size, µm</label><input id="kPix" type="number" min="0.5" max="20" step="0.05" value="3.45"></div>
+        <div class="ctl"><label for="kCam">Camera</label><select id="kCam">
+          <option value="imx264" selected>Machine-vision camera, Sony IMX264: 3.45 µm</option>
+          <option value="dmc45">Leica DMC4500: 3.4 µm</option>
+          <option value="dmc45b">Leica DMC4500, 2×2 binned: 3.4 µm, saved 1280 px wide</option>
+          <option value="flex">Leica Flexacam C3: 1.55 µm</option>
+          <option value="hq">Raspberry Pi HQ Camera, IMX477: 1.55 µm</option>
+          <option value="v3">Raspberry Pi Camera Module 3, IMX708: 1.4 µm</option>
+          <option value="v2">Raspberry Pi Camera Module 2, IMX219: 1.12 µm (OpenFlexure)</option>
+          <option value="iph">iPhone 14 Pro main camera: 1.22 µm, 2.44 µm when 4 are combined</option>
+          <option value="custom">My own camera</option>
+        </select></div>
+        <div class="ctl"><label for="kPix">Sensor pixel size, µm</label><input id="kPix" type="number" min="0.5" max="20" step="0.01" value="3.45"></div>
+        <div class="ctl"><label for="kSenW">Sensor width, pixels</label><input id="kSenW" type="number" min="100" max="20000" step="1" value="2464"></div>
+        <div class="ctl"><label for="kSave">Saved image width, pixels</label><input id="kSave" type="number" min="50" max="20000" step="1" value="2464"></div>
         <div class="ctl"><label for="kAd">C-mount adapter</label><select id="kAd"><option value="0.5">0.5×</option><option value="0.7">0.7×</option><option value="1" selected>1×</option></select></div>
         <div class="ctl"><label for="kBar">Scale bar length, µm</label><input id="kBar" type="number" min="0.1" max="5000" step="any" value="10"></div>
         <div class="ctl"><label for="kPre">Feature</label><select id="kPre">
@@ -232,9 +246,11 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var
         </select></div>
         <div class="ctl"><label for="kSize">Feature size, nm</label><input id="kSize" type="number" min="1" max="200000" step="any" value="500"></div>
       </div>
+      <p class="note"><b>Which pixel size to use.</b> The sensor pixel is a physical size on the chip, from the camera's data sheet. The saved image can have fewer pixels than the sensor, when the software bins (adds 2 × 2 pixels into one) or resizes, and then each saved pixel covers more of the specimen. Enter the width of the file you save, for example 1800 for an 1800 × 1000 image. If your software already reports µm per pixel for each objective (LAS EZ and most others do), that number is the "one image pixel at the specimen" line and you can check it here. A phone held to the eyepiece is not on a C-mount: its magnification onto the sensor is the phone lens focal length divided by the eyepiece focal length (250 mm ÷ eyepiece magnification), so use the software or a stage micrometer to calibrate it. Apple does not publish pixel sizes for its newer iPhones; the iPhone 14 Pro figures are from its launch.</p>
       <div class="stats" style="margin-top:12px">
         <div><span>Total visual magnification</span><b id="kMt"></b></div>
         <div><span>Useful range, 500–1000 × NA</span><b id="kUse"></b></div>
+        <div><span>Saved pixel, from binning or resizing</span><b id="kBin"></b></div>
         <div><span>One image pixel at the specimen</span><b id="kPS"></b></div>
         <div><span>Scale bar in the camera image</span><b id="kBpx"></b></div>
         <div><span>Pixels across the feature</span><b id="kFpx"></b></div>
@@ -500,14 +516,14 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var
   <div class="grid2">
     <div class="panel">
       <div class="controls">
-        <div class="ctl"><label for="pix">Camera pixel size <output id="pixv"></output></label><input id="pix" type="range" min="1.2" max="6.5" step="0.05" value="3.45"></div>
+        <div class="ctl"><label for="pix">Camera pixel size <output id="pixv"></output></label><input id="pix" type="range" min="1" max="6.5" step="0.05" value="3.45"></div>
         <div class="ctl"><label for="ad">C-mount adapter</label><select id="ad"><option value="0.5">0.5×</option><option value="0.7">0.7×</option><option value="1" selected>1×</option></select></div>
       </div>
       <dl class="read">
         <dt>Magnification at the sensor</dt><dd id="cM"></dd>
         <dt>Pixel at the specimen</dt><dd id="cP"></dd>
         <dt>Resolution / pixel (want ≥ 2)</dt><dd id="cS"></dd>
-        <dt>Camera field (2/3-inch, 8.8 × 6.6 mm)</dt><dd id="cF"></dd>
+        <dt>Camera field (sensor of the chosen camera)</dt><dd id="cF"></dd>
         <dt>Eyepiece field (FN 22)</dt><dd id="cE"></dd>
       </dl>
       <p id="cNote" class="note"></p>
@@ -580,6 +596,7 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var
     <li>D. B. Murphy, M. W. Davidson, <i>Fundamentals of Light Microscopy and Electronic Imaging</i>, 2nd ed., Wiley-Blackwell (2013). Depth of field, useful magnification and conjugate planes. Cited from general knowledge, not reread for this page.</li>
     <li>Edmund Optics, “Mitutoyo infinity-corrected long working distance objectives”. <a href="https://www.edmundoptics.co.uk/f/mitutoyo-infinity-corrected-long-working-distance-objectives/12298/">link</a>.</li>
     <li>G. F. Vander Voort, <i>Metallography: Principles and Practice</i>, McGraw-Hill (1984), reprinted by ASM International (1999), chapter on light microscopy; and <i>ASM Handbook Vol. 9, Metallography and Microstructures</i>, ASM International (2004). Specimen levelling, polarised light on anisotropic metals, contrast methods. Cited from general knowledge, not reread for this page.</li>
+    <li>Camera pixel sizes: Framos, Sony IMX264 data <a href="https://framos.com/products/sensors/area-sensors/imx264llr-c-18253/">link</a>; Leica DMC4500 data sheet <a href="https://admin.jhtechnologies.com/sites/default/files/Leica_DMC4500_EN_0.pdf">pdf</a>; Leica Flexacam C3 flyer <a href="https://admin.jhtechnologies.com/sites/default/files/Flexacam%20C3_flyer_EN_MC-0002945_22.07.2021.pdf">pdf</a>; Raspberry Pi camera documentation <a href="https://www.raspberrypi.com/documentation/accessories/camera.html">link</a>; PetaPixel on the iPhone 14 Pro main camera, 2.44 µm quad pixel <a href="https://petapixel.com/2022/09/07/the-iphone-14-pro-and-pro-max-ditch-the-notch-upgrade-main-camera">link</a>.</li>
     <li>ISO 8578, Microscopes: marking of objectives and eyepieces. Colour code for magnification. Cited from general knowledge, not reread for this page.</li>
   </ol>
   <p class="note">Tube lens focal lengths and parfocal distances are the makers' usual values. The simulated micrographs are synthetic and qualitative: grain sizes, lamellar spacings, groove widths and relief tilts were chosen to show the trends and are not measured values for any real alloy.</p>
@@ -601,11 +618,13 @@ function col(){return {ink:css('--ink'),muted:css('--muted'),rule:css('--rule'),
 const OBJ=[{m:5,na:0.15},{m:10,na:0.30},{m:20,na:0.45},{m:50,na:0.80},{m:100,na:0.90}]; // typical dry plan metallurgical objectives
 const LAM={w:550,g:546,b:450,r:650};
 const TINT={w:[1,1,1],g:[0.80,1,0.74],b:[0.70,0.82,1],r:[1,0.70,0.64]};
-const S={view:'eye',o:3,mode:'BF',ap:0.75,fd:1.05,samp:'fp',filt:'g',cx:0,cy:0,tilt:0.6,stand:'inv',part:'bs',rays:'il',fac:8,obAz:45,obT:0.92,poR:20,poA:2,diB:110,bsR:0.5,bsS:0.6,bsPol:false,pix:3.45,ad:1,illum:'K',eye:10,bar:10,fsz:500};
-const FN=22, SENSOR=[8.8,6.6];
+const S={view:'eye',o:3,mode:'BF',ap:0.75,fd:1.05,samp:'fp',filt:'g',cx:0,cy:0,tilt:0.6,stand:'inv',part:'bs',rays:'il',fac:8,obAz:45,obT:0.92,poR:20,poA:2,diB:110,bsR:0.5,bsS:0.6,bsPol:false,pix:3.45,ad:1,illum:'K',eye:10,bar:10,fsz:500,cam:'imx264',senW:2464,senH:2056,saveW:2464};
+const FN=22;
+/* sensor pixel (µm) and sensor size (pixels), from the makers' data; see the sources. iPhone 14 Pro: 48 MP, 2.44 µm quad pixel = 1.22 µm native */
+const CAMS={imx264:{p:3.45,w:2464,h:2056},dmc45:{p:3.4,w:2560,h:1920},dmc45b:{p:3.4,w:2560,h:1920,save:1280},flex:{p:1.55,w:4000,h:3000},hq:{p:1.55,w:4056,h:3040},v3:{p:1.4,w:4608,h:2592},v2:{p:1.12,w:3280,h:2464},iph:{p:1.22,w:8064,h:6048}};
 function D(){const o=OBJ[S.o],lam=LAM[S.filt]/1000,NAo=o.na,NAi=S.ap*NAo;
-  const ao=Math.asin(NAo),ai=Math.asin(NAi);const Mc=o.m*S.ad;
-  return {o,lam,NAo,NAi,ao,ai,dA:lam/(NAo+NAi),dR:0.61*lam/NAo,Mc,pS:S.pix/Mc,dof:lam/(NAo*NAo)+S.pix/(Mc*NAo),fov:FN*1000/o.m,camW:SENSOR[0]*1000/Mc,camH:SENSOR[1]*1000/Mc}}
+  const ao=Math.asin(NAo),ai=Math.asin(NAi);const Mc=o.m*S.ad,bin=S.senW/S.saveW,px=S.pix*bin,SW=S.senW*S.pix/1000,SH=S.senH*S.pix/1000;
+  return {o,lam,NAo,NAi,ao,ai,dA:lam/(NAo+NAi),dR:0.61*lam/NAo,Mc,bin,pS:px/Mc,dof:lam/(NAo*NAo)+px/(Mc*NAo),fov:FN*1000/o.m,camW:SW*1000/Mc,camH:SH*1000/Mc}}
 
 /* grating transfer under partially coherent illumination: share of the illumination disc (radius σ in pupil units)
    whose first diffraction order, shifted by λ/(S·NA), still lands inside the pupil (radius 1) */
@@ -992,7 +1011,8 @@ function stats(){const d=D();
 /* ---------- wiring ---------- */
 /* ---------- shared settings: scale and visibility calculator ---------- */
 function calc(){const d=D(),C=col(),Mt=d.o.m*S.eye,lo=500*d.NAo,hi=1000*d.NAo,s=S.fsz/1000;
-  if(document.activeElement!==$('kPix'))$('kPix').value=S.pix;$('kAd').value=String(S.ad);
+  for(const [id,v] of [['kPix',S.pix],['kSenW',S.senW],['kSave',S.saveW]])if(document.activeElement!==$(id))$(id).value=v;$('kAd').value=String(S.ad);$('kCam').value=S.cam;
+  $('kBin').textContent=d.bin>1.001?d.bin.toFixed(2)+' sensor pixels across':d.bin<0.999?'upsampled ×'+(1/d.bin).toFixed(2):'1 sensor pixel (full size)';
   $('kMt').textContent=d.o.m+' × '+S.eye+' = '+Math.round(Mt)+'×';
   $('kUse').textContent=Math.round(lo)+'–'+Math.round(hi)+'×'+(Mt>hi?' · empty':Mt<lo?' · eye limits':' · good');
   $('kPS').textContent=fmtL(d.pS);$('kBpx').textContent=fmtL(S.bar)+' = '+(S.bar/d.pS).toFixed(S.bar/d.pS<10?1:0)+' px';
@@ -1043,7 +1063,12 @@ bind('poR','poR',Number,['view']);bind('poA','poA',Number,['view']);bind('diB','
 bind('bsR','bsR',Number,['bs']);bind('bsS','bsS',Number,['bs']);
 bind('pix','pix',Number,['view','mtf','tilt']);bind('ad','ad',Number,['view','mtf','tilt']);
 bind('kEye','eye',Number,['calc']);bind('kBar','bar',v=>Math.max(0.01,+v||10),['calc']);
-$('kPix').addEventListener('input',e=>{const v=+e.target.value;if(v>=0.5&&v<=20){S.pix=v;$('pix').value=v;['view','mtf','tilt'].forEach(g=>sched(g))}});
+const camGroups=()=>['view','mtf','tilt'].forEach(g=>sched(g));
+$('kPix').addEventListener('input',e=>{const v=+e.target.value;if(v>=0.5&&v<=20){S.pix=v;S.cam='custom';$('pix').value=v;camGroups()}});
+$('kSenW').addEventListener('input',e=>{const v=Math.round(+e.target.value);if(v>=100){S.senH=Math.round(v*S.senH/S.senW);S.senW=v;S.cam='custom';camGroups()}});
+$('kSave').addEventListener('input',e=>{const v=Math.round(+e.target.value);if(v>=50){S.saveW=v;camGroups()}});
+$('kCam').addEventListener('input',e=>{const c=CAMS[e.target.value];S.cam=e.target.value;if(c){S.pix=c.p;S.senW=c.w;S.senH=c.h;S.saveW=c.save||c.w;$('pix').value=c.p}camGroups()});
+$('pix').addEventListener('input',()=>{S.cam='custom'});
 $('kAd').addEventListener('input',e=>{S.ad=+e.target.value;$('ad').value=e.target.value;['view','mtf','tilt'].forEach(g=>sched(g))});
 $('kPre').addEventListener('input',e=>{if(e.target.value){S.fsz=+e.target.value;$('kSize').value=e.target.value}else $('kSize').focus();sched('calc')});
 $('kSize').addEventListener('input',e=>{const v=+e.target.value;if(v>0){S.fsz=v;$('kPre').value=[...$('kPre').options].some(o=>o.value===String(v))?String(v):'';sched('calc')}});
