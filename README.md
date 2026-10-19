@@ -4,7 +4,7 @@ Personal website of Jonathan Aristya Setyadji. Plain HTML + CSS, no build step. 
 
 ## Files
 - `index.html`, `cv.html`, `atom-probe.html`, `work.html` — one file per page. Edit the text directly.
-- `lessons/` — interactive lessons. `lessons/index.html` links to two sections, `phase-transformations/` and `additive-manufacturing/`, each with its own `index.html` list. Each lesson is a single self-contained HTML file; add it to its section folder and add a card to that section's `index.html`. The small files left in `lessons/` redirect old lesson links to their new folder.
+- `lessons/` — interactive lessons. `lessons/index.html` links to three sections, `phase-transformations/`, `additive-manufacturing/` and `instruments/`, each with its own `index.html` list. Each lesson is a single self-contained HTML file; add it to its section folder and add a card to that section's `index.html`. The small files left in `lessons/` redirect old lesson links to their new folder.
 - `style.css` — all styling. Colours and fonts are variables at the top (`:root`).
 - `script.js` — light/dark toggle only.
 - `images/` — photos (keep them under ~500 KB each; 1600 px wide is plenty).
