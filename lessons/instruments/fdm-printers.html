@@ -79,7 +79,6 @@ td.m,code,.m{font:13px var(--mono)}
 .stats b{font:500 14px var(--mono);font-variant-numeric:tabular-nums}
 .warn{color:var(--rust);font-size:14px}
 .tag{display:inline-block;font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--rule);border-radius:3px;padding:1px 6px;color:var(--muted);vertical-align:middle;margin:1px 2px 1px 0}
-.tag.v0{border-color:var(--gold);color:var(--gold)}
 .pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
 .pair > div{display:grid;gap:6px;align-content:start;min-width:0}
 ul.tight,ol.tight{margin:0;padding-left:20px;display:grid;gap:4px;max-width:72ch}
@@ -100,7 +99,7 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var
   <a href="./" style="color:var(--muted);font-size:15px">← Instruments</a>
   <div class="eyebrow">Instruments · material extrusion additive manufacturing · FDM / FFF</div>
   <h1>The FDM polymer 3D printer</h1>
-  <p class="lede">A fused deposition modelling (FDM, also called fused filament fabrication, FFF) printer is a hot nozzle on a motion system. A motor pushes a 1.75 mm plastic filament into a heated block, the melt leaves a nozzle about 0.4 mm wide, and the machine draws the part one layer at a time. Almost everything that separates a slow, wobbly printer from a fast, accurate one comes down to two questions: what has to move, and how stiffly. This lesson takes the machine apart, animates the main families (bed slingers, CoreXY, H-bot, CoreXZ, delta, belt printers, IDEX and toolchangers) and then goes through what owners typically modify, with your Voron 0.2 as the running example.</p>
+  <p class="lede">A fused deposition modelling (FDM, also called fused filament fabrication, FFF) printer is a hot nozzle on a motion system. A motor pushes a 1.75 mm plastic filament into a heated block, the melt leaves a nozzle about 0.4 mm wide, and the machine draws the part one layer at a time. Almost everything that separates a slow, wobbly printer from a fast, accurate one comes down to two questions: what has to move, and how stiffly. This lesson takes the machine apart, animates the main families (bed slingers, CoreXY, H-bot, CoreXZ, delta, belt printers, IDEX and toolchangers) and then goes through what owners typically modify, using the open-source Voron printers as a running example of a machine built to be modified.</p>
   <div class="links">
     <a href="../additive-manufacturing/lpbf-316l-texture.html">Texture control in LPBF 316L</a>
     <a href="../phase-transformations/widmanstatten-transition.html">Planar to Widmanstätten Ferrite</a>
@@ -255,7 +254,7 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var
         <dt>Corner rounding, roughly v × duration / 4</dt><dd id="oR"></dd>
       </dl>
       <p id="ringNote" class="note"></p>
-      <p class="note">Mass and stiffness are illustrative starting values, not measurements of any printer; the shared architecture sets a plausible ratio between them. On your Voron, an ADXL345 accelerometer and Klipper's <code>SHAPER_CALIBRATE</code> measure f directly (ref. 3). Shaper impulse timings follow Klipper's shaper definitions (ref. 4). Klipper's default damping ratio is 0.1.</p>
+      <p class="note">Mass and stiffness are illustrative starting values, not measurements of any printer; the shared architecture sets a plausible ratio between them. On a Klipper printer, an ADXL345 accelerometer and Klipper's <code>SHAPER_CALIBRATE</code> measure f directly (ref. 3). Shaper impulse timings follow Klipper's shaper definitions (ref. 4). Klipper's default damping ratio is 0.1.</p>
     </div>
   </div>
   <p class="callout">Two quotes from the Klipper documentation explain the architecture trade-off. On bed slingers, "as filament accumulates on the moving bed, the resonance frequency will decrease", so a more tolerant shaper such as EI is suggested; move the printed-part slider to see it. And below about 20 to 25 Hz, they suggest stiffening the printer or reducing the moving mass, because no shaper can then avoid heavy smoothing (ref. 3).</p>
@@ -272,7 +271,7 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var
         <div class="ctl"><label for="bH">Layer height h <output id="bHv"></output></label><input id="bH" type="range" min="0.05" max="0.4" step="0.01" value="0.2"></div>
         <div class="ctl"><label for="bW">Line width w <output id="bWv"></output></label><input id="bW" type="range" min="0.3" max="0.8" step="0.01" value="0.45"></div>
         <div class="ctl"><label for="bV">Print speed <output id="bVv"></output></label><input id="bV" type="range" min="10" max="500" step="5" value="150"></div>
-        <div class="ctl"><label for="bQ">Your hotend's measured max flow, mm³/s</label><input id="bQ" type="number" min="1" max="100" step="0.5" value="20"></div>
+        <div class="ctl"><label for="bQ">Hotend's measured max flow, mm³/s</label><input id="bQ" type="number" min="1" max="100" step="0.5" value="20"></div>
       </div>
     </div>
     <div class="panel">
@@ -281,12 +280,12 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var
         <dt>Road cross-section A</dt><dd id="fA"></dd>
         <dt>Volumetric flow Q = A·v</dt><dd id="fQ"></dd>
         <dt>Filament feed rate (1.75 mm)</dt><dd id="fF"></dd>
-        <dt>Fastest speed at your max flow</dt><dd id="fV"></dd>
+        <dt>Fastest speed at this max flow</dt><dd id="fV"></dd>
         <dt>Line spacing, w − h(1 − π/4)</dt><dd id="fS"></dd>
         <dt>Void between two roads (per mm of length)</dt><dd id="fVo"></dd>
       </dl>
       <p id="flowWarn" class="warn" hidden></p>
-      <p class="note">The default max flow of 20 mm³/s is a placeholder: TeamFDM describes a high-flow hotend as the upgrade for prints above roughly 20 mm³/s (ref. 18). Measure your own with OrcaSlicer's max volumetric speed test (ref. 7); it depends on hotend, nozzle, material and temperature.</p>
+      <p class="note">The default max flow of 20 mm³/s is a placeholder: TeamFDM describes a high-flow hotend as the upgrade for prints above roughly 20 mm³/s (ref. 18). Measure the real value with OrcaSlicer's max volumetric speed test (ref. 7); it depends on hotend, nozzle, material and temperature.</p>
     </div>
   </div>
   <div class="grid2">
@@ -325,7 +324,7 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var
       <div class="controls">
         <div class="ctl"><label for="wN">Nozzle temperature, °C</label><input id="wN" type="number" value="240" step="5"></div>
         <div class="ctl"><label for="wE">Chamber / surroundings, °C</label><input id="wE" type="number" value="45" step="5"></div>
-        <div class="ctl"><label for="wT">Weld threshold, °C (e.g. your polymer's Tg)</label><input id="wT" type="number" value="105" step="1"></div>
+        <div class="ctl"><label for="wT">Weld threshold, °C (e.g. the polymer's Tg)</label><input id="wT" type="number" value="105" step="1"></div>
         <div class="ctl"><label for="wC">Cooling time constant <output id="wCv"></output></label><input id="wC" type="range" min="0.2" max="10" step="0.1" value="2"></div>
         <div class="ctl"><label for="wL">Layer time <output id="wLv"></output></label><input id="wL" type="range" min="2" max="60" step="0.5" value="4"></div>
         <div class="ctl"><label for="wR">Reheat by each new layer, fraction of the previous <output id="wRv"></output></label><input id="wR" type="range" min="0" max="0.8" step="0.01" value="0.5"></div>
@@ -345,7 +344,7 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var
   </div>
   <div class="pair">
     <div>
-      <h3>Links to your metallurgy</h3>
+      <h3>Links to physical metallurgy</h3>
       <ul class="tight">
         <li><b>Sintering.</b> Frenkel's viscous neck growth is the amorphous-material case of the same two-particle model used for metal powders, where the transport is by diffusion rather than viscous flow (Kuczynski). Powder metallurgy and polymer FDM share the neck-ratio language.</li>
         <li><b>Non-isothermal kinetics.</b> The equivalent isothermal weld time is the additivity rule you use to turn a continuous-cooling path into isothermal transformation kinetics, or the tempering parameter in steels.</li>
@@ -371,7 +370,7 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var
         </tbody>
       </table>
       </div>
-      <p class="note">From Prusa's filament material guide (ref. 8). Ranges cover many brands; use the datasheet for your spool. Your Voron 0.2 is enclosed, which is why Voron printers are usually built from ABS or ASA parts.</p>
+      <p class="note">From Prusa's filament material guide (ref. 8). Ranges cover many brands; use the datasheet for the spool in hand. Enclosed printers are often built from ABS or ASA parts for the same reason: they have to survive a warm chamber.</p>
     </div>
   </div>
 </section>
@@ -400,7 +399,7 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var
         <dt>Toolchanger: waste</dt><dd id="mW2"></dd>
         <dt>Toolchanger: time on changes</dt><dd id="mT2"></dd>
       </dl>
-      <p class="note">All inputs are yours to set. Take the purge volume from your slicer's flushing-volume table; it depends on the two colours. The 5 s toolchange default is Snapmaker's claim for the U1 (ref. 10), and the 40 s single-nozzle default is a placeholder within Prusa's "dozens of seconds" (ref. 9). Waste is given as volume; multiply by your filament's density from its datasheet for mass.</p>
+      <p class="note">All inputs are editable. Take the purge volume from the slicer's flushing-volume table; it depends on the two colours. The 5 s toolchange default is Snapmaker's claim for the U1 (ref. 10), and the 40 s single-nozzle default is a placeholder within Prusa's "dozens of seconds" (ref. 9). Waste is given as volume; multiply by your filament's density from its datasheet for mass.</p>
     </div>
   </div>
 </section>
@@ -412,20 +411,33 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var
   <div class="row" role="group" aria-label="Goal" id="goalBtns"></div>
   <div class="row"><label class="note"><input type="checkbox" id="onlyArch"> Only show mods that fit the selected architecture</label></div>
   <div class="mods" id="modGrid"></div>
-  <p class="note"><span class="tag v0">Voron 0.2</span> marks mods that are common on, or designed for, the V0. Fit varies between revisions and toolheads, so check each mod's own instructions against your build before ordering parts. Difficulty dots: ● bolt-on, ●● some wiring or firmware, ●●● major rebuild.</p>
+  <p class="note">Fit varies between printer models, revisions and toolheads, so check each mod's own instructions against the specific build before ordering parts. Difficulty dots: ● bolt-on, ●● some wiring or firmware, ●●● major rebuild.</p>
 </section>
 
-<section id="v0">
-  <div class="eyebrow">9 · Your Voron 0.2</div>
-  <h2>A small, enclosed CoreXY that is already where most bed-slinger mods try to go</h2>
+<section id="voron">
+  <div class="eyebrow">9 · Example: the open-source Voron printers</div>
+  <h2>A family of printers designed from the start to be built, tuned and modified</h2>
+  <p>Voron Design publishes complete open-source printers: frames, printed parts, wiring and Klipper configurations. Builders source the parts or buy kits, print the plastic parts themselves, and then modify them, which is why so many of the mods in section 8 started in the Voron community (ref. 18). Most models are enclosed CoreXY machines, so they already have what many bed-slinger upgrades try to add.</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Model</th><th>Kinematics</th><th>Build volume</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><b>Voron 0</b> (0.1, 0.2)</td><td>CoreXY</td><td class="m">120 × 120 × 120 mm</td><td>Small and stiff; 0.1 released 2021, 0.2 in 2023</td></tr>
+      <tr><td><b>Voron Trident</b></td><td>CoreXY</td><td class="m">250³, 300³ or 350³ mm</td><td>Fixed gantry, bed moves in Z on three lead screws; 2021</td></tr>
+      <tr><td><b>Voron 2.4</b></td><td>CoreXY</td><td class="m">250³, 300³ or 350³ mm</td><td>Flying gantry on four Z motors that also tram it; May 2020</td></tr>
+      <tr><td><b>Voron Switchwire</b></td><td>CoreXZ</td><td class="m">250 × 210 × 210 mm</td><td>Converted from a Cartesian bed slinger</td></tr>
+      <tr><td><b>Voron Legacy</b></td><td>—</td><td class="m">230 × 230 × 240 mm</td><td>Earlier design</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="note">Model list, kinematics, build volumes and release years from ref. 13. The Z arrangements in the notes column are not from ref. 13; check them against the current Voron documentation.</p>
   <ul class="tight">
-    <li><b>Kinematics.</b> CoreXY with a 120 × 120 × 120 mm build volume (ref. 13). The small frame is stiff and the moving mass is small, so its resonance frequencies are high; measure them with an accelerometer before chasing other upgrades.</li>
-    <li><b>Firmware.</b> Klipper, so input shaping, pressure advance and macros are configuration changes, not firmware rebuilds.</li>
-    <li><b>Toolhead.</b> The V0.2 is designed around the Mini Stealthburner (ref. 21). Its hotend and extruder set the flow limit of section 5.</li>
-    <li><b>Enclosure.</b> Already enclosed, so ABS and ASA print well. A carbon filter such as a Nevermore is the usual first addition, because ABS and ASA give off fumes and particles.</li>
-    <li><b>Good first mods.</b> An accelerometer run for input shaping, a pressure advance calibration, a max-flow test, a chamber thermistor and a filter. All are cheap and each corresponds to a section of this page.</li>
+    <li><b>Firmware.</b> Voron printers run Klipper, so input shaping, pressure advance and macros are configuration changes, not firmware rebuilds.</li>
+    <li><b>Toolheads.</b> The toolhead's hotend and extruder set the flow limit of section 5; the larger Vorons use the Stealthburner and the V0 a smaller version of it.</li>
+    <li><b>Enclosure.</b> Most models are enclosed, so ABS and ASA print well. A carbon filter such as a Nevermore is the usual first addition, because ABS and ASA give off fumes and particles.</li>
+    <li><b>Good first steps on any Klipper printer.</b> An accelerometer run for input shaping, a pressure advance calibration, a max-flow test, a chamber thermistor and, for an enclosed printer, a filter. All are cheap and each corresponds to a section of this page.</li>
   </ul>
-  <p class="callout h">For lab work, the V0's 120 mm cube is enough for sample holders, polishing jigs, mounts and the printed parts of the inverted microscope design. Print anything that sits near a hot stage or furnace in ASA or PC rather than PLA, and use the material guide above for the limits.</p>
+  <p class="callout h">In a materials lab, even a small printer is enough for sample holders, polishing jigs, mounts and instrument parts. Print anything that sits near a hot stage or furnace in ASA or PC rather than PLA, and use the material guide above for the limits. A separate lesson covers <a href="voron-0-2.html">the Voron 0.2 in detail</a>.</p>
 </section>
 
 <section id="refs">
@@ -451,7 +463,6 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var
     <li>TeamFDM, <a href="https://www.teamfdm.com/blogs/entry/12-best-voron-mods/">Best Voron mods</a>.</li>
     <li>Prusa MK4S listing, <a href="https://www.3djake.com/prusa/mk4s">3DJake</a>: 250 × 210 × 220 mm, bed slinger.</li>
     <li>R. P. Wool, K. M. O'Connor, "A theory of crack healing in polymers", J. Appl. Phys. 52 (1981) 5953.</li>
-    <li>Voron 0.2 release notes and repository, <a href="https://github.com/VoronDesign/Voron-0">github.com/VoronDesign/Voron-0</a>.</li>
   </ol>
   <p class="note">Refs. 14, 17 and 20 are cited from the literature without rereading the papers; if you have the PDFs, the Frenkel prefactor and the reptation scaling are worth checking against them. Printer models and specifications change often; check the maker's page before buying or citing.</p>
 </section>
@@ -601,7 +612,7 @@ const ARCH={
  sl:{n:"Bed slinger",d:"The toolhead rides on an X gantry that only moves in Z. The bed, with its heater, plate and the growing part, slides back and forth in Y underneath. Watch the printed path: it travels with the bed.",
      x:"toolhead (+ X motor on some designs)",y:"bed, heater, build plate and the part",z:"whole X gantry, on two lead screws",mass:1.2,k:30,
      note:"Y moving mass is the bed, not the toolhead. Tall, narrow prints are shaken back and forth on every Y move."},
- xy:{n:"CoreXY (your Voron 0.2)",d:"Two motors fixed at the back corners drive two crossed belts. Both belts end on the toolhead. The motors turning the same way move X, opposite ways move Y, and only one motor turns on a 45° diagonal.",
+ xy:{n:"CoreXY",d:"Two motors fixed at the back corners drive two crossed belts. Both belts end on the toolhead. The motors turning the same way move X, opposite ways move Y, and only one motor turns on a 45° diagonal.",
      x:"toolhead only",y:"toolhead + gantry beam",z:"bed, on lead screws (Voron 0.2, Trident) or the whole gantry (Voron 2.4)",mass:0.45,k:45,
      note:"Watch the two motor dials: each one's rotation is ΔX ± ΔY (ref. 1)."},
  hb:{n:"H-bot",d:"Like CoreXY but with one H-shaped belt. On X moves the belt pulls on the gantry at one side only, so it applies a torque that tries to rack the gantry out of square (rust arrow). CoreXY's crossed belts pull symmetrically and cancel it.",
@@ -620,7 +631,7 @@ const ARCH={
 const ARCH_ORDER=["sl","xy","hb","xz","de","be","id","tc"];
 let arch="xy";
 const archBtns=$("archBtns");
-ARCH_ORDER.forEach(k=>{const b=document.createElement("button");b.type="button";b.dataset.a=k;b.textContent=ARCH[k].n.replace(" (your Voron 0.2)","").replace(" (Voron Switchwire)","");b.onclick=()=>setArch(k);archBtns.appendChild(b);});
+ARCH_ORDER.forEach(k=>{const b=document.createElement("button");b.type="button";b.dataset.a=k;b.textContent=ARCH[k].n.replace(" (Voron Switchwire)","");b.onclick=()=>setArch(k);archBtns.appendChild(b);});
 function setArch(k){arch=k;[...archBtns.children].forEach(b=>b.setAttribute("aria-pressed",b.dataset.a===k?"true":"false"));
   const A=ARCH[k];$("archT").textContent=A.n;$("archD").textContent=A.d;$("archN").textContent=A.note;
   $("archRead").innerHTML=`<dt>Moves in X</dt><dd>${A.x}</dd><dt>Moves in Y</dt><dd>${A.y}</dd><dt>Moves in Z</dt><dd>${A.z}</dd>`;
@@ -880,7 +891,7 @@ bead.draw=()=>{
   $("fA").textContent=fmt(A,3)+" mm²";$("fQ").textContent=fmt(Q,1)+" mm³/s";
   $("fF").textContent=fmt(Q/(Math.PI*0.875*0.875),1)+" mm/s";$("fV").textContent=fmt(Qmax/A,0)+" mm/s";
   $("fS").textContent=fmt(sp,3)+" mm";$("fVo").textContent=fmt(hh*hh-Math.PI*hh*hh/4,4)+" mm²";
-  const W=$("flowWarn");if(Q>Qmax){W.hidden=false;W.textContent=`At ${v} mm/s this needs ${fmt(Q,1)} mm³/s, more than your hotend's ${Qmax}. The filament would not melt through: expect under-extrusion, skipping extruder steps or a clicking extruder. Slow down to about ${fmt(Qmax/A,0)} mm/s, or use a high-flow hotend or larger nozzle.`;}else W.hidden=true;
+  const W=$("flowWarn");if(Q>Qmax){W.hidden=false;W.textContent=`At ${v} mm/s this needs ${fmt(Q,1)} mm³/s, more than the hotend's ${Qmax}. The filament would not melt through: expect under-extrusion, skipping extruder steps or a clicking extruder. Slow down to about ${fmt(Qmax/A,0)} mm/s, or use a high-flow hotend or larger nozzle.`;}else W.hidden=true;
 };
 const pa=setup("cPA",0.42,190,300);
 bindRange("paT",v=>(v*1000).toFixed(0)+" ms",()=>pa.draw());
@@ -967,28 +978,28 @@ mm.draw=()=>{
 /* ---------------- 8 · mods ---------------- */
 const ALL=["sl","xy","hb","xz","de","be","id","tc"];
 const MODS=[
- {n:"Klipper firmware",g:["speed","quality"],a:ALL,v0:true,d:2,t:"Runs motion planning on a Raspberry Pi or similar and uses the printer's board only for timing steps.",w:"Makes input shaping, pressure advance and macros available. The V0.2 already runs it; it is the most common first mod on Marlin bed slingers."},
- {n:"Accelerometer for input shaping",g:["speed","quality"],a:ALL,v0:true,d:2,t:"An ADXL345 or LIS2DW on the toolhead (and on the bed of a slinger) measures resonances.",w:"Measures f for section 4 instead of guessing from a test print; often lets you double the acceleration."},
- {n:"High-flow hotend or nozzle",g:["speed"],a:ALL,v0:true,d:2,t:"A longer melt zone or a nozzle that splits the filament path (CHT style) so heat reaches the core faster.",w:"Raises the max flow of section 5. TeamFDM suggests it once you print above roughly 20 mm³/s (ref. 18). Check that it fits your toolhead."},
- {n:"Hardened or carbide-tipped nozzle",g:["materials"],a:ALL,v0:true,d:1,t:"Steel, ruby or tungsten carbide instead of brass.",w:"Needed for carbon- and glass-filled filaments (ref. 8). Hardened steel conducts heat less well than brass, so you may need a few degrees more."},
- {n:"Lighter or direct-drive toolhead",g:["speed","quality","materials"],a:["sl","xz","id","xy","hb"],v0:false,d:3,t:"Swap a heavy carriage for a lighter one, or convert Bowden to direct drive.",w:"Mass sets f in section 4; direct drive shrinks pressure advance and lets TPU feed reliably."},
- {n:"Linear rails instead of V-wheels",g:["quality","reliability"],a:["sl","xz"],v0:false,d:3,t:"Replaces plastic V-wheels on aluminium extrusions with steel rails and carriages.",w:"Higher, steadier stiffness and no wheel flat-spots. A classic Ender 3 upgrade; the Voron already uses rails."},
- {n:"Frame and gantry stiffening",g:["speed","quality"],a:["xy","hb","tc","sl"],v0:false,d:2,t:"Steel or titanium extrusion backers, braces and better corner joints.",w:"Raises k in section 4 and reduces thermal bowing of the X beam in hot enclosures (ref. 18). Common on Voron 2.4 and Trident."},
- {n:"Bed probe or nozzle probe",g:["quality","convenience"],a:ALL,v0:false,d:2,t:"BLTouch, Klicky, inductive, Voron Tap (the nozzle is the probe) or eddy-current scanners such as Beacon and Cartographer (ref. 18).",w:"Builds a bed mesh so the first layer is even; nozzle and eddy probes also set the Z offset automatically. Check V0 mounts before buying."},
- {n:"PEI spring-steel sheet",g:["quality","convenience"],a:ALL,v0:true,d:1,t:"Smooth or textured PEI on a magnetic flexible sheet.",w:"Reliable adhesion when hot and easy release when cool; flex the sheet to pop parts off."},
- {n:"Dual Z or automatic gantry tramming",g:["quality"],a:["sl","xz"],v0:false,d:2,t:"A second Z motor or a belt linking two lead screws.",w:"Keeps the gantry parallel to the bed on bed slingers. Voron 2.4 does this with four Z motors."},
- {n:"Enclosure",g:["materials","quality"],a:["sl","xy","hb","xz","id","tc"],v0:true,d:2,t:"Panels or a tent around the printer.",w:"Warm air keeps ABS, ASA, PC and nylon from warping and helps layer welding (section 6). The V0 is enclosed already; bed slingers are hard to enclose because the bed swings out."},
- {n:"Carbon and HEPA filter (Nevermore)",g:["reliability","materials"],a:["xy","hb","tc","id","sl"],v0:true,d:1,t:"A fan that recirculates chamber air through activated carbon, sometimes with a HEPA stage.",w:"Captures fumes and fine particles from ABS and ASA (ref. 18). Versions exist for the V0."},
- {n:"Chamber thermistor and heat soak",g:["materials","quality"],a:["xy","hb","tc","id"],v0:true,d:1,t:"A temperature sensor in the chamber, plus a macro that waits until the chamber is warm.",w:"Prints start only once the frame has expanded and the chamber is warm, so the first layer and dimensions are stable."},
- {n:"Toolhead board (USB or CAN)",g:["reliability","convenience"],a:ALL,v0:true,d:2,t:"A small board on the toolhead so only power and a data bus run down the umbilical or cable chain.",w:"Fewer wires to break from flexing (ref. 18). Many V0 builds use one with an umbilical."},
- {n:"Better part cooling",g:["quality","speed"],a:ALL,v0:true,d:2,t:"Larger blower fans, twin ducts, or a remote CPAP blower with a hose.",w:"Fast PLA prints need the road to freeze before the next one lands; cooling, not motion, is often the limit on small parts."},
- {n:"Filament runout sensor",g:["reliability"],a:ALL,v0:true,d:1,t:"A switch or encoder that pauses the print when filament stops moving.",w:"Saves long prints; an encoder version also catches jams (ref. 18)."},
- {n:"Nozzle wiper and purge bucket",g:["quality","reliability"],a:["xy","hb","tc","sl"],v0:true,d:1,t:"A brush and a small bin at the edge of the bed.",w:"A clean nozzle at the start of each print gives a cleaner first layer and more accurate nozzle probing (ref. 18)."},
- {n:"Multi-material unit (ERCF, Box Turtle, Tradrack)",g:["multi"],a:["xy","hb","sl","xz","tc"],v0:false,d:3,t:"Feeds four or more spools into the single nozzle, run by Happy Hare or similar Klipper software.",w:"Section 7: many colours for little money, but with purge waste on every change (ref. 18). Possible on a V0, but the small bed limits the purge tower."},
- {n:"Toolchanger conversion",g:["multi","materials"],a:["xy","tc"],v0:false,d:3,t:"Community conversions such as StealthChanger and TapChanger turn a Voron 2.4 or Trident into a toolchanger.",w:"Several nozzles with almost no purge waste (section 7). Needs a large CoreXY and careful dock alignment."},
- {n:"48 V motion and stronger drivers",g:["speed"],a:["xy","hb","tc","id"],v0:false,d:3,t:"Higher supply voltage for the XY steppers and drivers such as TMC5160.",w:"Stepper torque falls with speed because of winding inductance; more voltage keeps current, and torque, up at high step rates. Mainly for large, fast CoreXY machines."},
- {n:"Camera, lights and touchscreen",g:["convenience"],a:ALL,v0:true,d:1,t:"Chamber LEDs, a USB camera for timelapses and failure checks, KlipperScreen.",w:"Lets you check prints remotely and catch first-layer problems (ref. 18)."},
- {n:"Delta: longer arms and effector upgrades",g:["quality"],a:["de"],v0:false,d:2,t:"Carbon arms, magnetic ball joints and a stiffer effector.",w:"Reduces backlash and tilt of the effector; every arm length must match closely for accurate kinematics."}
+ {n:"Klipper firmware",g:["speed","quality"],a:ALL,d:2,t:"Runs motion planning on a Raspberry Pi or similar and uses the printer's board only for timing steps.",w:"Makes input shaping, pressure advance and macros available. Voron kits and many recent commercial printers already run it; it is the most common first mod on Marlin bed slingers."},
+ {n:"Accelerometer for input shaping",g:["speed","quality"],a:ALL,d:2,t:"An ADXL345 or LIS2DW on the toolhead (and on the bed of a slinger) measures resonances.",w:"Measures f for section 4 instead of guessing from a test print; often lets you double the acceleration."},
+ {n:"High-flow hotend or nozzle",g:["speed"],a:ALL,d:2,t:"A longer melt zone or a nozzle that splits the filament path (CHT style) so heat reaches the core faster.",w:"Raises the max flow of section 5. TeamFDM suggests it once you print above roughly 20 mm³/s (ref. 18). Check that it fits your toolhead."},
+ {n:"Hardened or carbide-tipped nozzle",g:["materials"],a:ALL,d:1,t:"Steel, ruby or tungsten carbide instead of brass.",w:"Needed for carbon- and glass-filled filaments (ref. 8). Hardened steel conducts heat less well than brass, so you may need a few degrees more."},
+ {n:"Lighter or direct-drive toolhead",g:["speed","quality","materials"],a:["sl","xz","id","xy","hb"],d:3,t:"Swap a heavy carriage for a lighter one, or convert Bowden to direct drive.",w:"Mass sets f in section 4; direct drive shrinks pressure advance and lets TPU feed reliably."},
+ {n:"Linear rails instead of V-wheels",g:["quality","reliability"],a:["sl","xz"],d:3,t:"Replaces plastic V-wheels on aluminium extrusions with steel rails and carriages.",w:"Higher, steadier stiffness and no wheel flat-spots. A classic Ender 3 upgrade; the Voron already uses rails."},
+ {n:"Frame and gantry stiffening",g:["speed","quality"],a:["xy","hb","tc","sl"],d:2,t:"Steel or titanium extrusion backers, braces and better corner joints.",w:"Raises k in section 4 and reduces thermal bowing of the X beam in hot enclosures (ref. 18). Common on Voron 2.4 and Trident."},
+ {n:"Bed probe or nozzle probe",g:["quality","convenience"],a:ALL,d:2,t:"BLTouch, Klicky, inductive, Voron Tap (the nozzle is the probe) or eddy-current scanners such as Beacon and Cartographer (ref. 18).",w:"Builds a bed mesh so the first layer is even; nozzle and eddy probes also set the Z offset automatically. Check that a mount exists for the specific toolhead before buying."},
+ {n:"PEI spring-steel sheet",g:["quality","convenience"],a:ALL,d:1,t:"Smooth or textured PEI on a magnetic flexible sheet.",w:"Reliable adhesion when hot and easy release when cool; flex the sheet to pop parts off."},
+ {n:"Dual Z or automatic gantry tramming",g:["quality"],a:["sl","xz"],d:2,t:"A second Z motor or a belt linking two lead screws.",w:"Keeps the gantry parallel to the bed on bed slingers. Voron 2.4 does this with four Z motors."},
+ {n:"Enclosure",g:["materials","quality"],a:["sl","xy","hb","xz","id","tc"],d:2,t:"Panels or a tent around the printer.",w:"Warm air keeps ABS, ASA, PC and nylon from warping and helps layer welding (section 6). Voron and many CoreXY printers are enclosed by design; bed slingers are hard to enclose because the bed swings out."},
+ {n:"Carbon and HEPA filter (Nevermore)",g:["reliability","materials"],a:["xy","hb","tc","id","sl"],d:1,t:"A fan that recirculates chamber air through activated carbon, sometimes with a HEPA stage.",w:"Captures fumes and fine particles from ABS and ASA (ref. 18). Versions exist for printers of many sizes."},
+ {n:"Chamber thermistor and heat soak",g:["materials","quality"],a:["xy","hb","tc","id"],d:1,t:"A temperature sensor in the chamber, plus a macro that waits until the chamber is warm.",w:"Prints start only once the frame has expanded and the chamber is warm, so the first layer and dimensions are stable."},
+ {n:"Toolhead board (USB or CAN)",g:["reliability","convenience"],a:ALL,d:2,t:"A small board on the toolhead so only power and a data bus run down the umbilical or cable chain.",w:"Fewer wires to break from flexing (ref. 18). Common on Voron builds, paired with an umbilical or cable chain."},
+ {n:"Better part cooling",g:["quality","speed"],a:ALL,d:2,t:"Larger blower fans, twin ducts, or a remote CPAP blower with a hose.",w:"Fast PLA prints need the road to freeze before the next one lands; cooling, not motion, is often the limit on small parts."},
+ {n:"Filament runout sensor",g:["reliability"],a:ALL,d:1,t:"A switch or encoder that pauses the print when filament stops moving.",w:"Saves long prints; an encoder version also catches jams (ref. 18)."},
+ {n:"Nozzle wiper and purge bucket",g:["quality","reliability"],a:["xy","hb","tc","sl"],d:1,t:"A brush and a small bin at the edge of the bed.",w:"A clean nozzle at the start of each print gives a cleaner first layer and more accurate nozzle probing (ref. 18)."},
+ {n:"Multi-material unit (ERCF, Box Turtle, Tradrack)",g:["multi"],a:["xy","hb","sl","xz","tc"],d:3,t:"Feeds four or more spools into the single nozzle, run by Happy Hare or similar Klipper software.",w:"Section 7: many colours for little money, but with purge waste on every change (ref. 18). Possible on small printers, but a small bed limits the purge tower."},
+ {n:"Toolchanger conversion",g:["multi","materials"],a:["xy","tc"],d:3,t:"Community conversions such as StealthChanger and TapChanger turn a Voron 2.4 or Trident into a toolchanger.",w:"Several nozzles with almost no purge waste (section 7). Needs a large CoreXY and careful dock alignment."},
+ {n:"48 V motion and stronger drivers",g:["speed"],a:["xy","hb","tc","id"],d:3,t:"Higher supply voltage for the XY steppers and drivers such as TMC5160.",w:"Stepper torque falls with speed because of winding inductance; more voltage keeps current, and torque, up at high step rates. Mainly for large, fast CoreXY machines."},
+ {n:"Camera, lights and touchscreen",g:["convenience"],a:ALL,d:1,t:"Chamber LEDs, a USB camera for timelapses and failure checks, KlipperScreen.",w:"Lets you check prints remotely and catch first-layer problems (ref. 18)."},
+ {n:"Delta: longer arms and effector upgrades",g:["quality"],a:["de"],d:2,t:"Carbon arms, magnetic ball joints and a stiffer effector.",w:"Reduces backlash and tilt of the effector; every arm length must match closely for accurate kinematics."}
 ];
 const GOALS=[["all","All"],["speed","Speed"],["quality","Print quality"],["materials","Materials"],["reliability","Reliability"],["multi","Multi-material"],["convenience","Convenience"]];
 let goal="all";
@@ -1000,7 +1011,7 @@ function renderMods(){
   MODS.filter(m=>(goal==="all"||m.g.includes(goal))&&(!only||m.a.includes(arch))).forEach(m=>{
     const fits=m.a.includes(arch);
     const el=document.createElement("div");el.className="mod";if(!fits)el.style.opacity="0.55";
-    el.innerHTML=`<h3>${m.n}</h3><div>${m.v0?'<span class="tag v0">Voron 0.2</span>':''}${m.g.map(x=>`<span class="tag">${GOALS.find(q=>q[0]===x)[1]}</span>`).join("")}</div>
+    el.innerHTML=`<h3>${m.n}</h3><div>${m.g.map(x=>`<span class="tag">${GOALS.find(q=>q[0]===x)[1]}</span>`).join("")}</div>
       <p>${m.t}</p><p class="why">${m.w}</p><div class="dots" title="difficulty">${"●".repeat(m.d)}<span style="color:var(--rule)">${"●".repeat(3-m.d)}</span></div>
       ${fits?"":`<p class="note">Does not usually apply to the ${ARCH[arch].n.split(" (")[0]}.</p>`}`;
     g.appendChild(el);});
