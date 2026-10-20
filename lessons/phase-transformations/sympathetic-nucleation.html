@@ -1,0 +1,586 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>body{margin:0}</style></head><body>
+<title>Sympathetic Nucleation</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: the lab notebook on etched-steel grey, honey/gold/amber/rust palette of the phase-diagram lessons; each section pairs one claim with one instrument that tests it */
+:root{
+  --bg:#eef1f3; --panel:#f8fafb; --ink:#17212b; --muted:#56636f; --rule:#cfd6dc;
+  --ferrite:#a8650a; --carbon:#e07b12; --tip:#b4480e; --ple:#d29a12; --gamma:#f5e6bd; --mart:#5b6670; --ok:#3f7d4e;
+  --display:"Spectral",Georgia,serif; --body:"Source Sans 3","Segoe UI",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12171c; --panel:#1a2128; --ink:#e3e8ec; --muted:#9aa6b1; --rule:#2d3740;
+  --ferrite:#f2b84b; --carbon:#f39a3c; --tip:#ff7a3d; --ple:#f5c542; --gamma:#3a3221; --mart:#aab4bd; --ok:#74c08a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12171c; --panel:#1a2128; --ink:#e3e8ec; --muted:#9aa6b1; --rule:#2d3740;
+  --ferrite:#f2b84b; --carbon:#f39a3c; --tip:#ff7a3d; --ple:#f5c542; --gamma:#3a3221; --mart:#aab4bd; --ok:#74c08a; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--body)}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px}
+h1,h2,h3{font-family:var(--display);font-weight:600;text-wrap:balance;margin:0}
+h1{font-size:clamp(30px,4.6vw,46px);line-height:1.08}
+h2{font-size:clamp(22px,3vw,28px);margin-top:8px}
+h3{font-size:18px}
+p{margin:0;max-width:68ch}
+.lede{color:var(--muted);font-size:17px;margin-top:10px}
+.eyebrow{font:500 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+section{display:grid;gap:14px;padding-block:34px;border-top:1px solid var(--rule)}
+header{display:grid;gap:6px;padding-bottom:26px}
+.links{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:10px;font-size:15px}
+nav.toc{display:flex;flex-wrap:wrap;gap:6px 8px;margin-top:14px}
+nav.toc a{font:500 12px var(--mono);text-decoration:none;border:1px solid var(--rule);border-radius:3px;padding:3px 8px;color:var(--muted)}
+nav.toc a:hover{border-color:var(--ferrite);color:var(--ink)}
+a{color:var(--ferrite)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:18px;align-items:start}
+.grid2e{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:820px){.grid2,.grid2e{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:14px;display:grid;gap:10px;min-width:0}
+canvas{display:block;width:100%;max-width:100%;touch-action:pan-y;border-radius:4px}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 18px}
+.ctl{display:grid;gap:2px;font-size:14px}
+.ctl label{display:flex;justify-content:space-between;gap:8px}
+.ctl output{font:500 13px var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+input[type=range]{width:100%;accent-color:var(--ferrite)}
+select,button{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--rule);border-radius:4px;padding:5px 10px}
+button{cursor:pointer}
+button:hover{border-color:var(--ferrite)}
+button[aria-pressed="true"]{border-color:var(--c,var(--ferrite));background:var(--panel);font-weight:600;box-shadow:inset 0 -3px 0 var(--c,var(--ferrite))}
+:focus-visible{outline:2px solid var(--ferrite);outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.key{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted)}
+.key span::before{content:"";display:inline-block;width:14px;height:4px;border-radius:2px;margin-right:6px;vertical-align:middle;background:var(--c)}
+.key span.dash::before{background:repeating-linear-gradient(90deg,var(--c) 0 4px,transparent 4px 7px)}
+.note{font-size:14px;color:var(--muted)}
+.callout{border-left:3px solid var(--tip);padding:4px 0 4px 12px;font-size:15px;max-width:none}
+.callout.c{border-left-color:var(--carbon)}
+.callout.p{border-left-color:var(--ple)}
+.callout.m{border-left-color:var(--mart)}
+blockquote{margin:0;padding:6px 0 6px 14px;border-left:2px solid var(--rule);font-family:var(--display);font-size:17px;max-width:70ch}
+blockquote cite{display:block;font:500 12px var(--mono);font-style:normal;color:var(--muted);margin-top:4px}
+.defs{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.defs div{display:grid;gap:4px;align-content:start;min-width:0}
+.defs b{font-family:var(--display);font-size:17px}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;font-size:14px;width:100%}
+th,td{padding:6px 10px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font:500 12px var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+td.m,code,.m{font:13px var(--mono);font-variant-numeric:tabular-nums}
+.eq{font:14px var(--mono);background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:8px 12px;overflow-x:auto;max-width:100%;white-space:nowrap}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px 18px;font-size:13px}
+.stats div{display:grid;gap:0}
+.stats span{color:var(--muted)}
+.stats b{font:500 14px var(--mono);font-variant-numeric:tabular-nums}
+.tag{display:inline-block;font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--rule);border-radius:3px;padding:1px 6px;color:var(--muted);vertical-align:middle}
+.tag.own{border-color:var(--tip);color:var(--tip)}
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.pair > div{display:grid;gap:6px;align-content:start;min-width:0}
+ul.tight,ol.tight{margin:0;padding-left:20px;display:grid;gap:4px;max-width:72ch}
+ol.refs{margin:0;padding-left:22px;display:grid;gap:5px;font-size:14px;color:var(--muted);max-width:92ch}
+.verdict{font-size:15px;font-weight:600}
+.good{color:var(--ok)} .bad{color:var(--tip)}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <a href="./" style="color:var(--muted);font-size:15px">← Phase transformations</a>
+  <span class="eyebrow">Phase transformations · ferrite morphology</span>
+  <h1>Sympathetic nucleation: ferrite that nucleates on ferrite</h1>
+  <p class="lede">A new ferrite crystal can form on the interface of one that already exists, even though the austenite there has been enriched in carbon. This page follows the problem from Aaronson and Wells (1956) through Shewmon’s ledge terraces and solute drag to in-situ microscopy, and shows where it decides whether an allotriomorph sprouts Widmanstätten plates.</p>
+  <div class="links">
+    <a href="widmanstatten-transition.html#explB">Planar to Widmanstätten ferrite, §5</a>
+    <a href="ple-nple.html#dissipation">PLE, NPLE and paraequilibrium, energy balance</a>
+    <a href="dilatometry.html#isothermal">Reading a dilatometer, isothermal holds</a>
+    <a href="ks-variant-atlas.html">The 24 KS variants</a>
+  </div>
+  <nav class="toc" aria-label="Sections">
+    <a href="#define">What it is</a><a href="#paradox">The paradox</a><a href="#tangent">Parallel tangent</a><a href="#barrier">The nucleus</a><a href="#misorientation">Misorientation</a><a href="#terraces">Terraces</a><a href="#evidence">Evidence</a><a href="#tests">Testing it</a><a href="#open">Open questions</a><a href="#sources">Sources</a>
+  </nav>
+</header>
+
+<!-- ============ 1. DEFINITION ============ -->
+<section id="define">
+  <span class="eyebrow">What it is</span>
+  <h2>A crystal of the same phase nucleates on the interphase boundary of an earlier one</h2>
+  <p>Aaronson and Wells found groups of ferrite crystals in a 0.29C–0.76Mn–0.25Si steel that could only be explained if new crystals had nucleated on the α:γ boundaries of older ones. The 1995 overview tightened the definition: both crystals must differ in composition from the matrix throughout the transformation, which is what separates it from recrystallization-type stimulated nucleation.</p>
+  <blockquote>“Sympathetic nucleation is defined as the nucleation of a precipitate crystal at an interphase boundary of a crystal of the same phase when these crystals differ in composition from their matrix phase throughout the transformation process.”<cite>[A1995] abstract, p. 107 (PDF 1)</cite></blockquote>
+  <div class="grid2">
+    <div class="panel">
+      <div class="row" role="group" aria-label="Configuration">
+        <button type="button" id="cfgFF" data-cfg="ff" aria-pressed="true">Face-to-face (sheaf)</button>
+        <button type="button" id="cfgEF" data-cfg="ef" aria-pressed="false">Edge-to-face</button>
+        <button type="button" id="cfgEE" data-cfg="ee" aria-pressed="false">Edge-to-edge</button>
+        <button type="button" id="cfgGB" data-cfg="gb" aria-pressed="false">On an allotriomorph</button>
+      </div>
+      <canvas id="cvCfg" height="260" aria-label="Sketch of the selected sympathetic nucleation configuration"></canvas>
+      <div class="ctl"><label for="nSteps">Successive nucleation events <output id="nStepsO">3</output></label><input id="nSteps" type="range" min="0" max="6" step="1" value="3"></div>
+      <div class="key"><span style="--c:var(--ferrite)">substrate crystal A</span><span style="--c:var(--ple)">sympathetic crystals C</span><span class="dash" style="--c:var(--ink)">α:α boundary (usually low angle)</span></div>
+    </div>
+    <div class="panel" aria-live="polite">
+      <h3 id="cfgTitle">Face-to-face: sheaves</h3>
+      <p id="cfgText" class="note"></p>
+      <p id="cfgWhen" class="note"></p>
+    </div>
+  </div>
+  <div class="pair">
+    <div><h3>Where it happens</h3><p class="note">AW ranked the sites: “Sympathetic nucleation takes place most frequently at intragranular plates, develops occasionally at the oriented-lattices boundaries of morphologies which nucleate at austenite grain boundaries, and occurs rarely, if ever, at the unoriented-lattices boundaries of the latter morphologies.” [AW1956] p. 1218 (PDF 3). The oriented-lattices boundary is the side of a grain-boundary crystal that faces the grain it holds an orientation relationship with.</p></div>
+    <div><h3>Why it is not branching</h3><p class="note">Under KS with conjugate habit planes “only one {110}bcc plane can be parallel to a {111}fcc habit plane. Hence branching of a bcc precipitate plate formed in an fcc matrix or vice versa is crystallographically impossible” [A1995] p. 110 (PDF 4). Two plates on different {111}γ planes are two crystals, so a boundary must separate them, even when etching does not reveal it.</p></div>
+    <div><h3>Why it matters for kinetics</h3><p class="note">Reynolds et al. attribute the bay and the incomplete reaction in Fe–C–Mo to it: “Extensive sympathetic nucleation of ferrite is observed at temperatures below that of the bay.” [R1990] p. 1433 (PDF 1). Most ferrite crystals of the first stage there are sympathetically nucleated (p. 1437).</p></div>
+  </div>
+</section>
+
+<!-- ============ 2. PARADOX ============ -->
+<section id="paradox">
+  <span class="eyebrow">The paradox</span>
+  <h2>The austenite next to ferrite is the worst place to nucleate more ferrite</h2>
+  <blockquote>“The austenite adjacent to the austenite-ferrite boundaries will be greatly enriched in carbon, approximately to the value of the γ/(α + γ) equilibrium curve or its metastable extrapolation at the temperature of transformation. … Since rates of nucleation are considered to decrease exponentially with decreasing supersaturation, the frequency with which ferrite nuclei appear at austenite-ferrite boundaries should be negligible in relation to that at which they form in other regions of the austenite.”<cite>[AW1956] p. 1216 (PDF 1)</cite></blockquote>
+  <p>Read the carbon at the interface off the Ae3 line (extended below the eutectoid with cementite suppressed) at the hold temperature. AW wrote the volume driving force with a dilute expression, Eq. 8, ΔF<sub>v</sub> = −(RT/V) ln(X/X<sub>γα</sub>), where X is the mole fraction of iron. Below it is written per mole, so no molar volume is needed. AW then let the interface austenite sit slightly below the Ae3 by ΔX (Eq. 9), because a crystal exactly on the line offers nothing.</p>
+  <div class="grid2e">
+    <div class="panel">
+      <canvas id="cvPD" height="320" aria-label="Fe–C corner with the extrapolated Ae3 line, the hold temperature and the bulk carbon"></canvas>
+      <div class="key"><span style="--c:var(--ferrite)">Ae3, TCFE14 Fe–C</span><span class="dash" style="--c:var(--ferrite)">metastable extrapolation (below 727 °C)</span><span style="--c:var(--tip)">interface austenite</span><span style="--c:var(--mart)">bulk alloy</span></div>
+    </div>
+    <div class="panel">
+      <canvas id="cvProf" height="320" aria-label="Carbon profile in austenite ahead of the ferrite interface"></canvas>
+      <div class="key"><span style="--c:var(--ferrite)">ferrite</span><span style="--c:var(--carbon)">carbon in austenite</span><span class="dash" style="--c:var(--tip)">AW’s departure ΔX below the Ae3</span></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="controls">
+      <div class="ctl"><label for="pT">Hold temperature <output id="pTO">550 °C</output></label><input id="pT" type="range" min="500" max="775" step="5" value="550"></div>
+      <div class="ctl"><label for="pC">Bulk carbon <output id="pCO">0.30 wt.%</output></label><input id="pC" type="range" min="0.05" max="0.6" step="0.01" value="0.30"></div>
+      <div class="ctl"><label for="pDX">AW’s departure ΔX (Fe mole fraction) <output id="pDXO">0.010</output></label><input id="pDX" type="range" min="0" max="0.04" step="0.001" value="0.010"></div>
+    </div>
+    <div class="stats" aria-live="polite">
+      <div><span>interface austenite, Ae3</span><b id="sXg">–</b></div>
+      <div><span>ln(X / X<sub>γα</sub>) bulk</span><b id="sLnB">–</b></div>
+      <div><span>ΔG bulk, −RT ln(X/X<sub>γα</sub>)</span><b id="sGB">–</b></div>
+      <div><span>ln((X<sub>γα</sub>+ΔX)/X<sub>γα</sub>) at the face</span><b id="sLnI">–</b></div>
+      <div><span>ΔX in carbon</span><b id="sDXw">–</b></div>
+      <div><span>barrier ratio face / bulk (∝ 1/ΔG²)</span><b id="sBar">–</b></div>
+    </div>
+    <p class="note">The Ae3 line is linear between five TCFE14 Fe–C points (500, 550, 650, 727, 775 °C) calculated with Thermo-Calc (TCFE14, cementite suppressed below 727 °C). Fe–C binary only: the 0.76 Mn of AW’s steel is left out. The barrier ratio drops the strain energy E from AW’s Eqs. 4 and 7 and keeps the interfacial factor equal, so it isolates the driving-force term.</p>
+  </div>
+  <div class="callout c"><p><b>A check against a modern database.</b> AW quote “ln X/X<sub>γα</sub> ≈ 0.21 in a 0.30 pct steel” at 550 °C, giving ΔF<sub>v</sub> = −48 cal cm⁻³ at austenite grain boundaries, and ln((X<sub>γα</sub>+ΔX)/X<sub>γα</sub>) ≈ 0.01, ΔF<sub>v</sub> = −2.3 cal cm⁻³ at the α:γ face with ΔX = 0.01 [AW1956] p. 1221 (PDF 6). Set 550 °C and 0.30 wt.% above: TCFE14 gives ln ≈ 0.09, about half of AW’s 0.21. Their extrapolation puts roughly 5 wt.% C at the interface, which matches their remark that the Brandt and Zener extrapolations “attain the composition of cementite” (p. 1222). Those extrapolation papers were not checked here.</p></div>
+  <div class="pair">
+    <div><h3>The second objection</h3><p class="note">Even with enough driving force, a moving boundary destroys the embryo: “the continuously moving disordered α:β boundaries would overrun the embryos before they reach critical nucleus size, particularly during the early growth times of these boundaries” [A1995] p. 107 (PDF 1). AW already noted the same idea from Mehl and Dube for cementite embryos and concluded that slow plate faces should favour surviving nuclei [AW1956] p. 1222 (PDF 7).</p></div>
+    <div><h3>The one term in its favour</h3><p class="note">“Only the free energy of activation for the diffusion of carbon in austenite, which decreases with increasing carbon content at a given temperature, is consistently favorable to sympathetic nucleation.” [AW1956] p. 1222 (PDF 7). It enters the pre-exponential factor, so it cannot rescue a barrier that has grown by the square of a driving-force ratio.</p></div>
+  </div>
+</section>
+
+<!-- ============ 3. PARALLEL TANGENT ============ -->
+<section id="tangent">
+  <span class="eyebrow">The paradox on Gibbs energy curves</span>
+  <h2>A nucleus can only use the gap between the austenite tangent and the ferrite curve</h2>
+  <p>The driving force for nucleating ferrite from austenite of composition x is found by the parallel-tangent construction: draw the tangent to G<sub>γ</sub> at x, then find the ferrite composition where G<sub>α</sub> has the same slope. The vertical gap between the two is the largest driving force any nucleus can have. Move the austenite composition from the bulk value toward the Ae3 and watch the gap close. On the Ae3 the tangent to austenite is the common tangent itself, so the gap is exactly zero. That is the paradox in one picture.</p>
+  <div class="grid2">
+    <div class="panel">
+      <canvas id="cvTan" height="340" aria-label="Schematic Gibbs energy curves of ferrite and austenite with the parallel tangent at the chosen austenite composition"></canvas>
+      <div class="key"><span style="--c:var(--ferrite)">G<sub>α</sub></span><span style="--c:var(--carbon)">G<sub>γ</sub></span><span class="dash" style="--c:var(--mart)">common tangent (Ae3 tie-line)</span><span style="--c:var(--tip)">tangent at x and its parallel on α</span></div>
+    </div>
+    <div class="panel">
+      <div class="ctl"><label for="tX">Austenite composition at the site <output id="tXO">bulk</output></label><input id="tX" type="range" min="0" max="1" step="0.005" value="0"></div>
+      <div class="stats" aria-live="polite">
+        <div><span>nucleation driving force (schematic units)</span><b id="tDG">–</b></div>
+        <div><span>fraction of the bulk value</span><b id="tPhi">–</b></div>
+      </div>
+      <p class="note">Schematic curves (parabolas in arbitrary units), not Thermo-Calc. The real Fe–C curves are what the <a href="ple-nple.html#gibbs">PLE/NPLE lesson</a> draws in its tangent section.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. BARRIER ============ -->
+<section id="barrier">
+  <span class="eyebrow">The nucleus</span>
+  <h2>Replacing α:γ area with a low-energy α:α boundary pays for the lost supersaturation</h2>
+  <p>AW used a hemispherical nucleus on a planar boundary (their Eqs. 2–7). At an austenite grain boundary the cap and the base are both α:γ, and the base destroys γ:γ area. At an α:γ face the base becomes an α:α boundary and destroys α:γ area. With E the strain energy:</p>
+  <div class="eq">ΔF*<sub>γγ</sub> = π(3σ<sub>γα</sub> − σ<sub>γγ</sub>)³ / [3(ΔF<sub>v</sub><sup>γγ</sup> + E)²]  (Eq. 4)    ΔF*<sub>γα</sub> = π(σ<sub>γα</sub> + σ<sub>αα</sub>)³ / [3(ΔF<sub>v</sub><sup>γα</sup> + E)²]  (Eq. 7)</div>
+  <p>With AW’s inputs, σ<sub>γγ</sub> = 850 erg cm⁻², σ<sub>γα</sub>/σ<sub>γγ</sub> = 0.74 and σ<sub>γα</sub>/σ<sub>αα</sub> = 0.71 [AW1956] p. 1221 (PDF 6), these reproduce their printed Eq. 10 (1.60 × 10⁻¹⁴ (cal cm⁻²)³; recomputed here 1.59) and Eq. 11 (5.01 × 10⁻¹⁴; recomputed 4.97), which confirms how Eqs. 4 and 7 read under the image. The ratio of the two barriers is a product of an interfacial factor and a driving-force factor Φ = ΔG<sub>sym</sub>/ΔG<sub>bulk</sub>.</p>
+  <div class="grid2">
+    <div class="panel">
+      <canvas id="cvMap" height="340" aria-label="Map of driving force ratio against alpha-alpha boundary energy, showing where sympathetic nucleation has the lower barrier"></canvas>
+      <div class="key"><span style="--c:var(--ok)">sympathetic barrier lower</span><span style="--c:var(--tip)">grain-boundary barrier lower</span><span style="--c:var(--ink)">equal barriers</span></div>
+    </div>
+    <div class="panel">
+      <div class="ctl"><label for="bS"><span>σ<sub>αα</sub> / σ<sub>γα</sub></span> <output id="bSO">0.50</output></label><input id="bS" type="range" min="0.05" max="1.6" step="0.01" value="0.50"></div>
+      <div class="ctl"><label for="bP"><span>Φ = ΔG<sub>sym</sub> / ΔG<sub>bulk</sub></span> <output id="bPO">0.90</output></label><input id="bP" type="range" min="0.01" max="1" step="0.01" value="0.90"></div>
+      <div class="stats" aria-live="polite">
+        <div><span>interfacial factor</span><b id="bIF">–</b></div>
+        <div><span>driving-force factor 1/Φ²</span><b id="bDF">–</b></div>
+        <div><span>ΔF*<sub>sym</sub> / ΔF*<sub>gb</sub></span><b id="bR">–</b></div>
+      </div>
+      <p class="verdict" id="bV" aria-live="polite"></p>
+      <p class="note">Dashed line: AW’s average ferrite grain boundary (σ<sub>αα</sub> = σ<sub>γα</sub>/0.71). Strain energy is set to zero.</p>
+    </div>
+  </div>
+  <div class="pair">
+    <div><h3>What AW concluded</h3><p class="note">The interfacial deterrent disappears where α:γ area “with average specific interfacial free energies” is replaced “by ferrite-ferrite boundaries with energies equal to or less than 0.72 of the average grain boundary energy in randomly polycrystalline ferrite” [AW1956] p. 1221 (PDF 6). The supersaturation deficit cannot be removed the same way; AW leaned on it shrinking at low temperature and on the large α:γ area in coarse-grained steel (p. 1222).</p></div>
+    <div><h3>A number that does not reproduce yet <span class="tag own">my arithmetic</span></h3><p class="note">Setting the interfacial factors of Eqs. 4 and 7 equal gives σ<sub>αα</sub> = 2σ<sub>γα</sub> − σ<sub>γγ</sub> = 0.65σ<sub>γα</sub>, which is 0.46 of AW’s average σ<sub>αα</sub>. AW print 0.98 (Eq. 13) and 0.72, and 0.72 = 0.71/0.98, so their Eq. 13 is σ<sub>γα</sub>/σ<sub>αα,crit</sub> = 0.98. Eqs. 12–13 are images in the PDF. How 0.98 follows is unresolved here; the map uses the equal-factor line.</p></div>
+    <div><h3>The pillbox version</h3><p class="note">Menon and Aaronson’s pillbox nucleus, bounded by low-energy faces, gives a stronger result: when γ<sub>αα</sub>/σ<sub>α:β,c</sub> is below about 0.2, “ΔG<sub>s</sub>* = 1/3 ΔG<sub>h</sub>* even when the net driving force for sympathetic nucleation is only about half that for homogeneous nucleation” [A1995] p. 115 (PDF 9). The same review warns that back-calculated site densities come out orders of magnitude too low (p. 114).</p></div>
+  </div>
+</section>
+
+<!-- ============ 5. MISORIENTATION ============ -->
+<section id="misorientation">
+  <span class="eyebrow">The α:α boundary</span>
+  <h2>Small misorientations are cheap, so a plate may reach its fast orientation in steps</h2>
+  <p>The α:α energy in the barrier depends on misorientation. Phelan, Stanford and Dippenaar put the Read–Shockley tilt-boundary energy into the sympathetic barrier, with G = 81 GPa, b = 247.7 pm, ν = 0.27, b₀ = 0.75b and σ<sub>α/γ</sub> ≈ 0.71σ<sub>α/α,max</sub> (Smith), which collapses to their Eq. 6 [P2005] p. 132 (PDF 6):</p>
+  <div class="eq">Φ²G* = 55.4 θ (ln 4/3 − ln θ)     θ in radians, Φ = 1</div>
+  <div class="grid2">
+    <div class="panel">
+      <canvas id="cvRS" height="300" aria-label="Sympathetic nucleation barrier against misorientation, Phelan 2005 Eq. 6"></canvas>
+      <div class="key"><span style="--c:var(--ferrite)">Φ²G* (Eq. 6)</span><span style="--c:var(--tip)">one step of θ</span><span style="--c:var(--ple)">two steps of θ/2</span></div>
+    </div>
+    <div class="panel">
+      <div class="ctl"><label for="rT">Allotriomorph-to-fast-orientation misorientation <output id="rTO">9.0°</output></label><input id="rT" type="range" min="1" max="20" step="0.5" value="9"></div>
+      <canvas id="cvEB" height="140" data-min="120" aria-label="Schematic EBSD misorientation profile from allotriomorph to plate tip"></canvas>
+      <div class="stats" aria-live="polite">
+        <div><span>barrier, one step</span><b id="rB1">–</b></div>
+        <div><span>barrier per event, two steps</span><b id="rB2">–</b></div>
+        <div><span>ratio</span><b id="rRt">–</b></div>
+      </div>
+      <p class="note">Units as in their Fig. 8. The EBSD sketch mimics the measured profile: about 9° in total, “two steps at 4–5° each” [P2005] p. 131 (PDF 5).</p>
+    </div>
+  </div>
+  <div class="callout p"><p>Their reading: “Although two low angle boundaries give the system a higher energy than a single higher angle boundary, … the energy required to form the critical nucleus is significantly lower at smaller misorientations. This is probably why a bridging step is required before an ideal growth orientation can be met.” [P2005] p. 132 (PDF 6). The total rotation from allotriomorph to plate tip was 4–12°, whether a plate nucleated directly or through a bridging crystal (p. 131). Because the allotriomorph “rarely exhibits an exact OR to either parent”, reaching a fast-growth orientation “inevitably requires some orientation change” (p. 132).</p></div>
+</section>
+
+<!-- ============ 6. TERRACES ============ -->
+<section id="terraces">
+  <span class="eyebrow">Shewmon’s answer</span>
+  <h2>A boundary that stops lets carbon leave, and the supersaturation comes back</h2>
+  <p>Shewmon (1965) moved the problem from disordered, continuously moving boundaries to ledged ones: “the immobile terraces of growth ledges at partially or fully coherent interphase boundaries would provide a lesser contribution of interfacial energy but a much larger supersaturation through which to drive the nucleation process. The immobility of these terraces permits solute to flow away from or toward them after the passage of a growth ledge, thereby restoring at least some of the original supersaturation” [A1995] p. 108 (PDF 2). Kinks on ledge risers move fastest and are the worst sites (p. 117).</p>
+  <div class="grid2">
+    <div class="panel">
+      <canvas id="cvLedge" height="300" data-min="270" data-ratio="0.55" aria-label="Ledged ferrite interface with terraces recovering carbon and the recovery curve against time"></canvas>
+      <div class="key"><span style="--c:var(--ferrite)">ferrite with ledges</span><span style="--c:var(--carbon)">carbon excess at the terrace</span><span style="--c:var(--tip)">time the terrace has been still</span></div>
+    </div>
+    <div class="panel">
+      <div class="ctl"><label for="lT">Time since the last ledge passed, t/τ <output id="lTO">1.0</output></label><input id="lT" type="range" min="-2" max="3" step="0.02" value="0"></div>
+      <div class="stats" aria-live="polite">
+        <div><span>carbon excess left at the terrace</span><b id="lLeft">–</b></div>
+        <div><span>excess removed</span><b id="lGone">–</b></div>
+      </div>
+      <p class="note">For a spike of width l = D/v left against a face that has stopped, the excess decays as (x<sub>g</sub> − x<sub>∞</sub>)/(x<sub>g0</sub> − x<sub>∞</sub>) = erfcx(√(t/τ)) with τ = D/v². Half is gone at 0.59τ and 90 % at 31.5τ, so recovery is a slow power law (exact solution for constant D and semi-infinite austenite, derivation not shown). It is generic, not tied to an alloy.</p>
+      <p class="note">This is why a ledged face can host sympathetic nucleation while a planar face of the same alloy cannot: the terrace waits, the riser moves.</p>
+    </div>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Site on a ferrite sideplate, Fe–0.675 at.% C</th><th>Φ<sub>SN</sub>/Φ<sub>Full</sub> after 800 → 750 °C at 1 s</th><th>What changes it</th></tr></thead>
+      <tbody>
+        <tr><td>between the two leading ledges</td><td class="m">0.97</td><td>the untransformed region beyond the plate edge is a carbon sink, so the ratio rises with time</td></tr>
+        <tr><td>between ledges at the middle</td><td class="m">0.90</td><td>ratio falls with time at both 750 and 800 °C</td></tr>
+        <tr><td>between ledges at the base</td><td class="m">0.88</td><td>last ledges formed, no point effect of diffusion; steepest fall</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">Enomoto’s finite-difference solution as applied in [A1995] pp. 118–120 (PDF 12–14), Figs. 15–17; strain energy ignored. 0.675 at.% C is about 0.15 wt.%. The split treatment raises the ratio because “a nearly instantaneous increase in supersaturation in the matrix in contact with the interphase boundaries attends the abrupt decrease in transformation temperature” (p. 119).</p>
+  <div class="callout m"><p><b>Reynolds et al. add solute drag.</b> In Fe–C–Mo below the bay, a slower α:γ boundary means terraces “survive” longer before the next riser overruns them: “The supersaturation for ferrite formation at the terraces then increases to the level where sympathetic nucleation can occur again.” These evasions of the solute-drag-like effect repeat until the carbon in the remaining austenite stops them, and “transformation stasis occurs when the SDLE is strong enough to produce growth stasis of the individual sympathetically nucleated ferrite crystals” and sympathetic nucleation becomes negligible [R1990] p. 1454 (PDF 22).</p></div>
+</section>
+
+<!-- ============ 8. EVIDENCE ============ -->
+<section id="evidence">
+  <span class="eyebrow">Evidence</span>
+  <h2>A single section cannot prove it, so the evidence has moved to in-situ microscopy and EBSD</h2>
+  <p>AW’s rules of evidence for one plane of polish: the new crystal does not touch a matrix grain boundary or subboundary; shape, size and position rule out a hidden common origin at a grain boundary; the α:α boundary was not made by polygonization or migration; intragranular nucleation rates are low; and the amount transformed is small [AW1956] pp. 1216–1217 (PDF 1–2). The 1995 review states the lesson plainly:</p>
+  <blockquote>“a configuration of crystals cannot be considered to have been created by sympathetic nucleation unless independent nucleation of all crystals involved at separate sites coupled with impingement and a deceptive appearance generated by a non-representative plane of polish can be safely considered to be highly improbable.”<cite>[A1995] p. 109 (PDF 3)</cite></blockquote>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Source</th><th>Alloy, treatment</th><th>Method</th><th>What was seen</th></tr></thead>
+      <tbody>
+        <tr><td>[AW1956]</td><td>0.29C–0.76Mn–0.25Si; 1300 °C, 775–475 °C isothermal</td><td>optical, over-etched, oblique light</td><td>Sideplates on Widmanstätten stars; sheaves at ≤ 525 °C; sawteeth on allotriomorphs at 750–775 °C (pp. 1217–1220)</td></tr>
+        <tr><td>[A1995]</td><td>review; Ti–Cr, steels</td><td>TEM, SEM channelling</td><td>An α:α boundary “invariably separates” the sympathetic crystal from its substrate in Ti–Cr, usually small-angle, sometimes near-CSL (p. 108)</td></tr>
+        <tr><td>[R1990]</td><td>Fe–C–Mo, below the bay</td><td>TEM, kinetics</td><td>Degenerate ferrite built from sympathetically nucleated crystals; stasis when it stops (pp. 1454, 1461)</td></tr>
+        <tr><td>[PD2004]</td><td>low-C Si-killed steel; 1350 °C, 100 °C/min to 700 °C hold</td><td>HT-LSCM + EBSD</td><td>Plates “grow directly from the stepped regions of the allotriomorph” (p. 3703); 5–10° between allotriomorph and plates, e.g. about 6° and 9–10°; &lt; 1° within the colony (pp. 3701, 3704)</td></tr>
+        <tr><td>[P2005]</td><td>Fe–C peritectic composition</td><td>HT-LSCM + EBSD</td><td>Stepwise orientation and growth-direction changes; 4–12° total, sometimes in two 4–5° steps (p. 131)</td></tr>
+        <tr><td>[C2014]</td><td>Fe–0.09C–1.48Mn; 1250 °C, 650–750 °C holds</td><td>HT-LSCM + EBSD</td><td>Edge-to-face plates from allotriomorphs and face-to-face on plate faces; abrupt orientation change along secondary plates; surface lengthening ~10× the bulk rate (pp. 86, 93)</td></tr>
+        <tr><td>[B2017]</td><td>Fe–C, 2-D phase field</td><td>simulation</td><td>Colonies can also grow by curvature-induced “cascading” of offspring plates; the authors “do not contest the widely-accepted mechanism of ‘sympathetic nucleation’” (p. 326)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">Free-surface caution: lengthening rates and growth directions at the confocal surface can differ from the bulk ([C2014] p. 93; [PD2004] p. 3704). Phelan et al. cite serial sectioning to about 300 µm to show surface and bulk agree for their observations ([P2005] pp. 131–132).</p>
+</section>
+
+<!-- ============ 9. TESTS ============ -->
+<section id="tests">
+  <span class="eyebrow">Testing it</span>
+  <h2>Sympathetic nucleation is one of the routes from allotriomorph to Widmanstätten plate</h2>
+  <p>The <a href="widmanstatten-transition.html#explB">Widmanstätten lesson</a> sets it beside interface instability and kinetic-branch change. These measurements can tell which route operates in a given steel and temperature.</p>
+  <div class="defs">
+    <div><b>In-situ heating EBSD</b><p class="note">Measure the misorientation at sideplate roots. Instability predicts none; sympathetic nucleation predicts a low-angle boundary, 4–12° in the confocal work. Look for two-step profiles, and for how far the allotriomorph sits from the KS variant expected for the plate.</p></div>
+    <div><b>HT confocal microscopy</b><p class="note">Watch whether plates start at steps or facets on the allotriomorph, as Phelan and Dippenaar saw, and whether new plates appear on existing faces after a temperature drop.</p></div>
+    <div><b>Split isothermal holds</b><p class="note">A drop from T₁ to T₂ raises the supersaturation at existing faces for a while [A1995] p. 119. In a dilatometer, compare the kinetics after the drop with an isothermal hold at T₂, then check the quenched sample by EBSD for new crystals on old faces.</p></div>
+    <div><b>Plain carbon against Mn or Mo steels</b><p class="note">If solute drag slows the face enough for supersaturation to return, as Reynolds et al. argued for Fe–C–Mo, sympathetic sideplates should be commoner in the alloyed steel at the same undercooling.</p></div>
+    <div><b>Temperature</b><p class="note">AW saw sympathetic nucleation rates rise as temperature falls, mainly at 550–475 °C, and the dominant configuration change from edge-to-face to face-to-face below about 525 °C (pp. 1220–1222).</p></div>
+  </div>
+</section>
+
+<!-- ============ 10. OPEN ============ -->
+<section id="open">
+  <span class="eyebrow">Open questions</span>
+  <h2>What is still unresolved</h2>
+  <ul class="tight">
+    <li><b>AW Eq. 13 (0.98).</b> Equal interfacial factors give σ<sub>αα</sub> = 0.65σ<sub>γα</sub>; AW print σ<sub>γα</sub>/σ<sub>αα,crit</sub> = 0.98 and the 0.72 that follows.</li>
+    <li><b>AW’s extrapolated Ae3.</b> ln X/X<sub>γα</sub> ≈ 0.21 at 550 °C is about twice the TCFE14 value. Brandt (1946) and Zener (1946) are not in the library.</li>
+    <li><b>Why does edge-to-face replace face-to-face at high driving force?</b> Face-to-face has the lower interfacial cost and the same driving force at a given site, yet loses in lower bainite. [A1995] pp. 120–121 leave it open; AW also had no explanation for the frequency of sheaves (p. 1222).</li>
+    <li><b>Why the misorientation steps?</b> Phelan et al. suggest successive nuclei keep a common pole to lower σ<sub>αα</sub>; there are few data for boundary energies below 10° or their temperature dependence ([P2005] p. 133).</li>
+  </ul>
+</section>
+
+<!-- ============ GLOSSARY ============ -->
+<section id="glossary">
+  <span class="eyebrow">Glossary</span>
+  <h2>Terms on this page</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Term</th><th>Meaning</th><th>Source</th></tr></thead>
+    <tbody>
+      <tr><td>substrate (base) crystal</td><td>the earlier crystal at whose interphase boundary the new one nucleates</td><td>[AW1956] p. 1216</td></tr>
+      <tr><td>sheaf</td><td>parallel plates, each nucleated face-to-face on the broad face of the previous one</td><td>[AW1956] p. 1217</td></tr>
+      <tr><td>Widmanstätten star</td><td>intragranular plates growing in several directions from one locus, often an inclusion</td><td>[AW1956] p. 1217</td></tr>
+      <tr><td>sawtooth</td><td>a crystal of triangular section on a grain boundary or grain-boundary ferrite, long axis on a habit plane</td><td>[AW1956] p. 1218</td></tr>
+      <tr><td>oriented-lattices boundary</td><td>the interface of a grain-boundary crystal with the austenite grain it nucleated in (holds an OR)</td><td>[AW1956] p. 1218</td></tr>
+      <tr><td>degenerate plate</td><td>an irregular plate, partly built from sympathetically nucleated crystals</td><td>[A1995] p. 113</td></tr>
+      <tr><td>terrace, riser, kink</td><td>the immobile flat, the step face and the mobile site on a growth ledge</td><td>[A1995] pp. 115–118</td></tr>
+      <tr><td>Φ<sub>SN</sub>/Φ<sub>Full</sub>, Φ</td><td>sympathetic driving force divided by the driving force in undisturbed austenite</td><td>[A1995] p. 118</td></tr>
+      <tr><td>SDLE</td><td>solute drag-like effect: slowing of ferrite growth by segregated substitutional solute</td><td>[R1990] p. 1433</td></tr>
+      <tr><td>split isothermal</td><td>hold at T₁, then drop to T₂; transformation continues by renucleation at existing boundaries</td><td>[A1995] p. 119</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============ SOURCES ============ -->
+<section id="sources">
+  <span class="eyebrow">Sources</span>
+  <h2>Where every number comes from</h2>
+  <p class="note">Page numbers are printed journal pages, with the PDF page of the copy used in brackets where quoted above.</p>
+  <ol class="refs">
+    <li>[AW1956] H.I. Aaronson, C. Wells, Sympathetic nucleation of ferrite, J. Metals (Trans. AIME), October 1956, 1216–1223. Printed = PDF + 1215. Eqs. 1, 2, 4–13 are images.</li>
+    <li>[A1995] H.I. Aaronson, G. Spanos, R.A. Masumura, R.G. Vardiman, D.W. Moon, E.S.K. Menon, M.G. Hall, Sympathetic nucleation: an overview, Mater. Sci. Eng. B 32 (1995) 107–123. Printed = PDF + 106.</li>
+    <li>[R1990] W.T. Reynolds Jr., F.Z. Li, C.K. Shui, H.I. Aaronson, The incomplete transformation phenomenon in Fe–C–Mo alloys, Metall. Trans. A 21 (1990) 1433–1463. Printed = PDF + 1432.</li>
+    <li>[S2017] W.W. Sun, H.S. Zurob, C.R. Hutchinson, Coupled solute drag and transformation stasis during ferrite formation in Fe–C–Mn–Mo, Acta Mater. 139 (2017) 62–74. Printed = PDF + 61.</li>
+    <li>[PD2004] D. Phelan, R. Dippenaar, Widmanstätten ferrite plate formation in low-carbon steels, Metall. Mater. Trans. A 35 (2004) 3701–3706. Printed = PDF + 3700.</li>
+    <li>[P2005] D. Phelan, N. Stanford, R. Dippenaar, In situ observations of Widmanstätten ferrite formation in a low-carbon steel, Mater. Sci. Eng. A 407 (2005) 127–134. Printed = PDF + 126.</li>
+    <li>[C2014] L. Cheng, K.M. Wu, X.L. Wan, R. Wei, In-situ observation on the growth of Widmanstätten sideplates in an Fe–C–Mn steel, Mater. Charact. 87 (2014) 86–94.</li>
+    <li>[B2017] A. Bhattacharya, K. Ankit, B. Nestler, Phase-field simulations of curvature-induced cascading of Widmanstätten-ferrite plates, Acta Mater. 123 (2017) 317–328.</li>
+    <li>Thermo-Calc 2026a, TCFE14: Fe–C Ae3 with cementite suppressed below 727 °C, five points used in the paradox figure.</li>
+  </ol>
+</section>
+</div>
+
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function setup(cv){const dpr=window.devicePixelRatio||1;const w=cv.clientWidth||600;const hmax=+cv.getAttribute('height');const hmin=+(cv.dataset.min||170);const h=Math.round(Math.max(hmin,Math.min(hmax,w*(+(cv.dataset.ratio||0.48)))));cv.style.height=h+'px';cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,w,h);return {g,w,h};}
+function axes(g,o){ // o: {x0,x1,y0,y1,L,R,T,B,w,h,xlog,ylog,xt,yt,xl,yl,xf,yf}
+  const X=v=>{const t=o.xlog?(Math.log10(v)-Math.log10(o.x0))/(Math.log10(o.x1)-Math.log10(o.x0)):(v-o.x0)/(o.x1-o.x0);return o.L+t*(o.w-o.L-o.R)};
+  const Y=v=>{const t=o.ylog?(Math.log10(v)-Math.log10(o.y0))/(Math.log10(o.y1)-Math.log10(o.y0)):(v-o.y0)/(o.y1-o.y0);return o.h-o.B-t*(o.h-o.T-o.B)};
+  g.save();g.strokeStyle=css('--rule');g.lineWidth=1;g.fillStyle=css('--muted');g.font='11px "JetBrains Mono",monospace';
+  g.textAlign='center';g.textBaseline='top';
+  (o.xt||[]).forEach(v=>{const x=X(v);g.beginPath();g.moveTo(x,o.T);g.lineTo(x,o.h-o.B);g.stroke();g.fillText(o.xf?o.xf(v):v,x,o.h-o.B+4)});
+  g.textAlign='right';g.textBaseline='middle';
+  (o.yt||[]).forEach(v=>{const y=Y(v);g.beginPath();g.moveTo(o.L,y);g.lineTo(o.w-o.R,y);g.stroke();g.fillText(o.yf?o.yf(v):v,o.L-5,y)});
+  g.strokeStyle=css('--muted');g.strokeRect(o.L,o.T,o.w-o.L-o.R,o.h-o.T-o.B);
+  g.font='12px "Source Sans 3",system-ui,sans-serif';g.fillStyle=css('--muted');g.textAlign='center';g.textBaseline='bottom';
+  if(o.xl)g.fillText(o.xl,(o.L+o.w-o.R)/2,o.h-2);
+  if(o.yl){g.save();g.translate(12,(o.T+o.h-o.B)/2);g.rotate(-Math.PI/2);g.textBaseline='middle';g.fillText(o.yl,0,0);g.restore();}
+  g.restore();return {X,Y};
+}
+function line(g,pts,col,wid,dash){g.save();g.strokeStyle=col;g.lineWidth=wid||2;g.setLineDash(dash||[]);g.beginPath();let first=true;pts.forEach(p=>{if(!p){first=true;return}if(first){g.moveTo(p[0],p[1]);first=false}else g.lineTo(p[0],p[1])});g.stroke();g.restore();}
+function txt(g,s,x,y,col,al,font){g.save();g.fillStyle=col||css('--ink');g.font=font||'12px "Source Sans 3",system-ui,sans-serif';g.textAlign=al||'left';g.textBaseline='middle';g.fillText(s,x,y);g.restore();}
+function press(group,btn){group.forEach(b=>b.setAttribute('aria-pressed',b===btn?'true':'false'));}
+
+/* ---------- 1. configurations ---------- */
+const CFG={
+ ff:{t:'Face-to-face: sheaves',x:'New plates nucleate against and parallel to the broad face of the previous plate, so a sheaf thickens one plate at a time. AW’s evidence: plates in a sheaf touch over most of their length, isolated plates between sheaves are rare even late in the reaction, and the number of plates per sheaf rises with time [AW1956] p. 1217.',w:'AW, 0.29C steel: “At temperatures of 525°C and below, most sympathetic nucleation takes the form of face-to-face nucleation of new plates during the formation and thickening of sheaves.” p. 1220.'},
+ ef:{t:'Edge-to-face: sideplates on a plate',x:'The edge of the new plate sits on the broad face of the substrate and the new plate lies on a different {111}γ plane. Sideplates on Widmanstätten stars are the cleanest example, because the star is intragranular and cannot hide a grain-boundary origin [AW1956] p. 1217; [A1995] p. 111. At large driving force this is the lower bainite configuration [A1995] p. 112.',w:'AW: “In the temperature range 700° to 550°C, sympathetic nucleation occurs largely in the form of edge-to-face nucleation of sideplates at stars and at isolated intragranular plates.” p. 1220.'},
+ ee:{t:'Edge-to-edge: segments along a lath',x:'A new segment nucleates at the leading edge of the previous one, which happens when “the supply of growth ledges at the leading edge temporarily ‘dries up’” and a stationary facet regains supersaturation [A1995] p. 111. In Ti–Cr each segment keeps nearly the width of its predecessor, possibly because of strain-energy or invariant-line constraints.',w:'Frequent in steel and Ti–X proeutectoid reactions [A1995] p. 111; favoured by both driving force and rim energy at plate edges (p. 120).'},
+ gb:{t:'Sideplates on a grain-boundary allotriomorph',x:'The case that matters most for Widmanstätten ferrite. Plates rooted on an allotriomorph may be part of the same crystal (instability), or new crystals nucleated on its oriented-lattices face. Convincing optical examples are hard to find because impingement and hidden grain-boundary origins mimic it [A1995] p. 113. Spanos et al. found most secondary sideplates form by sympathetic nucleation at allotriomorphs or by lateral impingement of primary sideplates (p. 113).',w:'Confocal + EBSD: plates grow from stepped regions of the allotriomorph with 5–10° misorientation [PD2004] pp. 3701–3704.'}
+};
+let cfg='ff';const cfgBtns=['cfgFF','cfgEF','cfgEE','cfgGB'].map($);
+cfgBtns.forEach(b=>b.addEventListener('click',()=>{cfg=b.dataset.cfg;press(cfgBtns,b);drawCfg()}));
+$('nSteps').addEventListener('input',drawCfg);
+function plate(g,cx,cy,len,th,ang,fill,tip){g.save();g.translate(cx,cy);g.rotate(ang);g.beginPath();
+  if(tip){g.moveTo(-len/2,-th/2);g.lineTo(len/2-th,-th/2);g.lineTo(len/2,0);g.lineTo(len/2-th,th/2);g.lineTo(-len/2,th/2);}
+  else g.rect(-len/2,-th/2,len,th);
+  g.closePath();g.fillStyle=fill;g.fill();g.strokeStyle=css('--bg');g.lineWidth=1;g.stroke();g.restore();}
+function bnd(g,x1,y1,x2,y2){line(g,[[x1,y1],[x2,y2]],css('--ink'),1.4,[4,3]);}
+function drawCfg(){
+  const n=+$('nSteps').value;$('nStepsO').textContent=n;
+  const {g,w,h}=setup($('cvCfg'));g.fillStyle=css('--gamma');g.fillRect(0,0,w,h);
+  const A=css('--ferrite'),Cc=css('--ple');const s=Math.min(w/760,1.2);
+  txt(g,'austenite γ',10,14,css('--muted'));
+  if(cfg==='ff'){const L=420*s,t=16*s,ang=-0.18,cx=w/2,cy=h/2+40*s;const nx=Math.sin(ang),ny=-Math.cos(ang);
+    plate(g,cx,cy,L,t,ang,A,true);txt(g,'A',cx-L/2-14,cy+8,css('--ink'));
+    for(let i=1;i<=n;i++){const ox=cx+nx*t*i*1.02+i*6*s,oy=cy+ny*t*i*1.02;plate(g,ox,oy,L*(1-0.07*i),t,ang+0.004*i,Cc,true);
+      const px=cx+nx*t*(i-0.5)*1.02+i*6*s,py=cy+ny*t*(i-0.5)*1.02;const dx=Math.cos(ang)*L*0.42*(1-0.07*i),dy=Math.sin(ang)*L*0.42*(1-0.07*i);bnd(g,px-dx,py-dy,px+dx,py+dy);}
+    if(n>0)txt(g,'C₁…C'+String(n).replace(/\d/g,d=>'₀₁₂₃₄₅₆'[d]),cx+L/2-30,cy+ny*t*(n+1.5)-6,css('--ink'));}
+  if(cfg==='ef'){const L=520*s,t=14*s,ang=0.0,cx=w/2,cy=h*0.62;plate(g,cx,cy,L,t,ang,A,true);txt(g,'A',cx-L/2-14,cy,css('--ink'));
+    for(let i=0;i<n;i++){const bx=cx-L*0.38+i*(L*0.7/Math.max(n-1,1))*(n>1?1:0)+(n===1?L*0.3:0);const len=(110+18*((i*37)%3))*s,a=-1.0;
+      const mx=bx+Math.cos(a)*len/2,my=cy-t/2+Math.sin(a)*len/2;plate(g,mx,my,len,10*s,a,Cc,true);bnd(g,bx-8*s,cy-t/2,bx+8*s,cy-t/2);}
+    if(n>0)txt(g,'C (sideplates)',cx+L*0.25,cy-150*s,css('--ink'));}
+  if(cfg==='ee'){const t=16*s,seg=110*s,ang=-0.05,x0=w/2-((n+1)*seg)/2,cy=h/2;
+    for(let i=0;i<=n;i++){const cx=x0+seg*(i+0.5),yy=cy+Math.sin(ang)*seg*i;plate(g,cx,yy,seg-1,t,ang,i===0?A:Cc,i===n);
+      if(i>0)bnd(g,cx-seg/2,yy-t*0.9,cx-seg/2,yy+t*0.9);}
+    txt(g,'A',x0-14,cy,css('--ink'));if(n>0)txt(g,'C₁ … at each leading edge',x0+seg*1.1,cy+36*s,css('--ink'));}
+  if(cfg==='gb'){const gy=h*0.66;line(g,[[0,gy],[w,gy]],css('--mart'),1.6);txt(g,'austenite grain boundary',10,gy+14,css('--muted'));txt(g,'γ₁',10,h-14,css('--muted'));
+    const cx=w/2,L=w*0.8,th=26*s;g.save();g.beginPath();g.ellipse(cx,gy,L/2,th,0,0,Math.PI*2);g.fillStyle=A;g.fill();g.restore();txt(g,'A (allotriomorph)',cx-L/2+10,gy+th+12,css('--ink'));
+    for(let i=0;i<n;i++){const fx=n===1?0.5:0.18+i*0.64/(n-1);const bx=cx-L/2+fx*L;const yb=gy-th*Math.sqrt(Math.max(0,1-Math.pow((bx-cx)/(L/2),2)));
+      const len=(130+(i%2)*25)*s,a=-1.18;plate(g,bx+Math.cos(a)*len/2,yb+Math.sin(a)*len/2,len,13*s,a,Cc,true);bnd(g,bx-9*s,yb+2,bx+9*s,yb+2);}
+    if(n>0)txt(g,'C (Widmanstätten sideplates, low-angle roots)',cx-L/2+10,22,css('--ink'));}
+  $('cfgTitle').textContent=CFG[cfg].t;$('cfgText').textContent=CFG[cfg].x;$('cfgWhen').textContent=CFG[cfg].w;
+}
+
+/* ---------- 2. paradox ---------- */
+const AE3=[[500,2.8],[550,2.3],[650,1.35],[727,0.75],[775,0.47]]; // TCFE14 Fe-C, wt% C
+const ae3=T=>{for(let i=0;i<AE3.length-1;i++){const [t0,c0]=AE3[i],[t1,c1]=AE3[i+1];if(T>=t0&&T<=t1)return c0+(c1-c0)*(T-t0)/(t1-t0)}return T<500?2.8:0.47};
+const xC=w=>(w/12.011)/((w/12.011)+((100-w)/55.845));
+const wC=x=>100*x*12.011/(x*12.011+(1-x)*55.845);
+function drawParadox(){
+  const T=+$('pT').value,w0=+$('pC').value,dX=+$('pDX').value;
+  $('pTO').textContent=T+' °C';$('pCO').textContent=w0.toFixed(2)+' wt.%';$('pDXO').textContent=dX.toFixed(3);
+  const wg=ae3(T),X=1-xC(w0),Xg=1-xC(wg),lnB=Math.log(X/Xg),Xi=Math.min(Xg+dX,X),lnI=Math.log(Xi/Xg);
+  const RT=8.314*(T+273.15);const dwi=wg-wC(1-Xi);
+  $('sXg').textContent=wg.toFixed(2)+' wt.% C';$('sLnB').textContent=lnB.toFixed(3);$('sGB').textContent=(-RT*lnB).toFixed(0)+' J/mol';
+  $('sLnI').textContent=lnI.toFixed(4);$('sDXw').textContent=dwi.toFixed(2)+' wt.% below Ae3';
+  $('sBar').textContent=lnI>0?'×'+(Math.pow(lnB/lnI,2)).toFixed(0):'∞ (no driving force)';
+  // phase diagram
+  let {g,w,h}=setup($('cvPD'));let o={x0:0,x1:3,y0:450,y1:800,L:44,R:10,T:10,B:34,w,h,xt:[0,0.5,1,1.5,2,2.5,3],yt:[450,500,550,600,650,700,750,800],xl:'carbon, wt.%',yl:'T, °C',xf:v=>v};
+  let {X:PX,Y:PY}=axes(g,o);
+  line(g,AE3.filter(p=>p[0]>=727).map(p=>[PX(p[1]),PY(p[0])]),css('--ferrite'),2.4);
+  line(g,AE3.filter(p=>p[0]<=727).map(p=>[PX(p[1]),PY(p[0])]),css('--ferrite'),2.4,[6,4]);
+  line(g,[[PX(0),PY(727)],[PX(3),PY(727)]],css('--muted'),1,[2,3]);txt(g,'727 °C',PX(2.55),PY(727)-8,css('--muted'));
+  txt(g,'Ae3',PX(0.62),PY(790),css('--ferrite'));
+  line(g,[[PX(w0),PY(T)],[PX(wg),PY(T)]],css('--tip'),1.6);
+  line(g,[[PX(w0),PY(450)],[PX(w0),PY(800)]],css('--mart'),1.2,[3,3]);
+  g.fillStyle=css('--mart');g.beginPath();g.arc(PX(w0),PY(T),4.5,0,7);g.fill();
+  g.fillStyle=css('--tip');g.beginPath();g.arc(PX(wg),PY(T),5,0,7);g.fill();
+  txt(g,'x_γα '+wg.toFixed(2),PX(wg)+8,PY(T)-10,css('--tip'),'left','11px "JetBrains Mono",monospace');
+  // profile
+  ({g,w,h}=setup($('cvProf')));const ymax=Math.max(3,Math.ceil(wg+0.3));
+  o={x0:-1,x1:8,y0:0,y1:ymax,L:44,R:10,T:10,B:34,w,h,xt:[0,2,4,6,8],yt:[...Array(ymax+1).keys()],xl:'distance from interface (diffusion lengths)',yl:'carbon in austenite, wt.%'};
+  ({X:PX,Y:PY}=axes(g,o));
+  g.fillStyle=css('--ferrite');g.globalAlpha=.25;g.fillRect(PX(-1),PY(ymax),PX(0)-PX(-1),PY(0)-PY(ymax));g.globalAlpha=1;
+  txt(g,'α',PX(-0.5),PY(ymax*0.9),css('--ferrite'),'center');
+  const erfc=x=>{const t=1/(1+0.3275911*x);return t*(0.254829592+t*(-0.284496736+t*(1.421413741+t*(-1.453152027+t*1.061405429))))*Math.exp(-x*x)};
+  const pts=[];for(let i=0;i<=160;i++){const d=8*i/160;pts.push([PX(d),PY(w0+(wg-w0)*erfc(d/2))])}
+  line(g,[[PX(-1),PY(0.02)],[PX(0),PY(0.02)]],css('--ferrite'),2.4);
+  line(g,[[PX(0),PY(0)],[PX(0),PY(ymax)]],css('--ferrite'),1.5);
+  line(g,pts,css('--carbon'),2.4);
+  const wi=wC(1-Xi);line(g,[[PX(0),PY(wi)],[PX(1.2),PY(wi)]],css('--tip'),1.6,[5,3]);
+  line(g,[[PX(0),PY(w0)],[PX(8),PY(w0)]],css('--mart'),1,[3,3]);
+  txt(g,'bulk '+w0.toFixed(2),PX(5.6),PY(w0)-9,css('--mart'),'left','11px "JetBrains Mono",monospace');
+  txt(g,'Ae3 '+wg.toFixed(2),PX(0.25),PY(wg)-10,css('--carbon'),'left','11px "JetBrains Mono",monospace');
+}
+['pT','pC','pDX'].forEach(id=>$(id).addEventListener('input',drawParadox));
+
+/* ---------- 3. parallel tangent (schematic parabolas) ---------- */
+const Ga=u=>25*(u-0.02)**2-0.12, dGa=u=>50*(u-0.02);
+const Gg=u=>1.2*(u-0.5)**2, dGg=u=>2.4*(u-0.5);
+// common tangent, solved analytically for these parabolas
+const sCT=(-0.48+Math.sqrt(0.48*0.48+4*0.19833*0.12))/(2*0.19833);const uA=0.02+sCT/50,uG=0.5+sCT/2.4;const xBulk=0.30;
+function dGN(x){const s=dGg(x),y=0.02+s/50;return {v:Gg(x)+s*(y-x)-Ga(y),y,s}}
+function drawTan(){
+  const f=+$('tX').value;const x=xBulk+f*(uG-xBulk);
+  const {g,w,h}=setup($('cvTan'));const o={x0:0,x1:0.85,y0:-0.2,y1:0.45,L:30,R:10,T:10,B:34,w,h,xt:[],yt:[],xl:'carbon (schematic) →',yl:'G (schematic)'};
+  const {X,Y}=axes(g,o);
+  const ca=[],cg=[];for(let i=0;i<=200;i++){const u=0.85*i/200;const a=Ga(u);if(a<0.5)ca.push([X(u),Y(a)]);else ca.push(null);cg.push([X(u),Y(Gg(u))]);}
+  g.save();g.beginPath();g.rect(o.L,o.T,w-o.L-o.R,h-o.T-o.B);g.clip();
+  line(g,ca,css('--ferrite'),2.4);line(g,cg,css('--carbon'),2.4);
+  const ct=u=>Ga(uA)+sCT*(u-uA);line(g,[[X(0),Y(ct(0))],[X(0.85),Y(ct(0.85))]],css('--mart'),1.2,[6,4]);
+  const d=dGN(x);const tg=u=>Gg(x)+d.s*(u-x);line(g,[[X(0),Y(tg(0))],[X(0.85),Y(tg(0.85))]],css('--tip'),1.8);
+  const pa=u=>Ga(d.y)+d.s*(u-d.y);line(g,[[X(0),Y(pa(0))],[X(0.3),Y(pa(0.3))]],css('--tip'),1.2,[4,3]);
+  g.restore();
+  g.fillStyle=css('--tip');g.beginPath();g.arc(X(x),Y(Gg(x)),5,0,7);g.fill();
+  g.fillStyle=css('--ferrite');g.beginPath();g.arc(X(d.y),Y(Ga(d.y)),4,0,7);g.fill();
+  // arrow for gap
+  const gx=X(d.y)+6;line(g,[[gx,Y(Ga(d.y))],[gx,Y(tg(d.y))]],css('--ink'),2);
+  txt(g,'ΔG_N',gx+6,(Y(Ga(d.y))+Y(tg(d.y)))/2,css('--ink'));
+  [[xBulk,'x₀ bulk'],[uG,'Ae3']].forEach(([u,l])=>{line(g,[[X(u),h-o.B],[X(u),h-o.B-8]],css('--muted'),1.5);txt(g,l,X(u),h-o.B-16,css('--muted'),'center')});
+  txt(g,'α',X(0.06),Y(0.38),css('--ferrite'));txt(g,'γ',X(0.78),Y(Gg(0.78))-12,css('--carbon'));
+  const b=dGN(xBulk).v;$('tDG').textContent=Math.max(d.v,0).toFixed(3);$('tPhi').textContent=(Math.max(d.v,0)/b).toFixed(2);
+  $('tXO').textContent=f===0?'bulk':f>=0.999?'on the Ae3':(100*f).toFixed(0)+' % of the way to Ae3';
+}
+$('tX').addEventListener('input',drawTan);
+
+/* ---------- 4. barrier map ---------- */
+const sGG=850,sGA=0.74*850,K=(3*sGA-sGG)/sGA; // interfacial factor normalised by sigma_ga
+function ratio(r,phi){return Math.pow((1+r)/K,3)/(phi*phi)}
+function drawMap(){
+  const r=+$('bS').value,phi=+$('bP').value;$('bSO').textContent=r.toFixed(2);$('bPO').textContent=phi.toFixed(2);
+  const IF=Math.pow((1+r)/K,3),R=IF/(phi*phi);
+  $('bIF').textContent=IF.toFixed(2);$('bDF').textContent=(1/(phi*phi)).toFixed(1);$('bR').textContent=R<100?R.toFixed(2):R.toExponential(1);
+  const v=$('bV');v.className='verdict '+(R<1?'good':'bad');v.textContent=R<1?'The sympathetic nucleus has the lower barrier.':'The austenite grain boundary still wins.';
+  const {g,w,h}=setup($('cvMap'));const o={x0:0.01,x1:1,y0:0,y1:1.6,L:44,R:12,T:10,B:34,w,h,xlog:true,xt:[0.01,0.03,0.1,0.3,1],yt:[0,0.4,0.8,1.2,1.6],xl:'Φ = ΔG_sym / ΔG_bulk (log)',yl:'σαα / σγα'};
+  const {X,Y}=axes(g,o);
+  // shade
+  const nx=90,ny=60;for(let i=0;i<nx;i++)for(let j=0;j<ny;j++){const p=Math.pow(10,-2+2*(i+0.5)/nx),s=1.6*(j+0.5)/ny;const ok=ratio(s,p)<1;
+    g.fillStyle=ok?css('--ok'):css('--tip');g.globalAlpha=ok?0.22:0.10;const x0=X(Math.pow(10,-2+2*i/nx)),x1=X(Math.pow(10,-2+2*(i+1)/nx));g.fillRect(x0,Y(1.6*(j+1)/ny),x1-x0+0.5,Y(1.6*j/ny)-Y(1.6*(j+1)/ny)+0.5);}
+  g.globalAlpha=1;
+  const c=[];for(let i=0;i<=100;i++){const p=Math.pow(10,-2+2*i/100);const s=K*Math.pow(p,2/3)-1;c.push(s>=0&&s<=1.6?[X(p),Y(s)]:null)}line(g,c,css('--ink'),2);
+  const avg=1/0.71;line(g,[[X(0.01),Y(avg)],[X(1),Y(avg)]],css('--mart'),1.2,[5,4]);txt(g,'AW average σαα = σγα/0.71',X(0.012),Y(avg)+11,css('--mart'));
+  g.fillStyle=css('--ink');g.beginPath();g.arc(X(phi),Y(r),6,0,7);g.fill();g.strokeStyle=css('--bg');g.lineWidth=2;g.stroke();
+}
+['bS','bP'].forEach(id=>$(id).addEventListener('input',drawMap));
+
+/* ---------- 5. misorientation ---------- */
+const rs=deg=>{const t=deg*Math.PI/180;return 55.4*t*(Math.log(4/3)-Math.log(t))};
+function drawRS(){
+  const th=+$('rT').value;$('rTO').textContent=th.toFixed(1)+'°';
+  const b1=rs(th),b2=rs(th/2);$('rB1').textContent=b1.toFixed(1);$('rB2').textContent=b2.toFixed(1);$('rRt').textContent=(b2/b1).toFixed(2);
+  let {g,w,h}=setup($('cvRS'));const ymax=Math.ceil(rs(28)/5)*5;
+  let o={x0:0,x1:30,y0:0,y1:ymax,L:40,R:10,T:10,B:34,w,h,xt:[0,5,10,15,20,25,30],yt:[0,5,10,15,20,25,30].filter(v=>v<=ymax),xl:'misorientation θ, degrees',yl:'Φ²G*'};
+  let {X,Y}=axes(g,o);const c=[];for(let i=1;i<=300;i++){const d=30*i/300;c.push([X(d),Y(rs(d))])}line(g,c,css('--ferrite'),2.4);
+  line(g,[[X(th),Y(0)],[X(th),Y(b1)]],css('--tip'),2);g.fillStyle=css('--tip');g.beginPath();g.arc(X(th),Y(b1),5,0,7);g.fill();
+  line(g,[[X(th/2),Y(0)],[X(th/2),Y(b2)]],css('--ple'),2);g.fillStyle=css('--ple');g.beginPath();g.arc(X(th/2),Y(b2),5,0,7);g.fill();
+  line(g,[[X(15),Y(0)],[X(15),Y(ymax)]],css('--muted'),1,[2,3]);txt(g,'15°: high-angle by convention',X(15)+4,Y(ymax*0.08),css('--muted'));
+  // EBSD sketch
+  ({g,w,h}=setup($('cvEB')));o={x0:0,x1:10,y0:0,y1:Math.max(12,th+2),L:40,R:10,T:8,B:30,w,h,xt:[],yt:[0,Math.round(Math.max(12,th+2)/2),Math.round(Math.max(12,th+2))],xl:'allotriomorph → bridging crystal → plate tip',yl:'Δθ, °'};
+  ({X,Y}=axes(g,o));const n=(t)=>t+(Math.sin(t*7.3)*0.25);
+  const one=[],two=[];for(let i=0;i<=200;i++){const s=10*i/200;one.push([X(s),Y(n(0)+(s>3.5?th:0))]);two.push([X(s),Y((s>3.5?th/2:0)+(s>6.5?th/2:0)+0.15)])}
+  line(g,one,css('--tip'),1.8);line(g,two,css('--ple'),1.8,[5,3]);
+  txt(g,'one step',X(8.2),Y(th)-10,css('--tip'),'left','11px "Source Sans 3",system-ui,sans-serif');txt(g,'two steps',X(4.6),Y(th/2)-10,css('--ple'),'left','11px "Source Sans 3",system-ui,sans-serif');
+}
+$('rT').addEventListener('input',drawRS);
+
+/* ---------- 6. ledges ---------- */
+function erfcx(x){if(x<3){const t=1/(1+0.5*x);const e=t*Math.exp(-x*x-1.26551223+t*(1.00002368+t*(0.37409196+t*(0.09678418+t*(-0.18628806+t*(0.27886807+t*(-1.13520398+t*(1.48851587+t*(-0.82215223+t*0.17087277)))))))));return e*Math.exp(x*x)}
+  const x2=x*x;return 1/(x*Math.sqrt(Math.PI))*(1-1/(2*x2)+3/(4*x2*x2)-15/(8*x2*x2*x2))}
+function drawLedge(){
+  const lt=+$('lT').value,t=Math.pow(10,lt);$('lTO').textContent=t<10?t.toFixed(2):t.toFixed(0);
+  const left=erfcx(Math.sqrt(t));$('lLeft').textContent=(100*left).toFixed(0)+' %';$('lGone').textContent=(100*(1-left)).toFixed(0)+' %';
+  const {g,w,h}=setup($('cvLedge'));const top=150;
+  // ledged interface sketch (top half)
+  g.fillStyle=css('--gamma');g.fillRect(0,0,w,top);
+  const stepW=w/4,stepH=22,yb=top-26;g.fillStyle=css('--ferrite');g.beginPath();g.moveTo(0,top);
+  for(let k=0;k<4;k++){const y=yb-k*0+ (k%2?0:0);g.lineTo(k*stepW,yb-k*stepH*0.0);}
+  g.lineTo(0,top);g.closePath();
+  // draw staircase explicitly
+  g.beginPath();g.moveTo(0,top);let y=yb-3*stepH*0.4;g.lineTo(0,y);
+  for(let k=0;k<4;k++){g.lineTo((k+1)*stepW-10,y);y+=stepH*0.4;g.lineTo((k+1)*stepW-10,Math.min(y,top));}
+  g.lineTo(w,top);g.closePath();g.fill();
+  // carbon at terraces: the terrace that the riser left longest ago is the freshest one here (k=1 chosen as 'our' terrace)
+  for(let k=0;k<4;k++){const ty=yb-3*stepH*0.4+k*stepH*0.4;const x0=k*stepW+(k?-10:0),x1=(k+1)*stepW-10;const a=k===1?left:[0.15,0,0.85,0][k];
+    if(k===3)continue;const grd=g.createLinearGradient(0,ty-30,0,ty);grd.addColorStop(0,'rgba(0,0,0,0)');grd.addColorStop(1,css('--carbon'));g.globalAlpha=0.15+0.75*a;g.fillStyle=grd;g.fillRect(x0+4,ty-30,x1-x0-8,30);g.globalAlpha=1;}
+  const ty1=yb-3*stepH*0.4+stepH*0.4;txt(g,'this terrace',stepW+stepW/2-20,ty1-40,css('--tip'),'center');
+  txt(g,'riser moves →',3*stepW+8,yb+12,css('--ink'));txt(g,'austenite γ',10,14,css('--muted'));
+  // recovery curve (bottom)
+  const o={x0:0.01,x1:1000,y0:0,y1:1,L:44,R:22,T:top+12,B:30,w,h,xlog:true,xt:[0.01,0.1,1,10,100,1000],yt:[0,0.5,1],xl:'t/τ (log)',yl:'excess left'};
+  const {X,Y}=axes(g,o);const c=[];for(let i=0;i<=200;i++){const tt=Math.pow(10,-2+5*i/200);c.push([X(tt),Y(erfcx(Math.sqrt(tt)))])}line(g,c,css('--carbon'),2.4);
+  [[0.59,'t₅₀'],[31.5,'t₉₀']].forEach(([v,l])=>{line(g,[[X(v),Y(0)],[X(v),Y(1)]],css('--muted'),1,[2,3]);txt(g,l,X(v)+4,Y(0.9),css('--muted'))});
+  g.fillStyle=css('--tip');g.beginPath();g.arc(X(t),Y(left),5,0,7);g.fill();
+}
+$('lT').addEventListener('input',drawLedge);
+
+/* ---------- boot & redraw ---------- */
+function all(){drawCfg();drawParadox();drawTan();drawMap();drawRS();drawLedge();}
+all();let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(all,120)});
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',all)}catch(e){}
+new MutationObserver(all).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(all);
+})();
+</script>
+
+</body></html>
