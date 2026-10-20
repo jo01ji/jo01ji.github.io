@@ -418,7 +418,7 @@ function drawCfg(){
       const px=cx+nx*t*(i-0.5)*1.02+i*6*s,py=cy+ny*t*(i-0.5)*1.02;const dx=Math.cos(ang)*L*0.42*(1-0.07*i),dy=Math.sin(ang)*L*0.42*(1-0.07*i);bnd(g,px-dx,py-dy,px+dx,py+dy);}
     if(n>0)txt(g,'C₁…C'+String(n).replace(/\d/g,d=>'₀₁₂₃₄₅₆'[d]),cx+L/2-30,cy+ny*t*(n+1.5)-6,css('--ink'));}
   if(cfg==='ef'){const L=520*s,t=14*s,ang=0.0,cx=w/2,cy=h*0.62;plate(g,cx,cy,L,t,ang,A,true);txt(g,'A',cx-L/2-14,cy,css('--ink'));
-    for(let i=0;i<n;i++){const bx=cx-L*0.38+i*(L*0.7/Math.max(n-1,1))*(n>1?1:0)+(n===1?L*0.3:0);const len=(110+18*((i*37)%3))*s,a=-1.0;
+    for(let i=0;i<n;i++){const bx=cx-L*0.36+i*L*0.13;const len=(110+18*((i*37)%3))*s,a=-1.0;
       const mx=bx+Math.cos(a)*len/2,my=cy-t/2+Math.sin(a)*len/2;plate(g,mx,my,len,10*s,a,Cc,true);bnd(g,bx-8*s,cy-t/2,bx+8*s,cy-t/2);}
     if(n>0)txt(g,'C (sideplates)',cx+L*0.25,cy-150*s,css('--ink'));}
   if(cfg==='ee'){const t=16*s,seg=110*s,ang=-0.05,x0=w/2-((n+1)*seg)/2,cy=h/2;
@@ -427,7 +427,7 @@ function drawCfg(){
     txt(g,'A',x0-14,cy,css('--ink'));if(n>0)txt(g,'C₁ … at each leading edge',x0+seg*1.1,cy+36*s,css('--ink'));}
   if(cfg==='gb'){const gy=h*0.66;line(g,[[0,gy],[w,gy]],css('--mart'),1.6);txt(g,'austenite grain boundary',10,gy+14,css('--muted'));txt(g,'γ₁',10,h-14,css('--muted'));
     const cx=w/2,L=w*0.8,th=26*s;g.save();g.beginPath();g.ellipse(cx,gy,L/2,th,0,0,Math.PI*2);g.fillStyle=A;g.fill();g.restore();txt(g,'A (allotriomorph)',cx-L/2+10,gy+th+12,css('--ink'));
-    for(let i=0;i<n;i++){const fx=n===1?0.5:0.18+i*0.64/(n-1);const bx=cx-L/2+fx*L;const yb=gy-th*Math.sqrt(Math.max(0,1-Math.pow((bx-cx)/(L/2),2)));
+    for(let i=0;i<n;i++){const fx=0.15+i*0.14;const bx=cx-L/2+fx*L;const yb=gy-th*Math.sqrt(Math.max(0,1-Math.pow((bx-cx)/(L/2),2)));
       const len=(130+(i%2)*25)*s,a=-1.18;plate(g,bx+Math.cos(a)*len/2,yb+Math.sin(a)*len/2,len,13*s,a,Cc,true);bnd(g,bx-9*s,yb+2,bx+9*s,yb+2);}
     if(n>0)txt(g,'C (Widmanstätten sideplates, low-angle roots)',cx-L/2+10,22,css('--ink'));}
   $('cfgTitle').textContent=CFG[cfg].t;$('cfgText').textContent=CFG[cfg].x;$('cfgWhen').textContent=CFG[cfg].w;
