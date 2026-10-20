@@ -1,0 +1,711 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>body{margin:0}</style></head><body>
+<title>Reading a Dilatometer</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: the lab notebook on etched-steel grey, in the honey/gold/amber/rust palette of the steel phase-diagram lessons; every plot is a ΔL/L0 trace read the way a DIL805 user reads it */
+:root{
+  --bg:#eef1f3; --panel:#f8fafb; --ink:#17212b; --muted:#56636f; --rule:#cfd6dc;
+  --ferrite:#a8650a; --carbon:#e07b12; --tip:#b4480e; --ple:#d29a12; --gamma:#f5e6bd; --mart:#5b6670;
+  --display:"Spectral",Georgia,serif; --body:"Source Sans 3","Segoe UI",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12171c; --panel:#1a2128; --ink:#e3e8ec; --muted:#9aa6b1; --rule:#2d3740;
+  --ferrite:#f2b84b; --carbon:#f39a3c; --tip:#ff7a3d; --ple:#f5c542; --gamma:#3a3221; --mart:#aab4bd; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12171c; --panel:#1a2128; --ink:#e3e8ec; --muted:#9aa6b1; --rule:#2d3740;
+  --ferrite:#f2b84b; --carbon:#f39a3c; --tip:#ff7a3d; --ple:#f5c542; --gamma:#3a3221; --mart:#aab4bd; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--body)}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px}
+h1,h2,h3{font-family:var(--display);font-weight:600;text-wrap:balance;margin:0}
+h1{font-size:clamp(28px,4.4vw,42px);line-height:1.1}
+h2{font-size:clamp(22px,3vw,28px);margin-top:8px}
+h3{font-size:18px}
+p{margin:0;max-width:68ch}
+.lede{color:var(--muted);font-size:17px;margin-top:10px}
+.eyebrow{font:500 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+section{display:grid;gap:14px;padding-block:34px;border-top:1px solid var(--rule)}
+header{display:grid;gap:6px;padding-bottom:26px}
+.links{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:10px;font-size:15px}
+a{color:var(--ferrite)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:820px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:14px;display:grid;gap:10px;min-width:0}
+canvas{display:block;width:100%;max-width:100%;touch-action:pan-y;border-radius:4px}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 18px}
+.ctl{display:grid;gap:2px;font-size:14px}
+.ctl label{display:flex;justify-content:space-between;gap:8px}
+.ctl output{font:500 13px var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+input[type=range]{width:100%;accent-color:var(--ferrite)}
+select,button{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--rule);border-radius:4px;padding:5px 10px}
+button{cursor:pointer}
+button:hover{border-color:var(--ferrite)}
+button[aria-pressed="true"]{border-color:var(--c,var(--ferrite));background:var(--panel);font-weight:600;box-shadow:inset 0 -3px 0 var(--c,var(--ferrite))}
+:focus-visible{outline:2px solid var(--ferrite);outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.key{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted)}
+.key span::before{content:"";display:inline-block;width:14px;height:4px;border-radius:2px;margin-right:6px;vertical-align:middle;background:var(--c)}
+.key span.dash::before{background:repeating-linear-gradient(90deg,var(--c) 0 4px,transparent 4px 7px)}
+.note{font-size:14px;color:var(--muted)}
+.callout{border-left:3px solid var(--tip);padding:4px 0 4px 12px;font-size:15px;max-width:none}
+.callout.c{border-left-color:var(--carbon)}
+.callout.p{border-left-color:var(--ple)}
+.defs{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.defs div{display:grid;gap:4px;align-content:start;min-width:0}
+.defs b{font-family:var(--display);font-size:17px}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;font-size:14px;width:100%}
+th,td{padding:6px 10px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font:500 12px var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+td.m,code,.m{font:13px var(--mono);font-variant-numeric:tabular-nums}
+.eq{font:14px var(--mono);background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:8px 12px;overflow-x:auto;max-width:100%;white-space:nowrap}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px 18px;font-size:13px}
+.stats div{display:grid;gap:0}
+.stats span{color:var(--muted)}
+.stats b{font:500 14px var(--mono);font-variant-numeric:tabular-nums}
+.tag{display:inline-block;font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--rule);border-radius:3px;padding:1px 6px;color:var(--muted);vertical-align:middle}
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.pair > div{display:grid;gap:6px;align-content:start;min-width:0}
+ul.tight{margin:0;padding-left:20px;display:grid;gap:4px;max-width:72ch}
+ol.refs{margin:0;padding-left:22px;display:grid;gap:4px;font-size:14px;color:var(--muted);max-width:90ch}
+.svgwrap{overflow-x:auto}
+.svgwrap svg{width:100%;min-width:560px;height:auto;display:block}
+.s-ink{stroke:var(--ink);fill:none;stroke-width:1.4}
+.s-mut{stroke:var(--muted);fill:none;stroke-width:1.2}
+.c-coil{stroke:var(--carbon);fill:var(--panel);stroke-width:2}
+.f-spec{fill:var(--ferrite)} .f-rod{fill:var(--gamma);stroke:var(--muted);stroke-width:1}
+.f-panel{fill:var(--panel);stroke:var(--rule)} .f-tc{stroke:var(--tip);stroke-width:1.6;fill:none}
+.t-lab{fill:var(--ink);font:13px var(--body)} .t-sm{fill:var(--muted);font:12px var(--body)} .t-mono{fill:var(--muted);font:11px var(--mono)}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <a href="./" style="color:var(--muted);font-size:15px">← Phase transformations</a>
+  <div class="eyebrow">Dilatometry · DIL805A/D · Fe–0.431C–1.92Mn (sample-01)</div>
+  <h1>Reading a Dilatometer</h1>
+  <p class="lede">A dilatometer measures the length of a small cylinder of steel while it is heated, held and cooled under tight control. Every phase in steel packs iron atoms at a slightly different density, so a phase change appears as a kink in an otherwise straight length–temperature line. This lesson builds that signal from lattice parameters, reads phase fractions and start temperatures off it, covers the deformation and tension modules, and ends with the schedule planned for sample-01.</p>
+  <div class="links">
+    <a href="steel-phase-diagram.html">The Fe–C phase diagram</a>
+    <a href="widmanstatten-transition.html">Planar to Widmanstätten Ferrite</a>
+    <a href="ple-nple.html">PLE, NPLE and Paraequilibrium</a>
+    <a href="martensite-traces.html">Martensite Traces in 3D</a>
+    <a href="ks-variant-atlas.html">KS Variant Atlas</a>
+  </div>
+</header>
+
+<section id="curve">
+  <div class="eyebrow">1 · The signal</div>
+  <h2>A phase change is a kink in a straight line</h2>
+  <p>Below is a modelled dilatometer trace for sample-01. On cooling, austenite contracts along one straight line. When ferrite forms, the specimen expands, because ferrite holds each iron atom in a slightly larger volume. Once the austenite is used up, the ferrite and pearlite contract along a second line. Move the transformation temperatures to see how the trace changes. They are example values for you to set, not predictions.</p>
+  <div class="grid2">
+    <div class="panel">
+      <div class="row" role="group" aria-label="Thermal path">
+        <button id="modeCool" aria-pressed="true">Cooling from 950 °C</button>
+        <button id="modeHeat" aria-pressed="false">Heating from 25 °C</button>
+      </div>
+      <canvas id="cvCurve" aria-label="Relative length change against temperature"></canvas>
+      <div class="key">
+        <span style="--c:var(--ink)">measured ΔL/L₀</span>
+        <span class="dash" style="--c:var(--tip)">austenite tangent</span>
+        <span class="dash" style="--c:var(--ferrite)">ferrite + pearlite tangent</span>
+      </div>
+      <canvas id="cvFrac" aria-label="Transformed fraction against temperature"></canvas>
+      <div class="key">
+        <span style="--c:var(--ferrite)">ferrite</span>
+        <span style="--c:var(--ple)">pearlite</span>
+        <span style="--c:var(--ink)">lever rule on the tangents</span>
+      </div>
+    </div>
+    <div class="panel">
+      <h3 id="ctlHead">Set the transformation</h3>
+      <div class="controls" id="ctlCool">
+        <div class="ctl"><label for="sFs">Ferrite start <output id="oFs"></output></label><input type="range" id="sFs" min="620" max="745" step="1" value="715"></div>
+        <div class="ctl"><label for="sFa">Ferrite fraction when pearlite starts <output id="oFa"></output></label><input type="range" id="sFa" min="0" max="0.6" step="0.01" value="0.35"></div>
+        <div class="ctl"><label for="sPs">Pearlite start <output id="oPs"></output></label><input type="range" id="sPs" min="560" max="700" step="1" value="650"></div>
+        <div class="ctl"><label for="sPw">Pearlite interval <output id="oPw"></output></label><input type="range" id="sPw" min="5" max="80" step="1" value="30"></div>
+      </div>
+      <div class="controls" id="ctlHeat" hidden>
+        <div class="ctl"><label for="sAc1">Ac1 <output id="oAc1"></output></label><input type="range" id="sAc1" min="683" max="780" step="1" value="705"></div>
+        <div class="ctl"><label for="sAc3">Ac3 <output id="oAc3"></output></label><input type="range" id="sAc3" min="745" max="900" step="1" value="800"></div>
+        <div class="ctl"><label for="sFa2">Ferrite fraction in the start structure <output id="oFa2"></output></label><input type="range" id="sFa2" min="0" max="0.6" step="0.01" value="0.35"></div>
+      </div>
+      <div class="stats">
+        <div><span>Length step across the transformation</span><b id="rStep">–</b></div>
+        <div><span>Same, in µm on a 10 mm specimen</span><b id="rStepUm">–</b></div>
+        <div><span>Largest lever-rule error</span><b id="rErr">–</b></div>
+        <div><span>Austenite C when pearlite starts</span><b id="rCg">–</b></div>
+      </div>
+      <p class="note">Lattice parameters from Kop et al. (2001), Table I, after Onink et al. (1993). Ferrite is valid above 527 °C and austenite above 727 °C, so the lines below are extrapolated, which is also what a tangent does. The lengths are referenced to the ferrite–pearlite start structure at 25 °C.</p>
+      <p class="note">Dotted verticals mark the Thermo-Calc TCFE14 equilibrium temperatures for sample-01: Ae3 745 °C, cementite onset 699 °C, Ae1 683 °C, with the paraequilibrium Ae3 at 720 °C. Real transformations on cooling start below these, by an undercooling that grows with cooling rate.</p>
+      <p class="callout c" id="calloutCurve">The lever rule reads the fraction as the distance between the two tangents. It assumes the austenite keeps contracting along the line it had before transformation. But the austenite that is left gets richer in carbon, which expands its lattice, so the lever rule misreads the fraction while ferrite is forming.</p>
+    </div>
+  </div>
+</section>
+
+<section id="instrument">
+  <div class="eyebrow">2 · The instrument</div>
+  <h2>A DIL805 heats the specimen by induction and reads its length through push rods</h2>
+  <p>The specimen is a small cylinder held between two push rods inside an induction coil. A thermocouple is spot-welded to the middle of the specimen, and heating power is controlled from that reading. The push rods carry the change in length out of the hot zone to a displacement transducer. Cooling comes from inert gas blown onto the specimen, in vacuum or inert atmosphere. Because the heated volume is tiny and the coil heats the specimen directly, the specimen can be heated and quenched at rates a furnace cannot reach.</p>
+  <div class="panel svgwrap">
+    <svg viewBox="0 0 760 300" role="img" aria-label="Schematic of a quenching dilatometer: specimen between push rods in an induction coil, thermocouple, gas nozzles and displacement transducer">
+      <rect x="10" y="16" width="740" height="272" rx="6" class="f-panel"></rect>
+      <text x="24" y="38" class="t-sm">Vacuum or inert-gas chamber</text>
+      <rect x="40" y="131" width="200" height="14" class="f-rod"></rect>
+      <rect x="400" y="131" width="200" height="14" class="f-rod"></rect>
+      <text x="140" y="166" class="t-sm" text-anchor="middle">fixed push rod</text>
+      <text x="500" y="166" class="t-sm" text-anchor="middle">moving push rod</text>
+      <rect x="240" y="118" width="160" height="40" rx="2" class="f-spec"></rect>
+      <text x="320" y="143" class="t-lab" text-anchor="middle" style="fill:var(--bg)">specimen</text>
+      <circle cx="236" cy="104" r="6" class="c-coil"></circle><circle cx="236" cy="172" r="6" class="c-coil"></circle><circle cx="260" cy="104" r="6" class="c-coil"></circle><circle cx="260" cy="172" r="6" class="c-coil"></circle><circle cx="284" cy="104" r="6" class="c-coil"></circle><circle cx="284" cy="172" r="6" class="c-coil"></circle><circle cx="308" cy="104" r="6" class="c-coil"></circle><circle cx="308" cy="172" r="6" class="c-coil"></circle><circle cx="332" cy="104" r="6" class="c-coil"></circle><circle cx="332" cy="172" r="6" class="c-coil"></circle><circle cx="356" cy="104" r="6" class="c-coil"></circle><circle cx="356" cy="172" r="6" class="c-coil"></circle><circle cx="380" cy="104" r="6" class="c-coil"></circle><circle cx="380" cy="172" r="6" class="c-coil"></circle><circle cx="404" cy="104" r="6" class="c-coil"></circle><circle cx="404" cy="172" r="6" class="c-coil"></circle>
+      <text x="320" y="84" class="t-sm" text-anchor="middle" style="fill:var(--carbon)">induction coil (cross-section)</text>
+      <path class="s-mut" d="M190 62 L226 94 M460 62 L414 94"></path>
+      <path class="s-mut" d="M226 94 l-9 -2 M226 94 l-3 -8 M414 94 l9 -2 M414 94 l3 -8"></path>
+      <text x="120" y="58" class="t-sm">quench gas</text>
+      <text x="466" y="58" class="t-sm">quench gas</text>
+      <path class="f-tc" d="M318 158 L318 214 M322 158 L322 214"></path>
+      <text x="332" y="222" class="t-sm" style="fill:var(--tip)">thermocouple, spot-welded at mid-length</text>
+      <rect x="620" y="113" width="90" height="50" rx="4" class="f-panel"></rect>
+      <text x="665" y="135" class="t-lab" text-anchor="middle">LVDT</text>
+      <text x="665" y="153" class="t-mono" text-anchor="middle">ΔL ± 0.05 µm</text>
+      <path class="s-ink" d="M600 138 L620 138"></path>
+      <path class="s-mut" d="M240 240 L240 258 M400 240 L400 258 M240 249 L400 249"></path>
+      <text x="320" y="274" class="t-mono" text-anchor="middle">L₀ = 10 mm</text>
+      <text x="730" y="274" class="t-mono" text-anchor="end">Ø4 × 10 mm solid, or Ø4/Ø3.4 hollow</text>
+    </svg>
+  </div>
+  <div class="pair">
+    <div>
+      <h3>What a DIL805A/D (TA Instruments, formerly Bähr) offers</h3>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Module</th><th>Range</th><th>Rates, load</th><th>Specimen</th></tr></thead>
+        <tbody>
+          <tr><td>Quenching, quartz head</td><td class="m">20–1000 °C</td><td class="m">heat 100 K/s, cool 100 K/s</td><td class="m">Ø4 × 10 solid</td></tr>
+          <tr><td>Quenching, alumina head</td><td class="m">20–1500 °C</td><td class="m">heat 1000 K/s, cool 400 K/s</td><td class="m">Ø4/Ø3.4 or Ø4/Ø3.6 × 10 hollow</td></tr>
+          <tr><td>Alpha (expansion coefficient)</td><td class="m">20–1000 °C</td><td class="m">quartz system</td><td class="m">as quenching</td></tr>
+          <tr><td>Sub-zero alpha</td><td class="m">−150 to 1300 °C</td><td class="m">quartz system</td><td class="m">hollow, bright and clean</td></tr>
+          <tr><td>Deformation (compression)</td><td class="m">20–1500 °C</td><td class="m">20 kN, 0–200 mm/s, ε̇ 0.001–20 s⁻¹, 0–70 %</td><td class="m">Ø5 × 10 solid, flat ends</td></tr>
+          <tr><td>Tension</td><td class="m">20–1500 °C</td><td class="m">10 kN, 0.01–10 mm/s</td><td class="m">round Ø5 × 10 gauge, or flat ≤ 2 mm thick</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">Resolution 0.05 µm and 0.05 °C in every module. The deformation and tension modules heat and cool at up to 100 °C/s. Values are from a DIL805A/D instrument deck summarised in Yuxiang's note. Check the configuration of the unit you book: heads, specimen holders and gas options vary between installations.</p>
+    </div>
+    <div>
+      <h3>Numbers that follow from these specifications</h3>
+      <ul class="tight">
+        <li>A 0.05 µm length step on a 10 mm specimen is a strain of 5 × 10⁻⁶. The full γ → α step in section 1 is a few hundred times larger, so the limit on a start temperature is noise and thermal gradients, not resolution.</li>
+        <li>The solid quartz configuration stops at 1000 °C, so the planned 950 °C austenitisation for sample-01 fits with a solid Ø4 × 10 mm specimen. Anything above 1000 °C needs the alumina head and a hollow specimen.</li>
+        <li>Hollow specimens cool faster because there is less metal to cool and gas can flow through the bore. That buys rate, but less mass also means a larger relative effect of the thermocouple and of surface decarburisation.</li>
+        <li>Kop et al. used two type-S thermocouples on a Bähr 805A/D, one to control power and one to check homogeneity along the specimen. They agreed within 10 K. Quartz push rods expand at about 0.5 × 10⁻⁶ K⁻¹, against about 10 × 10⁻⁶ K⁻¹ for steel.</li>
+        <li>The measured change contains the expansion of the push rods and holder as well as the specimen. Alpha mode removes it with a calibration run: <span class="m">L₀ = Lm − Ls</span>, measured minus system expansion.</li>
+      </ul>
+    </div>
+  </div>
+  <p class="note">Not every dilatometer works this way. The Adamel-Lhomargy DT 1000 used by García de Andrés's group heats Ø2 × 12 mm specimens with two tungsten-filament lamps in an elliptical reflector, measures through an amorphous silica push rod and LVDT to better than 0.1 µm, and quenches with a servo-controlled helium jet (Capdevila et al. 2003).</p>
+  <p class="callout p">The rates in the table are what the controller can command. Near rapid cooling and at the end of a quench, the measured temperature lags or overshoots the programme. Yuxiang's note asks for a sacrificial specimen first, to measure the real rate through the ferrite range, overshoot and settling at the hold, the gradient along the 10 mm length and the acquisition rate.</p>
+</section>
+
+<section id="volume">
+  <div class="eyebrow">3 · Where the length change comes from</div>
+  <h2>FCC and BCC iron pack each atom into a different volume</h2>
+  <p>Austenite is face-centred cubic with 4 iron atoms per cell, so each atom has a volume of a<sub>γ</sub>³/4. Ferrite is body-centred cubic with 2 atoms per cell, a<sub>α</sub>³/2. The difference is about one to two percent, and it depends on temperature and on the carbon dissolved in the austenite. For a specimen that changes volume equally in all directions, the length change is a third of the volume change: <span class="m">ΔL/L ≈ ΔV/3V</span>.</p>
+  <div class="grid2">
+    <div class="panel">
+      <canvas id="cvVol" aria-label="Volume per iron atom of austenite and ferrite against temperature"></canvas>
+      <div class="key">
+        <span style="--c:var(--tip)">austenite, at the chosen carbon</span>
+        <span class="dash" style="--c:var(--tip)">austenite, carbon-free</span>
+        <span style="--c:var(--ferrite)">ferrite</span>
+      </div>
+      <div class="controls">
+        <div class="ctl"><label for="sVT">Temperature <output id="oVT"></output></label><input type="range" id="sVT" min="300" max="950" step="5" value="700"></div>
+        <div class="ctl"><label for="sVC">Carbon in austenite <output id="oVC"></output></label><input type="range" id="sVC" min="0" max="0.8" step="0.01" value="0.431"></div>
+      </div>
+      <div class="stats">
+        <div><span>V per Fe atom, austenite</span><b id="rVg">–</b></div>
+        <div><span>V per Fe atom, ferrite</span><b id="rVa">–</b></div>
+        <div><span>ΔV/V, γ → α</span><b id="rdV">–</b></div>
+        <div><span>ΔL/L, γ → α</span><b id="rdL">–</b></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Handbook volume changes</h3>
+      <p class="note">ASM Handbook Vol. 4 (Table 3, from Thelning) gives the volume change for each transformation as a linear function of carbon. It states that linear changes are about one third of these.</p>
+      <div class="ctl"><label for="sTC">Carbon in the steel <output id="oTC"></output></label><input type="range" id="sTC" min="0.05" max="1.2" step="0.01" value="0.431"></div>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Transformation</th><th>Formula, %</th><th>ΔV/V</th><th>ΔL/L ≈</th></tr></thead>
+        <tbody id="thelning"></tbody>
+      </table></div>
+      <p class="note">At sample-01's 0.431 wt% C, martensite gives the largest volume change and upper bainite the smallest. These magnitudes are why a quench after a partial hold shows a second, larger expansion when the remaining austenite turns to martensite.</p>
+    </div>
+  </div>
+</section>
+
+<section id="lever">
+  <div class="eyebrow">4 · From length to fraction</div>
+  <h2>The lever rule is exact only if the austenite does not change while it shrinks</h2>
+  <p>The usual reading draws one tangent through the austenite line and one through the product line, and calls the transformed fraction the fraction of the way the curve has crossed from one to the other. That is correct when the product has one composition and the parent stays the same. Proeutectoid ferrite breaks the second condition. It rejects carbon into the remaining austenite, and the enriched austenite has a larger lattice than the tangent assumes.</p>
+  <div class="eq">f<sub>lever</sub>(T) = [L(T) − L<sub>γ</sub>(T)] / [L<sub>α+P</sub>(T) − L<sub>γ</sub>(T)]</div>
+  <div class="pair">
+    <div>
+      <h3>What goes wrong, and in which direction</h3>
+      <p>Carbon enrichment makes the remaining austenite bigger than the tangent predicts, so the specimen looks more expanded than its ferrite content alone would make it. The lever rule therefore reads too much ferrite during proeutectoid growth. The error disappears at the end, when no austenite is left, which is why the finish temperature is more reliable than the fraction curve in between. Section 1 shows the size of the error for the values you set.</p>
+    </div>
+    <div>
+      <h3>How the analysis is corrected</h3>
+      <p>The corrected methods compute the specimen length from the atomic volumes of each phase, with the austenite carbon updated by mass balance as ferrite forms, and solve for the fraction that reproduces the measured length. Pearlite is treated separately, as ferrite plus cementite formed from austenite of the composition it had when pearlite started. The correction is only as good as the lattice-parameter data, and it needs to know where pearlite starts, which comes from a change in slope or from metallography.</p>
+    </div>
+  </div>
+  <div class="eq">Kop et al.: f<sub>α</sub> = (V − V<sub>γ</sub>)/(V<sub>α</sub> − V<sub>γ</sub>) &nbsp;·&nbsp; f<sub>p</sub> = [V − V<sub>γ</sub> + f<sub>α</sub>(V<sub>γ</sub> − V<sub>α</sub>)]/(V<sub>p</sub> − V<sub>γ</sub>) &nbsp;·&nbsp; V = κV₀(3ΔL/L₀ + 1)</div>
+  <ul class="tight">
+    <li>V<sub>γ</sub> depends on the austenite carbon, which depends on f<sub>α</sub>, so the ferrite equation is solved iteratively. During pearlite f<sub>α</sub> is frozen and the austenite carbon is constant.</li>
+    <li>Pearlite is V<sub>p</sub> = (1 − ρ)V<sub>α</sub> + ρV<sub>θ</sub>, with ρ the cementite fraction. Cementite packs each iron atom into more volume than ferrite, so pearlite expands more than ferrite would. That is the second error in the lever rule.</li>
+    <li>κ scales the measured length to the calculated one, fitted before and after the transformation and varied linearly in between. It absorbs the push-rod contribution and transformation plasticity. Kop's κ were 1.004–1.008 on six C–Mn steels: the measured length change was always slightly smaller than calculated, and specimens came out shorter after a full cycle.</li>
+    <li>The switch from ferrite to pearlite is taken either where f<sub>α</sub> reaches its equilibrium value or at the second inflection point of L(T); the first inflection is the ferrite start. Kop preferred the inflection point, which is harder to see at high cooling rates.</li>
+    <li>Kop found the lever rule overestimates ferrite by up to 25 % (relative), with the largest error at the start of transformation and more error at higher carbon.</li>
+  </ul>
+  <p class="callout">Three conditions sit under any fraction read from a dilatometer: the strain is isotropic, so the length is a third of the volume; the specimen has one temperature along its gauge length; and the products are known. Mn banding in a 1.9 wt% Mn steel can break the first, fast induction cycles the second, and overlapping ferrite, Widmanstätten, bainite and pearlite strains the third.</p>
+</section>
+
+<section id="start">
+  <div class="eyebrow">5 · Start temperatures</div>
+  <h2>Where the curve leaves the line depends on how you look</h2>
+  <p>A start temperature is where the curve first departs from the parent tangent. With real noise, "first" depends on the observer. Yang and Bhadeshia (2007) showed that judging the departure by eye gave Ms values with a standard deviation of 43 °C on one Fe–0.13C–2.3Mn–4Ni steel, measured on a DIL805 with Ø4 × 7 mm specimens cooled at 3.2–330 °C/s. The offset method fixes the criterion: draw a line parallel to the austenite tangent, offset by the strain that a chosen fraction of product would cause, and take the temperature where the curve crosses it. With a 1 vol% offset the scatter fell to 12 °C.</p>
+  <div class="grid2">
+    <div class="panel">
+      <canvas id="cvOff" aria-label="Zoomed dilatometer trace with offset line and detected start temperatures"></canvas>
+      <div class="key">
+        <span style="--c:var(--ink)">one noisy trace</span>
+        <span class="dash" style="--c:var(--tip)">austenite tangent</span>
+        <span class="dash" style="--c:var(--carbon)">offset line</span>
+        <span style="--c:var(--ferrite)">detected starts, 40 traces</span>
+      </div>
+      <div class="controls">
+        <div class="ctl"><label for="sOf">Offset, as fraction transformed <output id="oOf"></output></label><input type="range" id="sOf" min="0.05" max="5" step="0.05" value="1"></div>
+        <div class="ctl"><label for="sNz">Noise, rms strain <output id="oNz"></output></label><input type="range" id="sNz" min="0" max="8" step="0.05" value="1.65"></div>
+      </div>
+      <div class="stats">
+        <div><span>Offset strain</span><b id="rOs">–</b></div>
+        <div><span>Mean detected start</span><b id="rOm">–</b></div>
+        <div><span>Scatter, 1σ</span><b id="rOsd">–</b></div>
+        <div><span>False starts in the austenite</span><b id="rOfa">–</b></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>What the method buys and costs</h3>
+      <ul class="tight">
+        <li>The offset must sit well above the noise. Yang and Bhadeshia found an rms noise of 1.65 × 10⁻⁵ strain in the austenite fit, and their 1 vol% offset was roughly ten times larger.</li>
+        <li>A smaller offset reads a higher start temperature but triggers on noise. Their mean Ms rose from 373 °C at 1 % to 419 °C at 0.08 %.</li>
+        <li>An Ms quoted without its offset is incomplete. Quote the fraction it corresponds to.</li>
+        <li>The same idea applies to ferrite and to Ac1 on heating: define the start as a fixed small fraction, such as the 1 % and 99 % used for start and finish in ASM Vol. 4.</li>
+        <li>For Ms, Yang and Bhadeshia found that taking the derivative does not help. For ferrite followed by pearlite, Kop used inflection points of L(T) to find where pearlite takes over. Either way the derivative amplifies noise and needs smoothing.</li>
+        <li>The offset for 1 vol% comes from the lattice parameters of austenite and martensite (their Eqs. 2–4). For their steel it is 1.21 × 10⁻⁴. The paper's text says 1.21 × 10⁻³, which is a typo: the table and the equations both give 10⁻⁴. For sample-01 the same equations give 1.12 × 10⁻⁴ at 1 vol%, about 1.1 µm on a 10 mm specimen, against a 0.05 µm resolution.</li>
+      </ul>
+      <p class="note">The trace uses the austenite expansivity Yang and Bhadeshia measured (2.43 × 10⁻⁵ °C⁻¹), the full γ → α′ strain for sample-01 and a Koistinen–Marburger product curve. The 380 °C start is arbitrary. The noise default is the value Yang and Bhadeshia measured on a DIL805. Notice that noise alone moves the 1 % start by well under a degree. Their 12 °C scatter came from specimen to specimen, which they attributed to temperature non-uniformity and to the austenite grain structure.</p>
+    </div>
+  </div>
+</section>
+
+<section id="heating">
+  <div class="eyebrow">6 · Heating</div>
+  <h2>On heating the specimen shrinks, first as pearlite dissolves, then as ferrite does</h2>
+  <p>Switch section 1 to heating. Austenite forms first from pearlite at Ac1, with a short steep contraction, then from proeutectoid ferrite up to Ac3. The measured Ac1 and Ac3 sit above the equilibrium Ae1 and Ae3 by an amount that grows with heating rate, which is why ASM Vol. 4 notes that continuous diagrams are delayed relative to isothermal ones, whether heating or cooling. A true isothermal diagram needs a very fast heating rate to the hold.</p>
+  <div class="pair">
+    <div>
+      <h3>The start structure matters as much as the rate</h3>
+      <p>In Xie Yi's report on two 0.25C–2.5Mn–1.4Si steels, tempering the quenched structure before heating raised Ac1 by 23–25 °C and Ac3 by 14–16 °C. The cause given is the carbide state and Cr and Mn partitioning. Those numbers belong to those steels and do not transfer to sample-01. The point is the method: measure Ac1 and Ac3 from the state you will actually start from.</p>
+    </div>
+    <div>
+      <h3>Two things that distort a heating curve</h3>
+      <ul class="tight">
+        <li>Ferromagnetic ferrite heats more easily by induction, so the heating power drops at the Curie temperature. Kop used that drop as a check on the thermocouple, with T<sub>C</sub> = 1042 K − 1500 K × w<sub>Mn</sub>. For sample-01 it gives about 740 °C, right next to Ae3 at 745 °C, so the power change overlaps the end of ferrite dissolution. Their steels had at most 0.72 wt% Mn, so this is an extrapolation.</li>
+        <li>Cementite in coarse pearlite may not dissolve by Ac3. Finishing above Ac3 does not guarantee homogeneous austenite. The 950 °C / 10 min austenitisation is about 200 K above Ae3 to make that likely.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="isothermal">
+  <div class="eyebrow">7 · Isothermal holds</div>
+  <h2>A hold turns the dilatometer into a clock</h2>
+  <p>Quench from 950 °C to a hold temperature fast enough that nothing forms on the way, then record length against time. At constant temperature the parent and product tangents are flat, so the length change is directly proportional to the transformed fraction, apart from the carbon-enrichment term. Ferrite at 640 °C in sample-01 stops short of full transformation. The plateau is set by how much carbon the austenite can take, and with 1.92 wt% Mn that limit is between the paraequilibrium and the full-equilibrium values. That is the question of the <a href="ple-nple.html">PLE, NPLE and paraequilibrium lesson</a>.</p>
+  <div class="grid2">
+    <div class="panel">
+      <canvas id="cvIso" aria-label="Transformed fraction against log time at the hold temperature"></canvas>
+      <div class="key">
+        <span style="--c:var(--ferrite)">transformed fraction, JMAK form</span>
+        <span class="dash" style="--c:var(--muted)">planned interruptions</span>
+      </div>
+      <div class="controls">
+        <div class="ctl"><label for="sIn">Avrami exponent n <output id="oIn"></output></label><input type="range" id="sIn" min="0.5" max="4" step="0.1" value="1.5"></div>
+        <div class="ctl"><label for="sIt">Time to half of the plateau <output id="oIt"></output></label><input type="range" id="sIt" min="0" max="3.5" step="0.05" value="1.5"></div>
+        <div class="ctl"><label for="sIf">Plateau ferrite fraction <output id="oIf"></output></label><input type="range" id="sIf" min="0.1" max="0.6" step="0.01" value="0.4"></div>
+      </div>
+      <div class="stats">
+        <div><span>Start, 1 % of plateau</span><b id="rI1">–</b></div>
+        <div><span>Finish, 99 % of plateau</span><b id="rI99">–</b></div>
+        <div><span>Length step at the plateau</span><b id="rIL">–</b></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Reading a hold</h3>
+      <ul class="tight">
+        <li>The JMAK form f = f<sub>max</sub>[1 − exp(−k tⁿ)] is a fitting curve here. The exponent and time scale are sliders, not values for sample-01.</li>
+        <li>The interruptions at 10 s, 30 s, 2 min and 10 min are the ones planned for sample-01. Each is quenched, so the remaining austenite becomes martensite and the specimen records the ferrite at that moment for metallography or EBSD.</li>
+        <li>A dilatometer sees how much product formed, not what shape it has. Allotriomorphic ferrite, primary and secondary Widmanstätten plates and bainitic ferrite all give the same kind of expansion. Separating them needs the interrupted specimens, which is where your in-situ confocal and EBSD work comes in. See <a href="widmanstatten-transition.html">Planar to Widmanstätten Ferrite</a>.</li>
+        <li>Capdevila, Caballero and García de Andrés (2003) measured allotriomorphic and idiomorphic ferrite separately in a 0.37C–1.45Mn steel by point counting, and concluded that treating proeutectoid ferrite as one reaction in a dilatometric analysis "might lead to wrong conclusions".</li>
+        <li>A change in rate partway through a hold, visible as a kink in log time, can mark a new product taking over. Use it to choose interruption times rather than as evidence of a morphology change on its own.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="stress">
+  <div class="eyebrow">8 · Under load</div>
+  <h2>Deformation and tension modules let you transform steel under stress</h2>
+  <p>The DIL805A/D can compress a specimen at up to 20 kN or pull it at up to 10 kN, before or during a thermal cycle, while still recording length. That opens two kinds of experiment. You can deform the austenite first and then watch how it transforms, which is how hot rolling is simulated. Or you can hold a stress while the transformation happens, and see how the stress changes the start temperature and the strain.</p>
+  <div class="grid2">
+    <div class="panel">
+      <canvas id="cvStress" aria-label="Axial and diametral strain through the martensite transformation of 60NCD11 steel under applied stress"></canvas>
+      <div class="key">
+        <span style="--c:var(--ink)">axial strain</span>
+        <span class="dash" style="--c:var(--carbon)">diametral strain</span>
+        <span style="--c:var(--muted)">zero stress, for comparison</span>
+      </div>
+      <div class="controls">
+        <div class="ctl"><label for="sSg">Applied stress, compression to tension <output id="oSg"></output></label><input type="range" id="sSg" min="-285" max="285" step="5" value="150"></div>
+      </div>
+      <div class="stats">
+        <div><span>Shift in Ms</span><b id="rSMs">–</b></div>
+        <div><span>Transformation plasticity, axial</span><b id="rSTp">–</b></div>
+        <div><span>Axial minus diametral</span><b id="rSAn">–</b></div>
+      </div>
+      <p class="note">Denis et al. (1985) model for 60NCD11 (0.57C–0.65Mn–2.35Ni–0.41Mo): Ms 247 °C, austenite expansivity 21.4 × 10⁻⁶ K⁻¹, Koistinen–Marburger fraction m = 1 − exp[−0.011(Ms − T)], transformation strain k′m with k′ = 1.11 × 10⁻², transformation plasticity Kσ(2 − m)m with K = 5.2 × 10⁻⁵ MPa⁻¹, and ΔMs = Aσ<sub>m</sub> + Bσ<sub>e</sub> with A = 0.05 and B = 0.0333 K/MPa. The diameter follows from plastic incompressibility. The slider stops at 285 MPa, about the austenite yield stress, where their linear results end.</p>
+    </div>
+    <div class="panel">
+      <h3>Three effects of stress</h3>
+      <ul class="tight">
+        <li><b>Ms moves.</b> Tension raises Ms by about 0.05 K/MPa in 60NCD11, and hydrostatic pressure lowers it by about the same (−0.05 K/MPa measured on Fe–0.5C). Compression also raises Ms, by less, because the transformation shear dominates the dilatation (γ₀ ≈ 0.19 against ε₀ ≈ 0.03). A shear stress that suits a variant does mechanical work towards the transformation, so less chemical driving force is needed.</li>
+        <li><b>Transformation plasticity.</b> A permanent strain builds up while the transformation runs, under a stress below the yield stress of either phase. It is linear in stress up to the austenite yield stress, so the axial strain overshoots the stress-free curve while the diameter shrinks. Two mechanisms are proposed. Greenwood–Johnson: the weaker phase yields locally to accommodate the volume change, biased by the stress, giving ε<sub>pt</sub> = (5/6)(σ/Y)(ΔV/V). Magee: the stress selects favourable variants, so their shape strains add up instead of cancelling. Denis et al. found 60NCD11 closer to Greenwood–Johnson.</li>
+        <li><b>Diffusional reactions start sooner or later.</b> Uniaxial tension or compression shortens the incubation of ferrite and pearlite, and hydrostatic pressure prolongs it and lowers A1 and A3.</li>
+        <li><b>Removing the stress can stop the reaction.</b> In interrupted tensile tests, martensite stopped forming when the load came off, and further cooling was needed to restart it.</li>
+      </ul>
+      <p class="callout c">With a stress applied, length is no longer a third of volume. The axial and diametral strains split apart, so a fraction from length alone is wrong. Measuring the diameter as well, using the optical channel shown in the DIL805 deck, lets you recover volume as ε<sub>V</sub> ≈ ε<sub>axial</sub> + 2ε<sub>diam</sub>.</p>
+    </div>
+  </div>
+  <div class="eq">Δg<sub>mech</sub> = σ<sub>n</sub>·δ + τ·s &nbsp;&nbsp;→&nbsp;&nbsp; uniaxial σ<sub>a</sub>: Δg<sub>mech</sub> = σ<sub>a</sub>(δ sin²χ₀ + s sin χ₀ cos λ₀)</div>
+  <p class="note">Patel and Cohen's work term, as written by Christian (§91); Denis et al. give the matching dMs/dσ = ½[γ₀ sin 2θ ± ε₀(1 + cos 2θ)]/(dΔG/dT), + for tension. σ<sub>n</sub> and τ are the stress components normal to and along the habit plane; δ and s are the dilatation and shear of the invariant-plane strain; χ₀ and λ₀ are the angles from the specimen axis to the habit plane and to the shape-strain direction. The variant with the largest Δg<sub>mech</sub> forms first, like Schmid's law for slip. Ms rises roughly linearly with stress because the chemical driving force is roughly linear in temperature. Uniaxial compression also raises Ms, by less than tension, because the dilatation δ then works against it.</p>
+  <div class="defs">
+    <div><b>Stress-assisted martensite</b><p>Above Ms, an elastic stress supplies the missing driving force and martensite nucleates on the existing sites. The start temperature rises with stress.</p></div>
+    <div><b>Strain-induced martensite</b><p>Above a certain temperature, the stress needed exceeds the austenite yield stress. Plastic strain then creates new nucleation sites, such as shear-band intersections, and martensite forms up to a limit called Md. Christian notes that one favoured variant then dominates, instead of the self-accommodating groups seen without stress.</p></div>
+    <div><b>Deform, then transform</b><p>Compress the austenite at a set temperature and strain rate, then cool. Dislocations and deformation bands add ferrite nucleation sites. Compare the transformation start with an undeformed specimen to measure the effect.</p></div>
+    <div><b>Minimum load matters</b><p>Even in the quenching module the push rods press on the specimen. That small load can cause transformation plasticity on its own. Use the minimum contact load the instrument allows, and keep it the same between runs.</p></div>
+  </div>
+  <p class="note">Yuxiang's note keeps deformation out of the first campaign until the undeformed baseline is established. It is the natural second step if prior-austenite deformation turns out to change the Widmanstätten start.</p>
+</section>
+
+<section id="sample01">
+  <div class="eyebrow">9 · Worked plan</div>
+  <h2>Sample-01 on the DIL805: austenitise, quench to the hold, interrupt</h2>
+  <div class="panel"><canvas id="cvPlan" aria-label="Planned temperature-time schedule for sample-01"></canvas>
+  <p class="note">The heating ramp and the quench to 640 °C are drawn at placeholder rates. Set them from the first full cooling curve. The shaded band is the range of the two Ms estimates.</p></div>
+  <div class="pair">
+    <div>
+      <h3>The numbers the schedule is built on</h3>
+      <div class="tablewrap"><table>
+        <tbody>
+          <tr><td>Composition, wt%</td><td class="m">Fe–0.431C–1.92Mn–0.038Si</td></tr>
+          <tr><td>Ae3 / PE Ae3 (TCFE14)</td><td class="m">745 / 720 °C</td></tr>
+          <tr><td>Cementite onset / Ae1 (TCFE14)</td><td class="m">699 / 683 °C</td></tr>
+          <tr><td>Ws, Bhadeshia criterion</td><td class="m">670 °C ± 20 K</td></tr>
+          <tr><td>WBs, Leach et al. 2019</td><td class="m">609 °C</td></tr>
+          <tr><td>Bs, TC Bainite model</td><td class="m">614 °C</td></tr>
+          <tr><td>Ms, Steven &amp; Haynes</td><td class="m">393 °C (Mn above its 1.7 % range)</td></tr>
+          <tr><td>Ms, Andrews 1965 nonlinear</td><td class="m">298 °C</td></tr>
+          <tr><td>Austenitise</td><td class="m">950 °C, 10 min</td></tr>
+          <tr><td>Hold</td><td class="m">640 °C (bracket 620, 650)</td></tr>
+          <tr><td>Interruptions</td><td class="m">10 s, 30 s, 2 min, 10 min</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div>
+      <h3>What to check on the dilatometer</h3>
+      <ul class="tight">
+        <li>Run a full cooling curve first, at the cooling rate you will use to reach 640 °C. If the trace leaves the austenite tangent before 640 °C, ferrite formed on the way and the hold is not isothermal from the start.</li>
+        <li>Measure Ac1 and Ac3 on the heating ramp of every run. They confirm the start structure and show whether 950 °C is safely austenitic.</li>
+        <li>Record the overshoot and settling time at 640 °C. A 10 s interruption is meaningless if the hold takes several seconds to settle.</li>
+        <li>On each final quench, read the martensite expansion. Its size gives the austenite left at the interruption, an independent check on the ferrite fraction.</li>
+        <li>Measure Ms with the offset method on the final quench. The two handbook formulas disagree by 95 K for this steel, so the dilatometer is the only reliable number.</li>
+        <li>Keep the full time, temperature and length data, not only the extracted temperatures.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="pitfalls">
+  <div class="eyebrow">10 · Checklist</div>
+  <h2>Most bad dilatometry is bad temperature, not bad length</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Problem</th><th>What you see</th><th>What to do</th></tr></thead>
+    <tbody>
+      <tr><td>Temperature gradient along the specimen</td><td>Transformations smeared over a wider range on fast cycles</td><td>Measure it with a second thermocouple on a dummy; hollow specimens reduce it</td></tr>
+      <tr><td>Thermocouple lag or poor weld</td><td>Heating and cooling curves offset; noisy control</td><td>Re-weld; compare a pure-iron or known-standard Ac3</td></tr>
+      <tr><td>System expansion not subtracted</td><td>Wrong expansion coefficients</td><td>Alpha-mode calibration, L₀ = Lm − Ls</td></tr>
+      <tr><td>Anisotropic strain</td><td>Length and diameter disagree; fractions above 1 or below 0</td><td>Measure diameter too; keep the rolling direction of the specimen on record</td></tr>
+      <tr><td>Mn banding</td><td>Two-stage transformation; ferrite forms first in the low-Mn bands</td><td>Section and etch; compare with homogenised material</td></tr>
+      <tr><td>Decarburisation or oxidation</td><td>Ferrite rim; Ar3 rising from run to run</td><td>Vacuum or clean inert gas; metallography of the surface</td></tr>
+      <tr><td>Push-rod load</td><td>Extra strain during transformation</td><td>Minimum contact load, the same in every run</td></tr>
+      <tr><td>Overlapping products</td><td>One smooth step with no clear kink</td><td>First derivative, interrupted quenches, metallography</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="refs">
+  <div class="eyebrow">Sources</div>
+  <ol class="refs">
+    <li>DIL805A/D instrument introduction (杜鹏举, 邓彪, 刘连骞, 薛文颖), in Y. Wu, DIL805A/D capability and workflow extraction, 2026-08-01. Module specifications, specimen geometries, calibration questions.</li>
+    <li>ASM Handbook Vol. 4, Heat Treating, "Principles of Heat Treating of Steels". Table 3 volume changes (from K.-E. Thelning, Steel and Its Heat Treatment, 2nd ed., 1984); IT and CHT diagrams by dilatometry; stress effects, Fig. 24.</li>
+    <li>H.-S. Yang, H. K. D. H. Bhadeshia, Uncertainties in the dilatometric determination of martensite start temperature, Mater. Sci. Technol. 23 (2007) 556–560.</li>
+    <li>S. Denis, E. Gautier, A. Simon, G. Beck, Stress–phase-transformation interactions: basic principles, modelling and calculation of internal stresses, Mater. Sci. Technol. 1 (1985) 805–814.</li>
+    <li>C. Capdevila, F. G. Caballero, C. García de Andrés, Competition between allotriomorphic and idiomorphic ferrite transformation kinetics, TMS 2003.</li>
+    <li>Xie Yi, semester report on carbide dissolution and austenite reversion, via ref. 1. Ac1 and Ac3 of tempered and quenched states.</li>
+    <li>Sample-01 thermodynamics: Thermo-Calc 2026a, TCFE14, your thermocalc/sample-01 runs; Ws and Bs estimates as in ws_estimates.md.</li>
+    <li>J. W. Christian, The Theory of Transformations in Metals and Alloys, Part II, §91 (stress-assisted and strain-induced martensite) and eq. 98.4 (D. P. Koistinen, R. E. Marburger, Acta Metall. 7 (1959) 59). M. R. Patel, M. Cohen, Acta Metall. 1 (1953) 531, cited through Christian.</li>
+    <li>Ms formulas: Steven &amp; Haynes, in Atlas of Time-Temperature Diagrams (valid 0.1–0.55 C, 0.2–1.7 Mn); K. W. Andrews, JISI 203 (1965) 721, nonlinear form as given in ASM Vol. 4.</li>
+    <li>M. Kop, J. Sietsma, S. van der Zwaag, Dilatometric analysis of phase transformations in hypo-eutectoid steels, J. Mater. Sci. 36 (2001) 519–526. Table I lattice parameters, after M. Onink et al., Scripta Metall. Mater. 29 (1993) 1011 (α, γ) and H. Stuart, N. Ridley, JISI 204 (1966) 711 (θ); Onink was not read directly.</li>
+  </ol>
+</section>
+</div>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function fit(c,aspect,minH){const w=c.clientWidth||300;let h=Math.round(w*aspect);if(minH)h=Math.max(h,minH);const r=window.devicePixelRatio||1;c.width=w*r;c.height=h*r;c.style.height=h+'px';const x=c.getContext('2d');x.setTransform(r,0,0,r,0,0);return {x,w,h}}
+const sup=s=>String(s).replace('-','⁻').replace(/\d/g,d=>'⁰¹²³⁴⁵⁶⁷⁸⁹'[d]);
+function sci(v,d=2){if(!isFinite(v)||v===0)return '0';const e=Math.floor(Math.log10(Math.abs(v)));return (v/10**e).toFixed(d)+'×10'+sup(e)}
+function fmtT(t){if(t<120)return t.toPrecision(3)+' s';if(t<7200)return (t/60).toPrecision(3)+' min';return (t/3600).toPrecision(3)+' h'}
+function ticks(a,b,n){const span=Math.abs(b-a),raw=span/n,p=10**Math.floor(Math.log10(raw)),m=raw/p,st=(m<1.5?1:m<3.5?2:m<7.5?5:10)*p,lo=Math.ceil(Math.min(a,b)/st)*st,out=[];for(let v=lo;v<=Math.max(a,b)+st*1e-9;v+=st)out.push(+v.toPrecision(12));return out}
+/* Generic plot frame: returns mappers and draws axes */
+function frame(c,o){
+  const {x,w,h}=fit(c,o.aspect||0.6,o.minH||220);
+  const L=o.padL||56,R=12,T=10,B=o.padB||40;
+  const X=v=>o.logx?L+(Math.log10(v)-Math.log10(o.xr[0]))/(Math.log10(o.xr[1])-Math.log10(o.xr[0]))*(w-L-R):L+(v-o.xr[0])/(o.xr[1]-o.xr[0])*(w-L-R);
+  const Y=v=>T+(o.yr[1]-v)/(o.yr[1]-o.yr[0])*(h-T-B);
+  x.clearRect(0,0,w,h);
+  x.font='12px '+css('--body');x.lineWidth=1;
+  const ink=css('--ink'),mut=css('--muted'),rule=css('--rule');
+  const xt=o.logx?o.logTicks:ticks(o.xr[0],o.xr[1],Math.max(3,Math.round(w/90)));
+  const yt=ticks(o.yr[0],o.yr[1],Math.max(3,Math.round(h/55)));
+  x.strokeStyle=rule;x.fillStyle=mut;x.textAlign='center';x.textBaseline='top';
+  xt.forEach(v=>{const px=X(v);x.globalAlpha=.6;x.beginPath();x.moveTo(px,T);x.lineTo(px,h-B);x.stroke();x.globalAlpha=1;x.fillText(o.xfmt?o.xfmt(v):v,px,h-B+6)});
+  x.textAlign='right';x.textBaseline='middle';
+  yt.forEach(v=>{const py=Y(v);x.globalAlpha=.6;x.beginPath();x.moveTo(L,py);x.lineTo(w-R,py);x.stroke();x.globalAlpha=1;x.fillText(o.yfmt?o.yfmt(v):v,L-6,py)});
+  x.strokeStyle=mut;x.beginPath();x.moveTo(L,T);x.lineTo(L,h-B);x.lineTo(w-R,h-B);x.stroke();
+  x.fillStyle=mut;x.textAlign='center';x.textBaseline='bottom';x.fillText(o.xlab,(L+w-R)/2,h-2);
+  x.save();x.translate(12,(T+h-B)/2);x.rotate(-Math.PI/2);x.textBaseline='middle';x.fillText(o.ylab,0,0);x.restore();
+  return {x,w,h,X,Y,L,R,T,B,ink,mut};
+}
+function line(f,xs,ys,col,wd,dash){const x=f.x;x.save();x.beginPath();x.rect(f.L,f.T,f.w-f.L-f.R,f.h-f.T-f.B);x.clip();x.strokeStyle=col;x.lineWidth=wd||1.8;x.setLineDash(dash||[]);x.beginPath();let s=false;for(let i=0;i<xs.length;i++){if(!isFinite(ys[i])){s=false;continue}const px=f.X(xs[i]),py=f.Y(ys[i]);s?x.lineTo(px,py):x.moveTo(px,py);s=true}x.stroke();x.restore()}
+function vmark(f,v,col,lab){const x=f.x;const px=f.X(v);if(px<f.L||px>f.w-f.R)return;x.save();x.strokeStyle=col;x.setLineDash([2,3]);x.lineWidth=1;x.beginPath();x.moveTo(px,f.T);x.lineTo(px,f.h-f.B);x.stroke();if(lab){x.fillStyle=col;x.font='11px '+css('--mono');x.textAlign='left';x.textBaseline='top';x.fillText(lab,px+3,f.T+2)}x.restore()}
+
+/* ---------- Lattice-parameter model: Kop, Sietsma & van der Zwaag 2001, Table I (after Onink et al. 1993; Stuart & Ridley 1966 for cementite) ----------
+   Å, T in K, x = atom fraction C. Valid: α 800–1200 K; γ 1000–1250 K, 0.0005 < x < 0.0365; θ 300–1000 K. Outside these the lines are extrapolated. */
+const LP={
+  aA:(TK)=>2.8863*(1+17.5e-6*(TK-800)),
+  aG:(TK,x)=>(3.6306+0.78*x)*(1+(24.9-50*x)*1e-6*(TK-1000)),
+  Vth:(TK)=>{const k=1+(5.311e-6-1.942e-9*TK+9.655e-12*TK*TK)*(TK-293);return 4.5234*5.0883*6.7426*k**3/12}
+};
+const Va=T=>LP.aA(T+273.15)**3/2, Vg=(T,y)=>{const x=y/(1+y);return LP.aG(T+273.15,x)**3/4}, Vc=T=>LP.Vth(T+273.15);
+/* sample-01: carbon atoms per metal atom from x_C = 0.01972 (run_log) */
+const XC=0.01972, Y0=XC/(1-XC);
+const wtFromY=y=>{const x=y/(1+y);return 100*x*12.011/(x*12.011+(1-x)*55.6)};
+const ss=u=>u<=0?0:u>=1?1:u*u*(3-2*u);
+
+let mode='cool';
+function states(){
+  const T=[],L=[],fa=[],fp=[],yg=[];
+  if(mode==='cool'){
+    const Fs=+$('sFs').value,faP=+$('sFa').value,Ps=Math.min(+$('sPs').value,Fs-2),Pf=Ps-(+$('sPw').value);
+    const yP=Y0/(1-faP),phi=3*yP;
+    for(let t=950;t>=400;t-=1){
+      let a=0,p=0;
+      if(t<Fs){const u=Math.min(1,(Fs-t)/(Fs-Ps));a=faP*(1-(1-u)**2)}
+      if(t<Ps){p=(1-faP)*ss((Ps-t)/(Ps-Pf))}
+      const g=1-a-p;
+      T.push(t);fa.push(a);fp.push(p);
+      const yy=a<1e-12&&p<1e-12?Y0:(p>0?yP:Y0/(1-a));yg.push(yy);
+      L.push(g*Vg(t,yy)+(a+p*(1-phi))*Va(t)+p*phi*Vc(t));
+    }
+    return {T,L,fa,fp,yg,Fs,Ps,Pf,faP,yP};
+  }else{
+    const Ac1=+$('sAc1').value,Ac3=Math.max(+$('sAc3').value,Ac1+15),faP=+$('sFa2').value,dP=10;
+    const yP=Y0/(1-faP),phi=3*yP;
+    for(let t=400;t<=950;t+=1){
+      let a=faP,p=1-faP;
+      if(t>Ac1)p=(1-faP)*(1-ss((t-Ac1)/dP));
+      if(t>Ac1+dP)a=faP*(1-Math.min(1,(t-Ac1-dP)/(Ac3-Ac1-dP))**0.7);
+      const g=1-a-p,yy=g>1e-9?(Y0-p*yP)/g:yP;
+      T.push(t);fa.push(a);fp.push(p);yg.push(yy);
+      L.push(g*Vg(t,yy)+(a+p*(1-phi))*Va(t)+p*phi*Vc(t));
+    }
+    return {T,L,fa,fp,yg,Fs:Ac3,Ps:Ac1+dP,Pf:Ac1,faP,yP,Ac1,Ac3};
+  }
+}
+function linfit(xs,ys){let n=xs.length,sx=0,sy=0,sxx=0,sxy=0;for(let i=0;i<n;i++){sx+=xs[i];sy+=ys[i];sxx+=xs[i]*xs[i];sxy+=xs[i]*ys[i]}const m=(n*sxy-sx*sy)/(n*sxx-sx*sx);return {m,c:(sy-m*sx)/n}}
+function drawCurve(){
+  const S=states();
+  const V0=(()=>{const faP=S.faP,yP=Y0/(1-faP),phi=3*yP;return (faP+(1-faP)*(1-phi))*Va(25)+(1-faP)*phi*Vc(25)})();
+  const e=S.L.map(v=>((v/V0)**(1/3)-1)*100);
+  // tangents
+  const gi=[],gv=[],pi=[],pv=[];
+  S.T.forEach((t,i)=>{if(t>S.Fs+15)(gi.push(t),gv.push(e[i]));if(t<S.Pf-15&&t>S.Pf-135)(pi.push(t),pv.push(e[i]))});
+  const tg=linfit(gi,gv),tp=linfit(pi,pv);
+  const eg=S.T.map(t=>tg.m*t+tg.c),ep=S.T.map(t=>tp.m*t+tp.c);
+  const fl=S.T.map((t,i)=>Math.max(-.1,Math.min(1.1,(e[i]-eg[i])/(ep[i]-eg[i]))));
+  const ft=S.T.map((t,i)=>S.fa[i]+S.fp[i]);
+  const ymin=Math.min(...e),ymax=Math.max(...e),pad=(ymax-ymin)*.08;
+  const f=frame($('cvCurve'),{xr:[400,950],yr:[ymin-pad,ymax+pad],xlab:'Temperature (°C)',ylab:'ΔL/L₀ (%)',aspect:.58,yfmt:v=>v.toFixed(1)});
+  [[745,'Ae3'],[699,''],[683,'Ae1']].forEach(([v,l])=>vmark(f,v,f.mut,l));
+  vmark(f,720,css('--ple'),'');
+  line(f,S.T,eg,css('--tip'),1.4,[6,4]);line(f,S.T,ep,css('--ferrite'),1.4,[6,4]);line(f,S.T,e,f.ink,2.2);
+  const g=frame($('cvFrac'),{xr:[400,950],yr:[0,1],xlab:'Temperature (°C)',ylab:'Fraction',aspect:.3,minH:150,yfmt:v=>v.toFixed(1)});
+  // stacked fill
+  const x=g.x;x.save();x.beginPath();x.rect(g.L,g.T,g.w-g.L-g.R,g.h-g.T-g.B);x.clip();
+  x.globalAlpha=.35;x.fillStyle=css('--ferrite');x.beginPath();x.moveTo(g.X(S.T[0]),g.Y(0));S.T.forEach((t,i)=>x.lineTo(g.X(t),g.Y(S.fa[i])));x.lineTo(g.X(S.T.at(-1)),g.Y(0));x.fill();
+  x.fillStyle=css('--ple');x.beginPath();S.T.forEach((t,i)=>{const px=g.X(t),py=g.Y(S.fa[i]+S.fp[i]);i?x.lineTo(px,py):x.moveTo(px,py)});for(let i=S.T.length-1;i>=0;i--)x.lineTo(g.X(S.T[i]),g.Y(S.fa[i]));x.fill();x.restore();
+  line(g,S.T,ft,css('--ferrite'),1.6);line(g,S.T,fl,g.ink,1.8,[5,3]);
+  // stats
+  let err=0;S.T.forEach((t,i)=>{if(t<S.Fs+15&&t>S.Pf-15){const d=fl[i]-ft[i];if(Math.abs(d)>Math.abs(err))err=d}});
+  const i0=S.T.findIndex(t=>Math.round(t)===Math.round(mode==='cool'?S.Fs+10:S.Pf-10));
+  const step=Math.abs(ep[i0]-eg[i0]);
+  $('rStep').textContent=step.toFixed(3)+' %';
+  $('rStepUm').textContent=(step/100*10000).toFixed(1)+' µm';
+  $('rErr').textContent=(err>=0?'+':'')+(err*100).toFixed(1)+' points';
+  $('rCg').textContent=wtFromY(S.yP).toFixed(2)+' wt% C';
+}
+function syncCurve(){
+  $('oFs').textContent=$('sFs').value+' °C';$('oFa').textContent=(+$('sFa').value).toFixed(2);
+  $('oPs').textContent=Math.min(+$('sPs').value,+$('sFs').value-2)+' °C';$('oPw').textContent=$('sPw').value+' °C';
+  $('oAc1').textContent=$('sAc1').value+' °C';$('oAc3').textContent=Math.max(+$('sAc3').value,+$('sAc1').value+15)+' °C';$('oFa2').textContent=(+$('sFa2').value).toFixed(2);
+  drawCurve();
+}
+['sFs','sFa','sPs','sPw','sAc1','sAc3','sFa2'].forEach(id=>$(id).addEventListener('input',syncCurve));
+function setMode(m){mode=m;$('modeCool').setAttribute('aria-pressed',m==='cool');$('modeHeat').setAttribute('aria-pressed',m==='heat');$('ctlCool').hidden=m!=='cool';$('ctlHeat').hidden=m!=='heat';syncCurve()}
+$('modeCool').onclick=()=>setMode('cool');$('modeHeat').onclick=()=>setMode('heat');
+
+/* ---------- atomic volume ---------- */
+function drawVol(){
+  const Tc=+$('sVT').value,wc=+$('sVC').value;
+  const x=(wc/12.011)/(wc/12.011+(100-wc)/55.6),y=x/(1-x);
+  $('oVT').textContent=Tc+' °C';$('oVC').textContent=wc.toFixed(2)+' wt%';
+  const Ts=[];for(let t=300;t<=950;t+=5)Ts.push(t);
+  const g=Ts.map(t=>Vg(t,y)),g0=Ts.map(t=>Vg(t,0)),a=Ts.map(t=>Va(t));
+  const all=[...g,...g0,...a],lo=Math.min(...all),hi=Math.max(...all),p=(hi-lo)*.1;
+  const f=frame($('cvVol'),{xr:[300,950],yr:[lo-p,hi+p],xlab:'Temperature (°C)',ylab:'Volume per Fe atom (Å³)',aspect:.55,yfmt:v=>v.toFixed(2)});
+  line(f,Ts,g0,css('--tip'),1.4,[5,4]);line(f,Ts,g,css('--tip'),2.2);line(f,Ts,a,css('--ferrite'),2.2);vmark(f,Tc,f.mut,'');
+  const vg=Vg(Tc,y),va=Va(Tc);
+  $('rVg').textContent=vg.toFixed(3)+' Å³';$('rVa').textContent=va.toFixed(3)+' Å³';
+  $('rdV').textContent=((va/vg-1)*100).toFixed(2)+' %';$('rdL').textContent=(((va/vg)**(1/3)-1)*100).toFixed(3)+' %';
+}
+['sVT','sVC'].forEach(id=>$(id).addEventListener('input',drawVol));
+function drawThelning(){
+  const c=+$('sTC').value;$('oTC').textContent=c.toFixed(2)+' wt%';
+  const rows=[['Spheroidized pearlite → austenite','4.64 − 2.21 C',4.64-2.21*c],['Austenite → martensite','4.64 − 0.53 C',4.64-0.53*c],['Austenite → lower bainite','4.64 − 1.43 C',4.64-1.43*c],['Austenite → upper bainite','4.64 − 2.21 C',4.64-2.21*c]];
+  $('thelning').innerHTML=rows.map(r=>`<tr><td>${r[0]}</td><td class="m">${r[1]}</td><td class="m">${r[2].toFixed(2)} %</td><td class="m">${(r[2]/3).toFixed(2)} %</td></tr>`).join('');
+}
+$('sTC').addEventListener('input',drawThelning);
+
+/* ---------- offset method ---------- */
+let seed=7;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};
+const gauss=()=>{let u=0,v=0;while(!u)u=rnd();v=rnd();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)};
+function drawOff(){
+  const of=+$('sOf').value/100,nz=+$('sNz').value*1e-5;
+  $('oOf').textContent=(of*100).toFixed(2)+' %';$('oNz').textContent=sci(nz||0,2);
+    const m=2.43e-5,Etr=1.11e-2,M0=380; // austenite expansivity (Yang & Bhadeshia); full γ→α' strain for sample-01 at 25 °C from their Eqs. 2–4
+  const Ts=[];for(let t=460;t>=300;t-=0.5)Ts.push(t);
+  const ftr=t=>t>=M0?0:1-Math.exp(-0.011*(M0-t)); // Koistinen–Marburger
+  const clean=Ts.map(t=>m*(t-400)+Etr*ftr(t));
+  const eos=Etr*of;
+  seed=7;const det=[];let fa=0;let one=null;
+  for(let k=0;k<40;k++){
+    const tr=clean.map(v=>v+nz*gauss());
+    if(!k)one=tr;
+    const fi=[],fv=[];Ts.forEach((t,i)=>{if(t>M0+20){fi.push(t);fv.push(tr[i])}});const lf=linfit(fi,fv);
+    let d=null;for(let i=0;i<Ts.length;i++){if(tr[i]-(lf.m*Ts[i]+lf.c)>eos){d=Ts[i];break}}
+    if(d!==null){if(d>M0+20)fa++;det.push(d)}
+  }
+  const ymin=Math.min(...clean)-3*nz-1e-4,ymax=m*(460-400)+3*nz;
+  const yz=[m*(300-400)-2e-4,Math.max(ymax,eos+m*60)];
+  const f=frame($('cvOff'),{xr:[300,460],yr:[yz[0]*1e3,Math.min(yz[1],4e-3)*1e3],xlab:'Temperature (°C)',ylab:'Strain (×10⁻³)',aspect:.6,yfmt:v=>v.toFixed(1)});
+  const base=Ts.map(t=>m*(t-400)*1e3);
+  line(f,Ts,one.map(v=>v*1e3),f.ink,1.2);line(f,Ts,base,css('--tip'),1.4,[6,4]);line(f,Ts,base.map(v=>v+eos*1e3),css('--carbon'),1.4,[6,4]);
+  const x=f.x;x.fillStyle=css('--ferrite');det.forEach((d,i)=>{x.beginPath();x.arc(f.X(d),f.h-f.B-6-(i%4)*5,2.6,0,7);x.fill()});
+  vmark(f,M0,f.mut,'true start');
+  const mean=det.reduce((a,b)=>a+b,0)/det.length,sd=Math.sqrt(det.reduce((a,b)=>a+(b-mean)**2,0)/Math.max(1,det.length-1));
+  $('rOs').textContent=sci(eos,2);$('rOm').textContent=det.length?mean.toFixed(1)+' °C':'–';$('rOsd').textContent=det.length>1?sd.toFixed(1)+' °C':'–';$('rOfa').textContent=fa+' of 40';
+}
+['sOf','sNz'].forEach(id=>$(id).addEventListener('input',drawOff));
+
+/* ---------- isothermal ---------- */
+function drawIso(){
+  const n=+$('sIn').value,t50=10**(+$('sIt').value),fm=+$('sIf').value;
+  $('oIn').textContent=n.toFixed(1);$('oIt').textContent=fmtT(t50);$('oIf').textContent=fm.toFixed(2);
+  const k=Math.LN2/t50**n,ts=[],fs=[];
+  for(let lt=-1;lt<=4;lt+=0.01){const t=10**lt;ts.push(t);fs.push(fm*(1-Math.exp(-k*t**n)))}
+  const f=frame($('cvIso'),{xr:[0.1,1e4],yr:[0,0.65],logx:true,logTicks:[0.1,1,10,100,1000,10000],xfmt:v=>v>=1000?(v/1000)+'k':v,xlab:'Time at 640 °C (s)',ylab:'Ferrite fraction',aspect:.55,yfmt:v=>v.toFixed(1)});
+  [10,30,120,600].forEach(t=>vmark(f,t,f.mut,t<120?t+' s':t/60+' min'));
+  line(f,ts,fs,css('--ferrite'),2.2);
+  const tf=q=>(-Math.log(1-q)/k)**(1/n);
+  $('rI1').textContent=fmtT(tf(0.01));$('rI99').textContent=fmtT(tf(0.99));
+  // length step at plateau with enrichment, 640 °C
+  const T=640,yy=Y0/(1-fm),v1=(1-fm)*Vg(T,yy)+fm*Va(T),v0=Vg(T,Y0);
+  $('rIL').textContent=(((v1/v0)**(1/3)-1)*100).toFixed(3)+' %';
+}
+['sIn','sIt','sIf'].forEach(id=>$(id).addEventListener('input',drawIso));
+
+/* ---------- stress ---------- */
+function drawStress(){
+  const s=+$('sSg').value;$('oSg').textContent=(s>0?'+':'')+s+' MPa'+(s>0?' tension':s<0?' compression':'');
+  // Denis, Gautier, Simon & Beck 1985, 60NCD11
+  const Ms0=247,al=21.4e-6,kKM=0.011,kp=1.11e-2,K=5.2e-5,A=0.05,B=0.0333;
+  const dMs=A*s/3+B*Math.abs(s),Ms=Ms0+dMs;
+  const Ts=[];for(let t=350;t>=20;t-=1)Ts.push(t);
+  const fr=(t,ms)=>t>=ms?0:1-Math.exp(-kKM*(ms-t));
+  const tpf=m=>K*s*(2-m)*m;
+  const ax=Ts.map(t=>{const m=fr(t,Ms);return (al*(t-350)+kp*m+tpf(m))*100});
+  const di=Ts.map(t=>{const m=fr(t,Ms);return (al*(t-350)+kp*m-0.5*tpf(m))*100});
+  const z=Ts.map(t=>(al*(t-350)+kp*fr(t,Ms0))*100);
+  const all=[...ax,...di,...z];
+  const f=frame($('cvStress'),{xr:[20,350],yr:[Math.min(...all)-.1,Math.max(...all)+.1],xlab:'Temperature (°C)',ylab:'Strain (%)',aspect:.6,yfmt:v=>v.toFixed(1)});
+  vmark(f,Ms0,f.mut,'Ms 247');
+  line(f,Ts,z,f.mut,1.4);line(f,Ts,di,css('--carbon'),1.8,[6,4]);line(f,Ts,ax,f.ink,2.2);
+  const tp=K*s;
+  $('rSMs').textContent=(dMs>=0?'+':'')+dMs.toFixed(1)+' °C';$('rSTp').textContent=(tp*100).toFixed(2)+' %';$('rSAn').textContent=(1.5*tp*100).toFixed(2)+' %';
+}
+$('sSg').addEventListener('input',drawStress);
+
+/* ---------- schedule ---------- */
+function drawPlan(){
+  const pts=[[0,25],[93,950],[693,950],[700,640]];
+  const f=frame($('cvPlan'),{xr:[0,1400],yr:[0,1000],xlab:'Time (s)',ylab:'Temperature (°C)',aspect:.3,minH:190});
+  const holds=[10,30,120,600];
+  const x=f.x;
+  line(f,pts.map(p=>p[0]),pts.map(p=>p[1]),f.ink,2.2);
+  holds.forEach((h,i)=>{const t1=700+h;line(f,[700,t1,t1+6],[640,640,25],[css('--ferrite'),css('--carbon'),css('--ple'),css('--tip')][i],1.6);x.fillStyle=f.mut;x.font='11px '+css('--mono');x.textAlign='left';x.fillText(h<120?h+' s':(h/60)+' min',f.X(t1)+4,f.Y(560-i*70))});
+  x.save();x.fillStyle=css('--mart');x.globalAlpha=.15;x.fillRect(f.L,f.Y(393),f.w-f.L-f.R,f.Y(298)-f.Y(393));x.restore();
+  x.fillStyle=f.mut;x.font='11px '+css('--mono');x.textAlign='left';x.fillText('Ms 298–393 (estimates)',f.L+6,f.Y(393)-4);
+  [[745,'Ae3 745'],[683,'Ae1 683']].forEach(([v,l])=>{x.save();x.strokeStyle=f.mut;x.setLineDash([2,3]);x.beginPath();x.moveTo(f.L,f.Y(v));x.lineTo(f.w-f.R,f.Y(v));x.stroke();x.fillStyle=f.mut;x.font='11px '+css('--mono');x.textAlign='right';x.fillText(l,f.w-f.R-4,f.Y(v)-4);x.restore()});
+  x.fillStyle=f.mut;x.font='12px '+css('--body');x.textAlign='left';x.fillText('950 °C, 10 min',f.X(320),f.Y(950)-8);x.fillText('quench to 640 °C, hold, quench',f.X(820),f.Y(700));
+}
+
+function all(){syncCurve();drawVol();drawThelning();drawOff();drawIso();drawStress();drawPlan()}
+all();
+let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(all,120)});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',all);
+new MutationObserver(all).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+})();
+</script>
+
+</body></html>
