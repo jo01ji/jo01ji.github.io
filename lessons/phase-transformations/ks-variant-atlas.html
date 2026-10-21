@@ -3,13 +3,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap">
 <style>
-/* Layout: lab-notebook atlas. Header, then a 3D cell + detail panel, the close-packed plane and pole figure side by side, then the full variant table. */
+/* Layout: lab-notebook atlas. Header and section nav, then the atlas (3D cell + detail, close-packed plane + pole figure, variant table), then three literature sections (why KS, KS in diffusional transformations, EBSD), then sources. */
 :root {
   --bg: #f3f5f7; --panel: #ffffff; --ink: #18212b; --muted: #5b6875; --line: #d5dce3; --soft: #e8edf1;
   --accent: #1d5fa8;
   --g0: #0f8a7e; --g1: #c77a12; --g2: #7651c4; --g3: #c2415f;
   --b0: #d0563a; --b1: #2f8f3a; --b2: #2a62c9;
   --gamma: #9aa8b5; --gamma-fill: #c9d3dc;
+  --good: #2f8f3a; --warn: #b4690e;
   --f-display: "Newsreader", Georgia, serif;
   --f-body: "IBM Plex Sans", system-ui, sans-serif;
   --f-mono: "IBM Plex Mono", ui-monospace, monospace;
@@ -19,14 +20,18 @@
   --accent: #6fa8ea;
   --g0: #35c2b2; --g1: #eaa64a; --g2: #a98af0; --g3: #ef7390;
   --b0: #f0805f; --b1: #6fcf78; --b2: #6f9bf2;
-  --gamma: #5e6d7b; --gamma-fill: #34414f; color-scheme: dark; } }
+  --gamma: #5e6d7b; --gamma-fill: #34414f;
+  --good: #6fcf78; --warn: #eaa64a; color-scheme: dark; } }
 :root[data-theme="dark"] {
   --bg: #11161c; --panel: #182029; --ink: #e5ebf0; --muted: #93a1ae; --line: #2c3845; --soft: #202a35;
   --accent: #6fa8ea;
   --g0: #35c2b2; --g1: #eaa64a; --g2: #a98af0; --g3: #ef7390;
   --b0: #f0805f; --b1: #6fcf78; --b2: #6f9bf2;
-  --gamma: #5e6d7b; --gamma-fill: #34414f; color-scheme: dark; }
+  --gamma: #5e6d7b; --gamma-fill: #34414f;
+  --good: #6fcf78; --warn: #eaa64a; color-scheme: dark; }
 * { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5; }
 .wrap { max-width: 1180px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 60px; display: grid; gap: 22px; }
 header h1 { font-family: var(--f-display); font-weight: 600; font-size: clamp(28px, 4.2vw, 42px); line-height: 1.1; margin: 0 0 8px; text-wrap: balance; }
@@ -34,6 +39,10 @@ header .rel { font-family: var(--f-mono); font-size: 15px; color: var(--accent);
 header p { max-width: 70ch; margin: 0; color: var(--muted); }
 .count { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 14px; font-family: var(--f-mono); font-size: 13px; color: var(--muted); }
 .count b { color: var(--ink); font-weight: 500; }
+nav.toc { display: flex; flex-wrap: wrap; gap: 6px 8px; margin-top: 16px; }
+nav.toc a { font-size: 13px; color: var(--ink); text-decoration: none; border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 4px 12px; }
+nav.toc a:hover { border-color: var(--accent); }
+nav.toc a span { color: var(--muted); font-family: var(--f-mono); margin-right: 6px; }
 .eyebrow { font-size: 11.5px; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin: 0 0 8px; }
 .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; min-width: 0; }
 .grid2 { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 22px; }
@@ -48,7 +57,8 @@ header p { max-width: 70ch; margin: 0; color: var(--muted); }
 button.chip { font: 500 12.5px var(--f-body); border: 1px solid var(--line); background: var(--panel); color: var(--ink); padding: 4px 10px; border-radius: 999px; cursor: pointer; }
 button.chip:hover { border-color: var(--accent); }
 button.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--panel); }
-button:focus-visible, input:focus-visible, tr:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button:focus-visible, input:focus-visible, tr:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+label.check { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink); cursor: pointer; }
 .hint { font-size: 12.5px; color: var(--muted); margin: 8px 0 0; }
 .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--muted); margin-top: 8px; }
 .sw { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
@@ -57,7 +67,7 @@ button:focus-visible, input:focus-visible, tr:focus-visible { outline: 2px solid
 .vrel { font-family: var(--f-mono); font-size: 14.5px; margin: 10px 0 14px; display: grid; gap: 3px; }
 .facts { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 13.5px; margin: 0; }
 .facts dt { color: var(--muted); }
-.facts dd { margin: 0; }
+.facts dd { margin: 0; min-width: 0; }
 .tag { display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
 .mat { font-family: var(--f-mono); font-size: 13px; display: inline-grid; grid-template-columns: repeat(3, auto); gap: 2px 14px; padding: 6px 12px; border-left: 1.5px solid var(--muted); border-right: 1.5px solid var(--muted); border-radius: 4px; margin-top: 4px; text-align: right; font-variant-numeric: tabular-nums; }
 .sibs { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5px; margin-top: 6px; }
@@ -66,9 +76,25 @@ button:focus-visible, input:focus-visible, tr:focus-visible { outline: 2px solid
 .sibs small { display: block; font-size: 10.5px; color: var(--muted); font-family: var(--f-body); font-weight: 400; }
 svg text { font-family: var(--f-mono); }
 .fig { width: 100%; height: auto; display: block; }
+/* plane controls */
+.twist { margin-top: 10px; display: grid; gap: 6px; }
+.twist input[type=range] { width: 100%; accent-color: var(--accent); }
+.ticks { position: relative; height: 30px; font-size: 10.5px; font-family: var(--f-mono); color: var(--muted); }
+.ticks span { position: absolute; transform: translateX(-50%); white-space: nowrap; text-align: center; line-height: 1.15; }
+.ticks span::before { content: ""; display: block; width: 1px; height: 5px; background: var(--muted); margin: 0 auto 2px; }
+.ticks span.il { color: var(--good); }
+.ticks span.il::before { background: var(--good); }
+.readout { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 8px; margin-top: 8px; }
+.readout div { background: var(--soft); border-radius: 8px; padding: 8px 10px; min-width: 0; }
+.readout b { display: block; font-family: var(--f-mono); font-size: 16px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.readout small { font-size: 11.5px; color: var(--muted); }
+.sliders { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px 16px; margin-top: 10px; font-size: 12.5px; }
+.sliders label { display: grid; gap: 2px; color: var(--muted); }
+.sliders output { color: var(--ink); font-family: var(--f-mono); }
+.sliders input { accent-color: var(--accent); width: 100%; }
 /* table */
 .tablewrap { overflow-x: auto; }
-table { border-collapse: collapse; width: 100%; font-size: 13.5px; min-width: 640px; font-variant-numeric: tabular-nums; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; min-width: 760px; font-variant-numeric: tabular-nums; }
 th, td { padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--soft); }
 thead th { font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--line); }
 tr.grp td { background: var(--soft); font-weight: 600; font-size: 13px; }
@@ -77,10 +103,39 @@ tbody tr.v:hover td { background: var(--soft); }
 tbody tr.v.sel td { background: color-mix(in srgb, var(--accent) 14%, transparent); }
 td.num { text-align: right; font-family: var(--f-mono); }
 .mis-0 { color: var(--muted); }
+.pill { display: inline-block; font-size: 11.5px; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+.pill.sb { border-color: var(--good); color: var(--good); }
+.pill.bl { border-color: var(--accent); color: var(--accent); }
 .why { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
 .why div { font-size: 14px; }
 .why h3 { font-family: var(--f-display); font-size: 19px; font-weight: 600; margin: 0 0 4px; }
 .why p { margin: 0; color: var(--muted); }
+/* literature sections */
+.part { display: grid; gap: 18px; scroll-margin-top: 12px; }
+.part > h2 { font-family: var(--f-display); font-weight: 600; font-size: clamp(24px, 3vw, 32px); line-height: 1.15; margin: 18px 0 0; text-wrap: balance; }
+.part > h2 small { display: block; font-family: var(--f-body); font-size: 12px; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin-bottom: 4px; }
+.part > p.lede { max-width: 72ch; margin: 0; color: var(--muted); }
+.prose h3 { font-family: var(--f-display); font-size: 21px; font-weight: 600; margin: 0 0 6px; text-wrap: balance; }
+.prose p, .prose li { max-width: 70ch; }
+.prose p { margin: 0 0 10px; }
+.prose ul { margin: 0 0 10px; padding-left: 20px; }
+.prose li { margin-bottom: 4px; }
+.beyond { border-left: 3px solid var(--warn); padding: 6px 12px; background: color-mix(in srgb, var(--warn) 8%, transparent); border-radius: 0 6px 6px 0; font-size: 13.5px; margin: 10px 0; max-width: 72ch; }
+.beyond b { color: var(--warn); font-weight: 600; font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; display: block; }
+details.src { margin-top: 10px; border-top: 1px solid var(--soft); padding-top: 8px; }
+details.src summary { cursor: pointer; font-size: 12.5px; color: var(--accent); font-weight: 500; }
+details.src blockquote { margin: 8px 0 0; padding: 6px 12px; border-left: 2px solid var(--line); font-size: 13px; color: var(--ink); max-width: 75ch; }
+details.src blockquote cite { display: block; font-style: normal; font-size: 12px; color: var(--muted); margin-top: 3px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+.links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.links a { font-size: 12.5px; color: var(--accent); }
+ol.steps { counter-reset: s; list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+ol.steps li { counter-increment: s; background: var(--soft); border-radius: 8px; padding: 10px 12px; font-size: 13px; }
+ol.steps li::before { content: counter(s); display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--accent); color: var(--panel); font: 600 11.5px var(--f-mono); margin-right: 6px; }
+ol.steps li b { font-weight: 600; }
+.reflist { display: grid; gap: 6px; font-size: 13px; margin: 0; padding-left: 18px; }
+.reflist li { max-width: 90ch; }
+.reflist code { font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); word-break: break-all; }
 @media (max-width: 520px) { #three { height: 340px; } .wrap { padding-inline: 16px; } }
 </style>
 
@@ -88,11 +143,19 @@ td.num { text-align: right; font-family: var(--f-mono); }
   <header>
     <h1>The 24 Kurdjumov–Sachs variants</h1>
     <p class="rel">{111}<sub>γ</sub> ∥ {011}<sub>α</sub> &nbsp;·&nbsp; ⟨<span class="bar">1</span>01⟩<sub>γ</sub> ∥ ⟨<span class="bar">1</span><span class="bar">1</span>1⟩<sub>α</sub></p>
-    <p>One austenite (fcc) grain can transform into 24 martensite (bcc) orientations that all satisfy the same KS relationship. Each one puts a close-packed {011}<sub>α</sub> plane on one of the four {111}<sub>γ</sub> planes and lines up a close-packed ⟨111⟩<sub>α</sub> row with a ⟨110⟩<sub>γ</sub> row inside it. Pick a variant anywhere on the page and every view follows.</p>
+    <p>One austenite (fcc) grain can transform into 24 martensite (bcc) orientations that all satisfy the same KS relationship. Each one puts a close-packed {011}<sub>α</sub> plane on one of the four {111}<sub>γ</sub> planes and lines up a close-packed ⟨111⟩<sub>α</sub> row with a ⟨110⟩<sub>γ</sub> row inside it. Pick a variant anywhere on the page and every view follows, including the literature sections further down.</p>
     <div class="count"><span><b>4</b> {111}<sub>γ</sub> planes</span><span>×</span><span><b>3</b> ⟨110⟩<sub>γ</sub> in each</span><span>×</span><span><b>2</b> ⟨111⟩<sub>α</sub> in (011)<sub>α</sub></span><span>=</span><span><b>24</b> distinct rotations (smallest separation 10.53°)</span></div>
+    <nav class="toc" aria-label="Sections">
+      <a href="#atlas"><span>A</span>The atlas</a>
+      <a href="#why"><span>1</span>Why KS, and why not exactly</a>
+      <a href="#diffusional"><span>2</span>KS in diffusional transformations</a>
+      <a href="#oriented"><span>2a</span>Oriented vs unoriented lattices</a>
+      <a href="#ebsd"><span>3</span>From EBSD back to variants</a>
+      <a href="#sources"><span>§</span>Sources</a>
+    </nav>
   </header>
 
-  <section class="grid2">
+  <section class="grid2" id="atlas">
     <div class="panel">
       <p class="eyebrow">Austenite unit cell with the martensite cell it becomes</p>
       <div id="three" role="img" aria-label="3D view of the fcc unit cell, its four {111} planes and the bcc cell of the selected variants"></div>
@@ -103,7 +166,10 @@ td.num { text-align: right; font-family: var(--f-mono); }
         <button class="chip" data-show="bain" type="button" id="show-bain">Its Bain group (8)</button>
         <button class="chip" data-show="all" type="button" id="show-all">All 24</button>
       </div>
-      <p class="hint">Drag to rotate, scroll or pinch to zoom. Grey spheres are fcc atoms; the coloured wire cell is the bcc cell (a<sub>α</sub>/a<sub>γ</sub> = 0.80), centred on its {111}<sub>γ</sub> plane with its (011)<sub>α</sub> face shaded. The arrow is the shared close-packed direction. Tick rows in the table to build your own set.</p>
+      <div class="toolbar">
+        <label class="check"><input type="checkbox" id="show-habit"> Show the lath habit plane {557}<sub>γ</sub> of the selected variant</label>
+      </div>
+      <p class="hint">Drag to rotate, scroll or pinch to zoom. Grey spheres are fcc atoms; the coloured wire cell is the bcc cell, scaled by a<sub>α</sub>/a<sub>γ</sub> from Kop et al. (set in the plane panel below), centred on its {111}<sub>γ</sub> plane with its (011)<sub>α</sub> face shaded. The arrow is the shared close-packed direction, which is also the lath long axis (section 3). Tick rows in the table to build your own set.</p>
       <div class="legend" id="legend3d"></div>
     </div>
     <div class="panel" id="detail"></div>
@@ -113,7 +179,20 @@ td.num { text-align: right; font-family: var(--f-mono); }
     <div class="panel">
       <p class="eyebrow">Looking down the habit {111}<sub>γ</sub> plane</p>
       <svg id="plane" class="fig" viewBox="-230 -215 460 430" role="img" aria-label="Atoms of the close-packed fcc plane with the bcc (011) plane of the selected variant overlaid"></svg>
-      <p class="hint">Large grey discs: atoms of the {111}<sub>γ</sub> plane. Small dots: atoms of the (011)<sub>α</sub> plane of the selected variant. Along the arrow the rows match; away from it the α lattice fans out. Its six variants are the three ⟨110⟩<sub>γ</sub> rows, each taken two ways (mirror images, 60° apart as crystals).</p>
+      <div class="twist">
+        <label for="twist" class="hint" style="margin:0">Twist the α plane about the plane normal: KS → Greninger–Troiano → Nishiyama–Wassermann → KS of the partner variant. <output id="twist-out" class="mi"></output></label>
+        <input type="range" id="twist" min="-1.5" max="12" step="0.05" value="0">
+        <div class="ticks" id="ticks" aria-hidden="true"></div>
+      </div>
+      <div class="toolbar">
+        <label class="check"><input type="checkbox" id="match" checked> Shade α atoms by how close they sit to an fcc site</label>
+      </div>
+      <div class="readout" id="readout"></div>
+      <div class="sliders">
+        <label for="tk">Temperature <output id="tk-out"></output><input type="range" id="tk" min="1000" max="1200" step="10" value="1000"></label>
+        <label for="xi">Carbon in austenite <output id="xi-out"></output><input type="range" id="xi" min="0.05" max="3.65" step="0.05" value="1.0"></label>
+      </div>
+      <p class="hint">Large grey discs: atoms of the {111}<sub>γ</sub> plane. Small dots: atoms of the (011)<sub>α</sub> plane of the selected variant. Along the arrow the rows match; away from it the α lattice fans out. Its six variants are the three ⟨110⟩<sub>γ</sub> rows, each taken two ways (mirror images, 60° apart as crystals). Lattice parameters follow Kop et al. 2001 Table I, valid for 1000–1200 K and 0.05–3.65 at.% C.</p>
     </div>
     <div class="panel">
       <p class="eyebrow">{100}<sub>α</sub> pole figure, projected on (001)<sub>γ</sub></p>
@@ -131,30 +210,265 @@ td.num { text-align: right; font-family: var(--f-mono); }
     <p class="eyebrow">All 24 variants</p>
     <div class="tablewrap">
       <table>
-        <thead><tr><th>Draw</th><th>Variant</th><th>Plane ∥ (011)<sub>α</sub></th><th>Direction ∥</th><th>Direction α</th><th>Bain</th><th class="num">Misorientation to <span id="mishead">V1</span></th></tr></thead>
+        <thead><tr><th>Draw</th><th>Variant</th><th>Plane ∥ (011)<sub>α</sub></th><th>Direction ∥</th><th>Direction <span style="text-transform:none">α</span></th><th>Bain</th><th class="num">Misorientation to <span id="mishead">V1</span></th><th>Axis (<span style="text-transform:none">α</span>)</th><th>Boundary with it</th></tr></thead>
         <tbody id="tbody"></tbody>
       </table>
     </div>
-    <p class="hint">Misorientation is the smallest rotation between two variants after applying the 24 cubic symmetry operators. Inside one plane group: 60° (twin-related pairs such as V1/V2), 49.47°, and the 10.53° sub-block partner (V1/V4).</p>
+    <p class="hint">Misorientation is the smallest rotation between two variants after applying the 24 cubic symmetry operators; the axis is that rotation's axis family in the α crystal. Inside one plane group: 60° (twin-related pairs such as V1/V2), 49.47°, and the 10.53° sub-block partner (V1/V4). Boundary labels use the packet / block / sub-block hierarchy of the cards below.</p>
   </section>
 
   <section class="panel why">
     <div><h3>Packets</h3><p>The six variants sharing one {111}<sub>γ</sub> plane form a packet in lath martensite. They are the same habit plane, rotated in-plane by the three ⟨110⟩<sub>γ</sub> rows.</p></div>
-    <div><h3>Blocks and sub-blocks</h3><p>Within a packet, pairs 10.53° apart (V1/V4, V2/V5, V3/V6) share a Bain axis and form a block of two sub-blocks.</p></div>
+    <div><h3>Blocks and sub-blocks</h3><p>Within a packet, pairs 10.53° apart (V1/V4, V2/V5, V3/V6) share a Bain axis and form a block of two sub-blocks. Each pair sits either side of one Nishiyama–Wassermann orientation, 5.26° from each: use the twist slider to walk from one to the other.</p></div>
     <div><h3>Bain groups</h3><p>Every variant is close to one of the three Bain orientations, compressed along [100]<sub>γ</sub>, [010]<sub>γ</sub> or [001]<sub>γ</sub>. Each Bain group holds 8 variants, two from each plane.</p></div>
+  </section>
+
+  <!-- ===================== 1. WHY KS ===================== -->
+  <section class="part" id="why">
+    <h2><small>Section 1</small>Why KS, and why it never fits exactly</h2>
+    <p class="lede">The {111}<sub>γ</sub> and {011}<sub>α</sub> planes do not match atom for atom. KS is the best partial match: one close-packed row lines up almost exactly, and the rest of the misfit is taken up by steps, dislocations and a small extra rotation.</p>
+
+    <div class="grid2b">
+      <div class="panel prose">
+        <h3>How big the misfit is</h3>
+        <p>The readouts under the plane view give the numbers for the lattice parameters you set. At 1000 K and 1 at.% C (Kop et al. 2001, Table I):</p>
+        <ul>
+          <li><b>Along the shared row</b> (⟨110⟩<sub>γ</sub> ∥ ⟨111⟩<sub>α</sub>): 2.573 Å vs 2.508 Å, about 2.5% short in α.</li>
+          <li><b>Across the rows</b>: 2.228 Å in (111)<sub>γ</sub> vs 2.365 Å in (011)<sub>α</sub>, about 6% long in α.</li>
+          <li><b>Angle between rows</b>: 60° in the fcc plane, 70.53° in the bcc plane. Once one row is matched the next is 10.5° off.</li>
+        </ul>
+        <p>KS and Nishiyama–Wassermann (NW) are the two ways of splitting that 10.5°. KS puts it all on one side and matches a close-packed row exactly. NW splits it 5.26° each side and matches ⟨100⟩<sub>α</sub> with a ⟨110⟩<sub>γ</sub> instead. Lath martensite sits between the two, near the Greninger–Troiano (GT) orientation (Howe et al., p. 814).</p>
+        <div class="beyond"><b>Beyond the papers</b>The spacings are my arithmetic from Kop's lattice-parameter equations: a<sub>γ</sub>/√2 and (√3/2)a<sub>α</sub> along the row, (√6/4)a<sub>γ</sub> and √(2/3)a<sub>α</sub> across it.</div>
+        <details class="src"><summary>Sources (3)</summary>
+          <blockquote>"aα = 2.8863 Å (1 + 17.5 × 10⁻⁶ K⁻¹ [T − 800 K]) … aγ = (3.6306 + 0.78ξ) Å (1 + (24.9 − 50ξ)10⁻⁶ K⁻¹ [T − 1000 K]) 1000 K &lt; T &lt; 1250 K; 0.0005 &lt; ξ &lt; 0.0365"<cite>Kop, Sietsma &amp; van der Zwaag 2001, J. Mater. Sci. 36, Table I, p. 520</cite></blockquote>
+          <blockquote>"Lath martensite forms with habit planes close to {575}γ and a narrow range of orientations centred on the Greninger–Troiano relationship in low-carbon and interstitial-free alloy steels"<cite>Howe, Pond &amp; Hirth 2009, Prog. Mater. Sci. 54, p. 814</cite></blockquote>
+          <blockquote>"The OR commonly mentioned between fcc and bcc are in between Kurdjumov–Sachs (KS) … and Nishiyama–Wasserman (NW)"<cite>Cottura et al. 2014, Acta Mater. 72, p. 208</cite></blockquote>
+        </details>
+      </div>
+
+      <div class="panel prose">
+        <h3>The twist slider, read against the papers</h3>
+        <p>Howe, Pond and Hirth treat the (111)<sub>γ</sub>/(011)<sub>α</sub> terrace as coherent and let defect networks take up the misfit. They walk the twist from NW (0°) through GT (2.5°) to KS (5.26°) and find the GT network closest to what TEM shows in lath martensite (pp. 818–819). The slider above runs the same path for the selected variant, then carries on to the KS partner on the other side of NW.</p>
+        <p>Cottura et al. build the KS eigenstrain as the Bain strain plus a 5.26° rotation that aligns the close-packed directions. In their phase-field model a plate with that strain grows at constant speed along its invariant line (p. 208). So KS is what you get when the Bain strain is rotated until a close-packed row is undistorted.</p>
+        <div class="beyond"><b>Beyond the papers</b>The green ticks on the slider mark where a line in the terrace plane is neither stretched nor rotated, for a 2-D correspondence that maps the two (011)<sub>α</sub> close-packed rows onto the nearest two ⟨110⟩<sub>γ</sub> rows. It lands within about half a degree of KS for every composition the sliders allow. It is a 2-D sketch, not the 3-D invariant-line calculation of the papers.</div>
+        <details class="src"><summary>Sources (3)</summary>
+          <blockquote>"Ma and Pond [57] determined the provisional network configurations for twist angles φxy up to 5.26°, i.e. the orientation range from Nishiyama–Wasserman, through Greninger–Troiano, to Kurdjumov–Sachs"<cite>Howe, Pond &amp; Hirth 2009, p. 818</cite></blockquote>
+          <blockquote>"the eigenstrain expressed in the ferrite bcc frame is obtained by combining the Bain matrix with a rotation of 5.26° around the e1 or e2 axis of bcc to align the dense directions of both lattices … the plate grows at constant velocity along the invariant line [4.32, 3.67, 0.24]α"<cite>Cottura et al. 2014, p. 208</cite></blockquote>
+          <blockquote>"the terraces are always coherent, a particular orientation relationship describing the correlation of α and γ unit cells beyond the short-range distortion field"<cite>Howe, Pond &amp; Hirth 2009, p. 820</cite></blockquote>
+        </details>
+      </div>
+    </div>
+
+    <div class="grid2b">
+      <div class="panel prose">
+        <h3>Why the habit plane is {557}<sub>γ</sub>, not {111}<sub>γ</sub></h3>
+        <p>If the interface were a flat (111)<sub>γ</sub> terrace, laths would lie on {111}<sub>γ</sub>. They don't: lath martensite grows on planes near {557}<sub>γ</sub>, about 9.4° away. In the topological model the interface is (111)<sub>γ</sub> terraces broken by disconnections, defects that are both a dislocation and a step of height h. A regular array of steps spaced d apart tilts the average interface by ψ = tan⁻¹(h/d) (Howe et al., p. 818). For their GT network ψ = 9.18°, giving a habit plane (0.505 0.700 0.505)<sub>γ</sub>, which is (575)<sub>γ</sub> to within a fraction of a degree.</p>
+        <p>The tilt axis is the step line, which lies along the shared close-packed row. That is why the {557}<sub>γ</sub> plane of each variant contains its ⟨110⟩<sub>γ</sub> row: V1 and V2 (row [<span class="bar">1</span>01]<sub>γ</sub>) share (575)<sub>γ</sub>, V3 and V4 share (755)<sub>γ</sub>, V5 and V6 share (557)<sub>γ</sub>. Tick "Show the lath habit plane" in the 3D view to see it.</p>
+        <div class="beyond"><b>Beyond the papers</b>Assigning one {557}<sub>γ</sub> to each variant is my geometry: it is the only {557}<sub>γ</sub> plane within 10° of the variant's {111}<sub>γ</sub> that contains its parallel ⟨110⟩<sub>γ</sub>. It agrees with Nyyssönen et al.'s measured habit (0.49, 0.70, 0.52)<sub>γ</sub> and long axis (−0.71, −0.03, 0.70)<sub>γ</sub> for their standard variant, which is V1 here (section 3).</div>
+        <details class="src"><summary>Sources (2)</summary>
+          <blockquote>"The optimal candidate terrace plane is (111)γ/(011)α because the coherency strains, although large, are acceptable and glissile disconnections can arise."<cite>Howe, Pond &amp; Hirth 2009, p. 814</cite></blockquote>
+          <blockquote>"The normal to this plane is determined by rotating the normal to the terrace plane by the angle ψ = tan⁻¹ h/dD about an axis parallel to nD2 … has ψ = 9.18° which corresponds to a habit plane (0.505 0.700 0.505)γ."<cite>Howe, Pond &amp; Hirth 2009, p. 818</cite></blockquote>
+        </details>
+      </div>
+      <div class="panel">
+        <p class="eyebrow">Terraces and disconnections, seen edge-on</p>
+        <svg id="steps" class="fig" viewBox="0 0 460 250" role="img" aria-label="Edge-on sketch of (111) terraces separated by disconnection steps, with the resulting tilted habit plane"></svg>
+        <div class="sliders" style="grid-template-columns:1fr">
+          <label for="dh">Step spacing d, in step heights h <output id="dh-out"></output><input type="range" id="dh" min="3" max="16" step="0.05" value="6.19"></label>
+        </div>
+        <div class="readout" id="step-readout"></div>
+        <p class="hint">Each step is one disconnection. Closer steps tilt the average interface (dashed) further from the terrace. The marks show Howe et al.'s GT network (ψ = 9.18°) and the exact (575)<sub>γ</sub> (ψ = 9.45°).</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 2. DIFFUSIONAL ===================== -->
+  <section class="part" id="diffusional">
+    <h2><small>Section 2</small>KS in diffusional transformations</h2>
+    <p class="lede">KS is not only a martensite relationship. Widmanstätten ferrite, bainite and even grain-boundary allotriomorphs carry it on at least one side. Where it holds, the interface is semi-coherent, slow and full of ledges; where it doesn't, the interface is incoherent and mobile. Almost every topic downstream of nucleation (sympathetic nucleation, interface mobility, solute drag, plate shape) depends on which kind of interface you are looking at.</p>
+
+    <div class="grid2" id="oriented">
+      <div class="panel">
+        <p class="eyebrow">Oriented- and unoriented-lattices boundaries of a grain-boundary allotriomorph</p>
+        <svg id="ori" class="fig" viewBox="0 0 560 380" role="img" aria-label="A ferrite allotriomorph on an austenite grain boundary: a flat KS boundary with the grain it nucleated in, and a curved boundary with no orientation relationship to the other grain"></svg>
+        <div class="toolbar" role="group" aria-label="Reaction temperature">
+          <span class="lab">Reaction temperature</span>
+          <button class="chip" type="button" data-ori="hi" id="ori-hi">Near Ae3</button>
+          <button class="chip" type="button" data-ori="lo" id="ori-lo">Well below Ae3</button>
+          <label class="check" style="margin-left:8px"><input type="checkbox" id="ori-sym" checked> Mark sympathetic nucleation sites</label>
+        </div>
+        <div class="grid2b" style="gap:12px;margin-top:12px">
+          <svg id="ori-a" class="fig" viewBox="0 0 270 190" role="img" aria-label="Close-up of the oriented-lattices boundary: atom rows continue across a flat terrace with a ledge"></svg>
+          <svg id="ori-b" class="fig" viewBox="0 0 270 190" role="img" aria-label="Close-up of the unoriented-lattices boundary: atom rows meet at an arbitrary angle across a rough interface"></svg>
+        </div>
+        <div class="sliders" style="grid-template-columns:1fr">
+          <label for="ori-ang">Orientation of γ2 (any value: there is no relationship) <output id="ori-ang-out"></output><input type="range" id="ori-ang" min="0" max="60" step="1" value="23"></label>
+        </div>
+        <p class="hint">Schematic, not to scale. The faint lines are lattice rows: in γ1 and the ferrite they run parallel, because the ferrite is one of γ1's KS variants (coloured as the selected variant, <span id="ori-v"></span>); in γ2 they point anywhere.</p>
+      </div>
+      <div class="panel prose">
+        <h3>Two sides of one crystal</h3>
+        <p>A ferrite crystal that nucleates on an austenite grain boundary usually has an orientation relationship with only one of the two grains. Aaronson and Wells named the two interfaces: the boundary with the grain it nucleated in is the <b>oriented-lattices boundary</b>, the boundary with the other grain the <b>unoriented-lattices boundary</b>. In steel the oriented side is the KS (sometimes NW) side.</p>
+        <p><b>Near Ae3</b> the oriented side is flat, highly coherent and hard to move, so the allotriomorph thickens mainly into the other grain through the curved, incoherent unoriented boundary (Dong 2021, p. 5).</p>
+        <p><b>Well below Ae3</b> the driving force is large enough to pay for the transformation strain, and growth goes through the KS interface alone: the ferrite turns acicular or plate-like and grows as Widmanstätten or bainitic ferrite into the oriented grain (Dong 2021, p. 6). This is the ferrite that grows into the austenite on the KS side.</p>
+        <p><b>Sympathetic nucleation follows the same split.</b> Aaronson and Wells found it most often on intragranular plates, occasionally on oriented-lattices boundaries, and rarely if ever on unoriented ones. The oriented side has the partially coherent terraces that keep their supersaturation (section 2, Reynolds); the unoriented side keeps moving and has none.</p>
+        <p>For EBSD: a crystal nucleated on the oriented side is one of the 24 variants of γ1, so the pair finder applies to it. Against γ2 it is just a high-angle misorientation.</p>
+        <div class="beyond"><b>Beyond the papers</b>Aaronson and Wells give the definition and the frequency ranking in words; they print no sketch. The drawing is mine, built from their definition and Dong's description of his Fig. 1.4(a). Dong also notes that carbon at the immobile interface departs from its equilibrium value (Fig. 1.4(b), p. 6), which is not drawn here.</div>
+        <details class="src"><summary>Sources (5)</summary>
+          <blockquote>"The interphase boundary between a precipitate crystal formed at a grain boundary and the matrix grain in which it nucleated is termed an oriented-lattices boundary; the boundary between this crystal and the adjacent matrix grain is termed an unoriented-lattices boundary"<cite>Aaronson &amp; Wells 1956, footnote, p. 1218</cite></blockquote>
+          <blockquote>"Sympathetic nucleation takes place most frequently at intragranular plates, develops occasionally at the oriented-lattices boundaries of morphologies which nucleate at austenite grain boundaries, and occurs rarely, if ever, at the unoriented-lattices boundaries of the latter morphologies."<cite>Aaronson &amp; Wells 1956, p. 1218</cite></blockquote>
+          <blockquote>"大量实验结果表明晶界铁素体在原奥氏体晶界上形核，其与一侧相邻奥氏体的界面呈平直状态，可移动性较差，而另一侧多呈弯曲状态，可移动性较好。"<cite>Dong 2021, p. 5. My translation: many experiments show that grain-boundary ferrite nucleates on the prior austenite grain boundary; its interface with the austenite on one side is flat and of poor mobility, while the other side is mostly curved and of good mobility.</cite></blockquote>
+          <blockquote>"当温度下降至显著低于 Ae3 线时，铁素体生长将仅通过 K-S 界面的迁移来完成，这是因为较大过冷度可产生足够大的相变驱动力来克服切变反应过程中带来的相变应变[26]。此时铁素体的形貌将由高温时的仿晶界状（Allotriomorphic）或等轴状（Idiomorphic）向低温时的针状（Acicular）或片状（Plate）转变。"<cite>Dong 2021, p. 6. My translation: when the temperature falls well below Ae3, ferrite growth proceeds only by migration of the K-S interface, because the larger undercooling gives enough driving force to overcome the transformation strain of the shear reaction; the ferrite morphology then changes from allotriomorphic or idiomorphic at high temperature to acicular or plate-like at low temperature.</cite></blockquote>
+          <blockquote>"The grain boundary allotriomorph by virtue of its origins at a grain boundary rarely exhibits an exact OR to either parent."<cite>Phelan, Stanford &amp; Dippenaar 2005, p. 132</cite></blockquote>
+        </details>
+      </div>
+    </div>
+
+    <div class="grid2b">
+      <div class="panel prose">
+        <h3>Sympathetic nucleation</h3>
+        <p><b>Why a second crystal is needed.</b> Under KS one ferrite crystal has one {011}<sub>α</sub> plane parallel to one {111}<sub>γ</sub>. The four {111}<sub>γ</sub> planes are 70.53° apart, while {011}<sub>α</sub> planes are 60° or 90° apart, so a single crystal cannot put plates on two {111}<sub>γ</sub>. Aaronson and Wells used this (via Dubé and Mehl) to argue that plates on different octahedral planes must be separate crystals with a ferrite/ferrite boundary between them; Aaronson et al. restate it as "branching … is crystallographically impossible".</p>
+        <p><b>What the boundary looks like.</b> Sympathetically nucleated crystals usually make a small-angle boundary with their substrate, occasionally a near-coincidence large-angle one. A lower α/α boundary energy lowers the nucleation barrier ΔG* (Fig. 12 of Aaronson et al.). Phelan et al. watched Widmanstätten plates nucleate on allotriomorphs in situ; since the allotriomorph is rarely exactly KS, the plate either picks a variant a degree or two away or pays for a larger boundary.</p>
+        <p><b>Where it happens.</b> On the immobile terraces of growth ledges at partially coherent boundaries, which keep their supersaturation after a ledge passes (Shewmon, via Aaronson et al.). Those terraces exist because of a rational orientation relationship such as KS.</p>
+        <p>The pair finder on the right turns this into numbers for the selected substrate variant. It answers the follow-up in your sympathetic-nucleation reading log: in EBSD, the α/α misorientation between two plates tells you whether they can be the same packet, a sub-block pair, or crystals on different {111}<sub>γ</sub>.</p>
+        <div class="links"><a href="https://claude.ai/artifact/5BNyBZx44UPMuMD7FsGa9z" target="_blank" rel="noopener">Sympathetic Nucleation lesson ↗</a></div>
+        <details class="src"><summary>Sources (6)</summary>
+          <blockquote>"Dube and Mehl have demonstrated that the crystallography of the Kurdjumow and Sachs orientation and habit plane relationships … will not permit a single ferrite crystal to evolve plates parallel to more than one octahedral austenite plane."<cite>Aaronson &amp; Wells 1956, Trans. AIME, p. 1217</cite></blockquote>
+          <blockquote>"only one {110}bcc plane can be parallel to a {111}fcc habit plane. Hence branching of a bcc precipitate plate formed in an fcc matrix or vice versa is crystallographically impossible"<cite>Aaronson et al. 1995, Mater. Sci. Eng. B32, p. 110</cite></blockquote>
+          <blockquote>"Sympathetically nucleated crystals typically form a small-angle grain boundary with respect to their substrate crystals, though in some instances a large-angle, near-coincident site boundary may appear instead"<cite>Aaronson et al. 1995, p. 122</cite></blockquote>
+          <blockquote>"Comparison of ΔG* for sympathetic nucleation with that for homogeneous nucleation as a function of the driving force ratio and the ratio of the α:α grain boundary energy to that of the coherent α:β boundary energy."<cite>Aaronson et al. 1995, Fig. 12 caption, p. 116</cite></blockquote>
+          <blockquote>"the immobile terraces of growth ledges at partially or fully coherent interphase boundaries would provide a lesser contribution of interfacial energy but a much larger supersaturation through which to drive the nucleation process"<cite>Aaronson et al. 1995, p. 108</cite></blockquote>
+          <blockquote>"The grain boundary allotriomorph by virtue of its origins at a grain boundary rarely exhibits an exact OR to either parent. Therefore, sympathetic nucleation of the fast growth orientation on grain boundary allotriomorphs inevitably requires some orientation change."<cite>Phelan, Stanford &amp; Dippenaar 2005, Mater. Sci. Eng. A 407, p. 132</cite></blockquote>
+        </details>
+      </div>
+      <div class="panel">
+        <p class="eyebrow">Pair finder: neighbours of the selected variant</p>
+        <p class="hint" style="margin-top:0" id="pair-summary"></p>
+        <svg id="pairs" class="fig" viewBox="0 0 460 470" role="img" aria-label="Bar chart of the misorientation from the selected variant to each of the other 23 variants"></svg>
+        <div class="legend"><span><span class="sw" id="pair-sw-same"></span>same {111}<sub>γ</sub> (same packet)</span><span><span class="sw" style="background:var(--gamma)"></span>different {111}<sub>γ</sub></span><span><span class="sw" style="background:none;border:1.5px solid var(--good)"></span>same Bain group</span></div>
+        <p class="hint">Click a bar to make that variant the substrate. The 15° line is the usual low/high-angle convention, not a value from these papers.</p>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="panel prose">
+        <h3>Interface character and mobility</h3>
+        <p>A grain-boundary allotriomorph usually has KS (sometimes NW) with one austenite grain and no rational relationship with the other. The KS side is flat, highly coherent and slow; the other side is curved, incoherent and grows (Dong 2021, p. 5). Militzer et al. draw the same line between morphologies: Widmanstätten and bainitic ferrite keep an orientation relationship and a shear correspondence with the austenite they grow into, allotriomorphic ferrite does not.</p>
+        <p>Dong fitted interface velocities against measured interfacial carbon in Fe-0.1C and found the intrinsic mobility of the semi-coherent (Widmanstätten) interface about ten times lower than the incoherent (allotriomorph) one, with an extra ~20 J/mol dissipated by the Widmanstätten transformation strain.</p>
+        <p>Reynolds et al. give the mechanism: partially coherent broad faces are less mobile than plate edges, and their stationary terraces are where carbides and new ferrite nucleate.</p>
+        <div class="links"><a href="https://claude.ai/artifact/WRFniYnSdHHL2G3txpjsfx" target="_blank" rel="noopener">Planar to Widmanstätten Ferrite lesson ↗</a></div>
+        <details class="src"><summary>Sources (5)</summary>
+          <blockquote>"晶体学研究证实了铁素体与平直界面一侧的奥氏体晶粒多呈 Kurdjumov-Sachs（K-S）位向关系（有时也呈西山关系（Nishiyama-Wasserman）），界面共格度高[26, 27]；与生长界面一侧无特定的位向关系（non K-S），界面共格度差[18]"<cite>Dong 2021, PhD thesis, Tsinghua University, p. 5. My translation: crystallography confirms that ferrite mostly has a KS (sometimes NW) relationship with the austenite on the flat-interface side, with high coherency; with the growing side there is no specific relationship (non-KS) and coherency is poor.</cite></blockquote>
+          <blockquote>"the value of intrinsic mobility for semicoherent interface is about one order of magnitude smaller than that of the incoherent interface, and the extrinsic energy dissipation for AF is negligibly small whereas that for WF is about 20J/mol"<cite>Dong 2021, English abstract, p. II</cite></blockquote>
+          <blockquote>"Widmanstätten and bainitic ferrite have an orientation relationship with the austenite into which they are growing and the two lattices share a shear correspondence." … "Allotriomorphic ferrite does not have a rational orientation relationship with the austenite grain into which it is growing"<cite>Militzer, Hutchinson, Zurob &amp; Miyamoto 2022, Int. Mater. Rev., p. 5</cite></blockquote>
+          <blockquote>"Boundary orientations which result in substantial areas of partial coherency (e.g., the broad faces of plates) are less mobile than boundaries which have a higher density of sites where atomic attachment is feasible (e.g., the edges of plates)"<cite>Reynolds, Li, Shui &amp; Aaronson 1990, Metall. Trans. A 21A, p. 1455</cite></blockquote>
+          <blockquote>"interfacial structure studies of ferrite and bainite plates have demonstrated that the ferrite: austenite boundaries have a sessile, misfit dislocation structure"<cite>Reynolds et al. 1990, p. 1449</cite></blockquote>
+        </details>
+      </div>
+
+      <div class="panel prose">
+        <h3>Solute drag and stasis</h3>
+        <p>The solute-drag models in your folder (Purdy &amp; Brechet 1995, Hillert 1999) describe the interface as a region where solute binds and diffuses; they do not depend on the orientation relationship. KS enters through which interface is moving and how strongly it binds solute.</p>
+        <ul>
+          <li>Semi-coherent broad faces of Widmanstätten and bainitic plates (rational OR) may segregate less than incoherent interfaces such as the plate tip (Militzer et al., p. 12).</li>
+          <li>The only atomistic numbers in the review come from DFT on a KS bcc/fcc interface; the binding energies are similar to a Σ5 grain boundary in bcc iron (p. 13).</li>
+          <li>In Fe-0.1C-Nb, Dong traces the slow-down of allotriomorphs to Nb segregation at the moving incoherent interface (p. III).</li>
+          <li>In Fe-C-Mo, Reynolds et al. tie their solute-drag-like effect (SDLE) to ledges: a slowed boundary leaves its partially coherent terraces exposed for longer, until sympathetic nucleation can start again on them (p. 1454); the same terraces are the likeliest sites for carbides (p. 1455). Here drag, KS terraces and sympathetic nucleation are one mechanism.</li>
+        </ul>
+        <p>So the question to ask of a drag model is which interface it describes: the incoherent tip and allotriomorph faces, or the KS terraces.</p>
+        <div class="links"><a href="https://claude.ai/artifact/GVjThW68kNCjortZ5muSx7" target="_blank" rel="noopener">PLE, NPLE and Paraequilibrium lesson ↗</a></div>
+        <details class="src"><summary>Sources (5)</summary>
+          <blockquote>"The rational orientation relationship of Widmanstätten or bainitic ferrite with the parent austenite leads to semi-coherent interfaces, which may have weaker solute segregation tendencies than incoherent interfaces such as the plate tip"<cite>Militzer et al. 2022, p. 12</cite></blockquote>
+          <blockquote>"They constructed a simulation domain with a bcc-fcc interface having a Kudrjumov–Sachs orientation relationship … The binding energies are similar to those obtained previously for a Σ5 grain boundary in bcc-Fe"<cite>Militzer et al. 2022, p. 13</cite></blockquote>
+          <blockquote>"the Nb segregation at the migrating incoherent α/γ interface is the main cause for growth retardation of allotriomorphic ferrite"<cite>Dong 2021, English abstract, p. III</cite></blockquote>
+          <blockquote>"On a ledgewise growth mechanism, a decrease in the velocity of a migrating α:γ boundary is equivalent to an increase in the mean time the partially coherent terraces of the boundary 'survive' before being overrun by the carbon diffusion fields associated with the risers of succeeding growth ledges. The supersaturation for ferrite formation at the terraces then increases to the level where sympathetic nucleation can occur again."<cite>Reynolds et al. 1990, p. 1454</cite></blockquote>
+          <blockquote>"the stationary portions of the boundary, i.e., the terraces of ledges, are the most likely sites for carbide nucleation"<cite>Reynolds et al. 1990, p. 1455</cite></blockquote>
+        </details>
+      </div>
+
+      <div class="panel prose">
+        <h3>Widmanstätten ferrite and bainite</h3>
+        <p>Militzer et al. call Widmanstätten ferrite "diffusional-displacive": carbon diffusion sets the rate, while the iron lattice changes by disconnection motion, the same defects that set the lath habit in section 1. Its shape change is why stress affects it so much more than it affects allotriomorphs.</p>
+        <p>Bhadeshia: Widmanstätten ferrite grows as pairs of mutually accommodating variants whose opposing shape changes cancel, storing about 50 J/mol; bainite plates show a single invariant-plane strain and store about 400 J/mol. Ohmori et al.: Widmanstätten ferrite nucleates diffusionally with a KS-type relationship on perturbed allotriomorph interfaces or grain boundaries, then grows displacively.</p>
+        <p>The plate itself grows along the invariant line of its KS strain, the same direction that becomes the lath long axis (Cottura et al., p. 208; section 3).</p>
+        <div class="links"><a href="https://claude.ai/artifact/SvWrWBo6yp7rgWPBdM4UvC" target="_blank" rel="noopener">Deformation and Plasticity lesson ↗</a></div>
+        <details class="src"><summary>Sources (4)</summary>
+          <blockquote>"'diffusional-displacive' – diffusional because the growth kinetics are rate-limited by carbon diffusion and displacive because the substitutional lattice rearrangement across the interface occurs through the motion of disconnections"<cite>Militzer et al. 2022, p. 5</cite></blockquote>
+          <blockquote>"The displacive formation of Widmanstätten ferrite seems to involve the cooperative growth of mutually accommodating crystallographic variants." … "(of the order of 50 J mol⁻¹)" … "amounting to about 400 J mol⁻¹"<cite>Bhadeshia 1985, Mater. Sci. Technol. 1, p. 501</cite></blockquote>
+          <blockquote>"a Widmanstätten ferrite nucleates in the orthoequilibrium condition at either perturbed grain-boundary ferrite/austenite interface or a grain boundary via a diffusional manner with a specific orientation relationship such as that of Kurdjumov-Sachs"<cite>Ohmori et al. 1994, Metall. Mater. Trans. A 25A, p. 1988</cite></blockquote>
+          <blockquote>"the attainment of an essentially uninterrupted invariant line along the length of the lath broad faces"<cite>Aaronson et al. 1995, p. 111</cite></blockquote>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 3. EBSD ===================== -->
+  <section class="part" id="ebsd">
+    <h2><small>Section 3</small>From EBSD back to variants</h2>
+    <p class="lede">An EBSD map shows only the bcc orientations. Because each one is a known KS variant of a parent grain, you can work backwards: rebuild the austenite, label every domain with its variant, and rotate the domain shapes into the austenite frame. Nyyssönen et al. use this to recover habit planes and long axes from ordinary 2-D maps.</p>
+    <div class="grid2b">
+      <div class="panel prose">
+        <h3>The workflow</h3>
+        <ol class="steps">
+          <li><b>Index</b> the bcc map.</li>
+          <li><b>Reconstruct</b> parent austenite grains from the child orientations and the OR.</li>
+          <li><b>Label variants</b>: find the symmetry operator, and so the variant number, of each pixel.</li>
+          <li><b>Segment</b> variant domains; for lath martensite these are sub-blocks.</li>
+          <li><b>Rotate</b> centroid-to-boundary vectors into the austenite frame and fit a shape.</li>
+        </ol>
+        <p style="margin-top:12px">Their standard variant is V1 in Morito's numbering, the same as this page. For quenched 0.7 wt% C martensite they measure a habit plane of (0.49, 0.70, 0.52)<sub>γ</sub>, about 1° from (575)<sub>γ</sub>, and a long axis of (−0.71, −0.03, 0.70)<sub>γ</sub>, which is the [<span class="bar">1</span>01]<sub>γ</sub> row that V1 shares with its α crystal. The lath grows along the KS parallel direction.</p>
+        <p>For your in-situ heating-stage EBSD, the variant table above is the lookup: the misorientation and axis between two neighbouring domains tell you whether they are sub-blocks, blocks or different packets of one parent grain, or not KS-related at all.</p>
+        <div class="links"><a href="https://claude.ai/artifact/5EL19rtnzcBskvbJLhPu6L" target="_blank" rel="noopener">Martensite Traces in 3D lesson ↗</a><a href="https://claude.ai/artifact/TKHyqkfvyJaGb1t4RwqSiw" target="_blank" rel="noopener">Reading Pole Figures lesson ↗</a></div>
+        <details class="src"><summary>Sources (4)</summary>
+          <blockquote>"the orientation relationship between the parent and child phase was defined by the Young, Kurdjumow, and Sachs (YKS) OR [14,15], with only variants 1 to 6 forming as defined by Morito et al. [16]."<cite>Nyyssönen et al. 2026, Acta Mater. 313, 122306, p. 5</cite></blockquote>
+          <blockquote>"Subsequent single-surface TEM measurements by Kelly et al. [4] identified the long direction of laths as being close to [101]γ."<cite>Nyyssönen et al. 2026, p. 2</cite></blockquote>
+          <blockquote>Table 2, 07C-A quenched, RD/ND: habit plane "0.49, 0.70, 0.52", long axis "−0.71, −0.03, 0.70"<cite>Nyyssönen et al. 2026, p. 7</cite></blockquote>
+          <blockquote>"Importantly, Sandvik et al. [3] explicitly linked the (575)γ habit plane to a specific transformation variant, which is also used in the present work."<cite>Nyyssönen et al. 2026, p. 11</cite></blockquote>
+        </details>
+      </div>
+      <div class="panel">
+        <p class="eyebrow">Habit planes on the standard triangle</p>
+        <svg id="ipf" class="fig" viewBox="0 0 460 380" role="img" aria-label="Habit plane normals of lath martensite and bainite on the cubic standard stereographic triangle"></svg>
+        <div class="legend" id="ipf-legend"></div>
+        <p class="hint">Plane normals reduced to the 001–101–111 triangle. Martensite clusters at {557}<sub>γ</sub>, about 9.4° from the KS terrace {111}<sub>γ</sub>; bainite plates spread further. Values from Nyyssönen et al. Table 2 (p. 7) and the earlier studies they cite (p. 12); Howe et al.'s calculated plane from p. 818.</p>
+        <details class="src"><summary>Sources (1)</summary>
+          <blockquote>"The habit plane of the plates was reported as (0.373, 0.663, 0.649)γ … Zhang and Kelly [23] reported that the individual lower bainite platelets have habit planes within 5° of (295)γ, whereas individual upper bainite platelets lie within 5° of either (122)γ or from (295)γ"<cite>Nyyssönen et al. 2026, p. 12 (citing Sandvik, and Zhang &amp; Kelly; those papers are not in your folder)</cite></blockquote>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel prose" id="sources">
+    <p class="eyebrow">Sources</p>
+    <p class="hint" style="margin-top:0">Every quote above is from these files in <span class="mi">~/phd_2/03-literature/papers/</span>, with printed page numbers. Morito et al. 2003, Kurdjumov &amp; Sachs 1930 and Dubé &amp; Mehl are not in the folder; points from them are cited through the papers that quote them. Variant numbering, rotation matrices and misorientations were computed for this page and match Morito's values for V1–V6 (60°/[11<span class="bar">1</span>], 60°/[011], 10.53°/[0<span class="bar">1</span><span class="bar">1</span>], 60°/[0<span class="bar">1</span><span class="bar">1</span>], 49.47°/[011]).</p>
+    <ol class="reflist">
+      <li>Aaronson &amp; Wells 1956, Sympathetic nucleation of ferrite, Trans. AIME (J. Metals), pp. 1216–1223. <code>phase transformations/aaronson_1956_sympathetic nucleation of ferrite.pdf</code></li>
+      <li>Aaronson, Spanos, Masamura, Vardiman, Moon, Menon &amp; Hall 1995, Sympathetic nucleation: an overview, Mater. Sci. Eng. B32, 107–123. <code>phase transformations/aaronson-et-al-1995-sympathetic-nucleation-an-overview.pdf</code></li>
+      <li>Bhadeshia 1985, Diffusion-controlled growth of ferrite plates in plain-carbon steels, Mater. Sci. Technol. 1, 497–504. <code>phase transformations/bhadeshia-1985-….pdf</code></li>
+      <li>Cottura, Appolaire, Finel &amp; Le Bouar 2014, Phase field study of acicular growth: role of elasticity in Widmanstätten structure, Acta Mater. 72, 200–210. <code>phase transformations/cottura-et-al-2014-….pdf</code></li>
+      <li>Dong 2021, 合金元素偏聚与析出对钢中 α/γ 界面迁移行为的影响, PhD thesis, Tsinghua University. <code>phase transformations/dong-2021-….pdf</code></li>
+      <li>Howe, Pond &amp; Hirth 2009, The role of disconnections in phase transformations, Prog. Mater. Sci. 54, 792–838. <code>phase transformations/howe-et-al-2009-….pdf</code></li>
+      <li>Kop, Sietsma &amp; van der Zwaag 2001, Dilatometric analysis of phase transformations in hypo-eutectoid steels, J. Mater. Sci. 36, 519–526. <code>phase transformations/kop_2001_….pdf</code></li>
+      <li>Militzer, Hutchinson, Zurob &amp; Miyamoto 2022, Modelling of the diffusional austenite-ferrite transformation, Int. Mater. Rev. <code>phase transformations/militzer-et-al-2022-….pdf</code></li>
+      <li>Nyyssönen, Ståhlkrantz, Gazder, Hielscher &amp; Niessen 2026, Three-dimensional shape metrics for martensite and bainite from two-dimensional orientation maps, Acta Mater. 313, 122306. <code>ebsd-morphology/nyyssonen_2024_….pdf</code> (file name says 2024; the paper is 2026)</li>
+      <li>Ohmori, Ohtsubo, Jung, Okaguchi &amp; Ohtani 1994, Morphology of bainite and Widmanstätten ferrite, Metall. Mater. Trans. A 25A, 1981–1989. <code>phase transformations/ohmori et al_1994_….pdf</code></li>
+      <li>Phelan, Stanford &amp; Dippenaar 2005, In situ observations of Widmanstätten ferrite formation in a low-carbon steel, Mater. Sci. Eng. A 407, 127–134. <code>phase transformations/phelan-et-al-2005-….pdf</code></li>
+      <li>Reynolds, Li, Shui &amp; Aaronson 1990, The incomplete transformation phenomenon in Fe-C-Mo alloys, Metall. Trans. A 21A, 1433–1463. <code>phase transformations/reynolds_1990_….pdf</code></li>
+      <li>Purdy &amp; Brechet 1995 and Hillert 1999 were checked: neither discusses orientation relationships, which is why section 2 treats solute drag through interface type.</li>
+    </ol>
   </section>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script>
-const DATA = {"variants":[{"id":1,"cp":0,"pg":[1,1,1],"dg":[-1,0,1],"da":[-1,-1,1],"bain":2,"R":[[0.741582,0.64983,0.166667],[-0.666667,0.741582,0.074915],[-0.074915,-0.166667,0.983163]]},{"id":2,"cp":0,"pg":[1,1,1],"dg":[-1,0,1],"da":[-1,1,-1],"bain":0,"R":[[0.074915,-0.166667,0.983163],[0.666667,0.741582,0.074915],[-0.741582,0.64983,0.166667]]},{"id":3,"cp":0,"pg":[1,1,1],"dg":[0,1,-1],"da":[-1,-1,1],"bain":1,"R":[[-0.666667,0.741582,0.074915],[-0.074915,-0.166667,0.983163],[0.741582,0.64983,0.166667]]},{"id":4,"cp":0,"pg":[1,1,1],"dg":[0,1,-1],"da":[-1,1,-1],"bain":2,"R":[[0.666667,0.741582,0.074915],[-0.741582,0.64983,0.166667],[0.074915,-0.166667,0.983163]]},{"id":5,"cp":0,"pg":[1,1,1],"dg":[1,-1,0],"da":[-1,-1,1],"bain":0,"R":[[-0.074915,-0.166667,0.983163],[0.741582,0.64983,0.166667],[-0.666667,0.741582,0.074915]]},{"id":6,"cp":0,"pg":[1,1,1],"dg":[1,-1,0],"da":[-1,1,-1],"bain":1,"R":[[-0.741582,0.64983,0.166667],[0.074915,-0.166667,0.983163],[0.666667,0.741582,0.074915]]},{"id":7,"cp":1,"pg":[1,-1,1],"dg":[1,0,-1],"da":[-1,-1,1],"bain":0,"R":[[-0.074915,-0.166667,0.983163],[0.666667,-0.741582,-0.074915],[0.741582,0.64983,0.166667]]},{"id":8,"cp":1,"pg":[1,-1,1],"dg":[1,0,-1],"da":[-1,1,-1],"bain":2,"R":[[-0.741582,0.64983,0.166667],[-0.666667,-0.741582,-0.074915],[0.074915,-0.166667,0.983163]]},{"id":9,"cp":1,"pg":[1,-1,1],"dg":[-1,-1,0],"da":[-1,-1,1],"bain":1,"R":[[0.741582,0.64983,0.166667],[0.074915,0.166667,-0.983163],[-0.666667,0.741582,0.074915]]},{"id":10,"cp":1,"pg":[1,-1,1],"dg":[-1,-1,0],"da":[-1,1,-1],"bain":0,"R":[[0.074915,-0.166667,0.983163],[0.741582,-0.64983,-0.166667],[0.666667,0.741582,0.074915]]},{"id":11,"cp":1,"pg":[1,-1,1],"dg":[0,1,1],"da":[-1,-1,1],"bain":2,"R":[[-0.666667,0.741582,0.074915],[-0.741582,-0.64983,-0.166667],[-0.074915,-0.166667,0.983163]]},{"id":12,"cp":1,"pg":[1,-1,1],"dg":[0,1,1],"da":[-1,1,-1],"bain":1,"R":[[0.666667,0.741582,0.074915],[-0.074915,0.166667,-0.983163],[-0.741582,0.64983,0.166667]]},{"id":13,"cp":2,"pg":[-1,1,1],"dg":[0,-1,1],"da":[-1,-1,1],"bain":2,"R":[[0.666667,-0.741582,-0.074915],[0.741582,0.64983,0.166667],[-0.074915,-0.166667,0.983163]]},{"id":14,"cp":2,"pg":[-1,1,1],"dg":[0,-1,1],"da":[-1,1,-1],"bain":1,"R":[[-0.666667,-0.741582,-0.074915],[0.074915,-0.166667,0.983163],[-0.741582,0.64983,0.166667]]},{"id":15,"cp":2,"pg":[-1,1,1],"dg":[-1,0,-1],"da":[-1,-1,1],"bain":0,"R":[[0.074915,0.166667,-0.983163],[-0.666667,0.741582,0.074915],[0.741582,0.64983,0.166667]]},{"id":16,"cp":2,"pg":[-1,1,1],"dg":[-1,0,-1],"da":[-1,1,-1],"bain":2,"R":[[0.741582,-0.64983,-0.166667],[0.666667,0.741582,0.074915],[0.074915,-0.166667,0.983163]]},{"id":17,"cp":2,"pg":[-1,1,1],"dg":[1,1,0],"da":[-1,-1,1],"bain":1,"R":[[-0.741582,-0.64983,-0.166667],[-0.074915,-0.166667,0.983163],[-0.666667,0.741582,0.074915]]},{"id":18,"cp":2,"pg":[-1,1,1],"dg":[1,1,0],"da":[-1,1,-1],"bain":0,"R":[[-0.074915,0.166667,-0.983163],[-0.741582,0.64983,0.166667],[0.666667,0.741582,0.074915]]},{"id":19,"cp":3,"pg":[1,1,-1],"dg":[-1,1,0],"da":[-1,-1,1],"bain":1,"R":[[0.741582,0.64983,0.166667],[-0.074915,-0.166667,0.983163],[0.666667,-0.741582,-0.074915]]},{"id":20,"cp":3,"pg":[1,1,-1],"dg":[-1,1,0],"da":[-1,1,-1],"bain":0,"R":[[0.074915,-0.166667,0.983163],[-0.741582,0.64983,0.166667],[-0.666667,-0.741582,-0.074915]]},{"id":21,"cp":3,"pg":[1,1,-1],"dg":[0,-1,-1],"da":[-1,-1,1],"bain":2,"R":[[-0.666667,0.741582,0.074915],[0.741582,0.64983,0.166667],[0.074915,0.166667,-0.983163]]},{"id":22,"cp":3,"pg":[1,1,-1],"dg":[0,-1,-1],"da":[-1,1,-1],"bain":1,"R":[[0.666667,0.741582,0.074915],[0.074915,-0.166667,0.983163],[0.741582,-0.64983,-0.166667]]},{"id":23,"cp":3,"pg":[1,1,-1],"dg":[1,0,1],"da":[-1,-1,1],"bain":0,"R":[[-0.074915,-0.166667,0.983163],[-0.666667,0.741582,0.074915],[-0.741582,-0.64983,-0.166667]]},{"id":24,"cp":3,"pg":[1,1,-1],"dg":[1,0,1],"da":[-1,1,-1],"bain":2,"R":[[-0.741582,0.64983,0.166667],[0.666667,0.741582,0.074915],[-0.074915,0.166667,-0.983163]]}],"mis":[[0.0,60.0,60.0,10.53,60.0,49.47,49.47,10.53,50.51,50.51,14.88,57.21,14.88,50.51,57.21,20.61,51.73,47.11,50.51,57.21,20.61,47.11,57.21,21.06],[60.0,0.0,49.47,60.0,10.53,60.0,10.53,49.47,57.21,14.88,50.51,50.51,57.21,50.51,21.06,57.21,47.11,20.61,50.51,14.88,47.11,51.73,20.61,57.21],[60.0,49.47,0.0,60.0,60.0,10.53,50.51,57.21,20.61,47.11,57.21,21.06,49.47,10.53,50.51,50.51,14.88,57.21,14.88,50.51,57.21,20.61,51.73,47.11],[10.53,60.0,60.0,0.0,49.47,60.0,50.51,14.88,47.11,51.73,20.61,57.21,10.53,49.47,57.21,14.88,50.51,50.51,57.21,50.51,21.06,57.21,47.11,20.61],[60.0,10.53,60.0,49.47,0.0,60.0,14.88,50.51,57.21,20.61,51.73,47.11,50.51,57.21,20.61,47.11,57.21,21.06,49.47,10.53,50.51,50.51,14.88,57.21],[49.47,60.0,10.53,60.0,60.0,0.0,57.21,50.51,21.06,57.21,47.11,20.61,50.51,14.88,47.11,51.73,20.61,57.21,10.53,49.47,57.21,14.88,50.51,50.51],[49.47,10.53,50.51,50.51,14.88,57.21,0.0,60.0,60.0,10.53,60.0,49.47,47.11,51.73,20.61,57.21,50.51,14.88,47.11,20.61,57.21,50.51,21.06,57.21],[10.53,49.47,57.21,14.88,50.51,50.51,60.0,0.0,49.47,60.0,10.53,60.0,20.61,47.11,57.21,21.06,50.51,57.21,51.73,47.11,14.88,50.51,57.21,20.61],[50.51,57.21,20.61,47.11,57.21,21.06,60.0,49.47,0.0,60.0,60.0,10.53,57.21,14.88,50.51,50.51,10.53,49.47,20.61,57.21,50.51,14.88,47.11,51.73],[50.51,14.88,47.11,51.73,20.61,57.21,10.53,60.0,60.0,0.0,49.47,60.0,50.51,50.51,14.88,57.21,49.47,10.53,57.21,21.06,50.51,57.21,20.61,47.11],[14.88,50.51,57.21,20.61,51.73,47.11,60.0,10.53,60.0,49.47,0.0,60.0,21.06,57.21,47.11,20.61,57.21,50.51,50.51,50.51,10.53,49.47,57.21,14.88],[57.21,50.51,21.06,57.21,47.11,20.61,49.47,60.0,10.53,60.0,60.0,0.0,57.21,20.61,51.73,47.11,14.88,50.51,14.88,57.21,49.47,10.53,50.51,50.51],[14.88,57.21,49.47,10.53,50.51,50.51,47.11,20.61,57.21,50.51,21.06,57.21,0.0,60.0,60.0,10.53,60.0,49.47,47.11,51.73,20.61,57.21,50.51,14.88],[50.51,50.51,10.53,49.47,57.21,14.88,51.73,47.11,14.88,50.51,57.21,20.61,60.0,0.0,49.47,60.0,10.53,60.0,20.61,47.11,57.21,21.06,50.51,57.21],[57.21,21.06,50.51,57.21,20.61,47.11,20.61,57.21,50.51,14.88,47.11,51.73,60.0,49.47,0.0,60.0,60.0,10.53,57.21,14.88,50.51,50.51,10.53,49.47],[20.61,57.21,50.51,14.88,47.11,51.73,57.21,21.06,50.51,57.21,20.61,47.11,10.53,60.0,60.0,0.0,49.47,60.0,50.51,50.51,14.88,57.21,49.47,10.53],[51.73,47.11,14.88,50.51,57.21,20.61,50.51,50.51,10.53,49.47,57.21,14.88,60.0,10.53,60.0,49.47,0.0,60.0,21.06,57.21,47.11,20.61,57.21,50.51],[47.11,20.61,57.21,50.51,21.06,57.21,14.88,57.21,49.47,10.53,50.51,50.51,49.47,60.0,10.53,60.0,60.0,0.0,57.21,20.61,51.73,47.11,14.88,50.51],[50.51,50.51,14.88,57.21,49.47,10.53,47.11,51.73,20.61,57.21,50.51,14.88,47.11,20.61,57.21,50.51,21.06,57.21,0.0,60.0,60.0,10.53,60.0,49.47],[57.21,14.88,50.51,50.51,10.53,49.47,20.61,47.11,57.21,21.06,50.51,57.21,51.73,47.11,14.88,50.51,57.21,20.61,60.0,0.0,49.47,60.0,10.53,60.0],[20.61,47.11,57.21,21.06,50.51,57.21,57.21,14.88,50.51,50.51,10.53,49.47,20.61,57.21,50.51,14.88,47.11,51.73,60.0,49.47,0.0,60.0,60.0,10.53],[47.11,51.73,20.61,57.21,50.51,14.88,50.51,50.51,14.88,57.21,49.47,10.53,57.21,21.06,50.51,57.21,20.61,47.11,10.53,60.0,60.0,0.0,49.47,60.0],[57.21,20.61,51.73,47.11,14.88,50.51,21.06,57.21,47.11,20.61,57.21,50.51,50.51,50.51,10.53,49.47,57.21,14.88,60.0,10.53,60.0,49.47,0.0,60.0],[21.06,57.21,47.11,20.61,57.21,50.51,57.21,20.61,51.73,47.11,14.88,50.51,14.88,57.21,49.47,10.53,50.51,50.51,49.47,60.0,10.53,60.0,60.0,0.0]]};
-const V = DATA.variants, MIS = DATA.mis;
+const DATA = {"variants":[{"id":1,"cp":0,"pg":[1,1,1],"dg":[-1,0,1],"da":[-1,-1,1],"bain":2,"R":[[0.741582,0.64983,0.166667],[-0.666667,0.741582,0.074915],[-0.074915,-0.166667,0.983163]]},{"id":2,"cp":0,"pg":[1,1,1],"dg":[-1,0,1],"da":[-1,1,-1],"bain":0,"R":[[0.074915,-0.166667,0.983163],[0.666667,0.741582,0.074915],[-0.741582,0.64983,0.166667]]},{"id":3,"cp":0,"pg":[1,1,1],"dg":[0,1,-1],"da":[-1,-1,1],"bain":1,"R":[[-0.666667,0.741582,0.074915],[-0.074915,-0.166667,0.983163],[0.741582,0.64983,0.166667]]},{"id":4,"cp":0,"pg":[1,1,1],"dg":[0,1,-1],"da":[-1,1,-1],"bain":2,"R":[[0.666667,0.741582,0.074915],[-0.741582,0.64983,0.166667],[0.074915,-0.166667,0.983163]]},{"id":5,"cp":0,"pg":[1,1,1],"dg":[1,-1,0],"da":[-1,-1,1],"bain":0,"R":[[-0.074915,-0.166667,0.983163],[0.741582,0.64983,0.166667],[-0.666667,0.741582,0.074915]]},{"id":6,"cp":0,"pg":[1,1,1],"dg":[1,-1,0],"da":[-1,1,-1],"bain":1,"R":[[-0.741582,0.64983,0.166667],[0.074915,-0.166667,0.983163],[0.666667,0.741582,0.074915]]},{"id":7,"cp":1,"pg":[1,-1,1],"dg":[1,0,-1],"da":[-1,-1,1],"bain":0,"R":[[-0.074915,-0.166667,0.983163],[0.666667,-0.741582,-0.074915],[0.741582,0.64983,0.166667]]},{"id":8,"cp":1,"pg":[1,-1,1],"dg":[1,0,-1],"da":[-1,1,-1],"bain":2,"R":[[-0.741582,0.64983,0.166667],[-0.666667,-0.741582,-0.074915],[0.074915,-0.166667,0.983163]]},{"id":9,"cp":1,"pg":[1,-1,1],"dg":[-1,-1,0],"da":[-1,-1,1],"bain":1,"R":[[0.741582,0.64983,0.166667],[0.074915,0.166667,-0.983163],[-0.666667,0.741582,0.074915]]},{"id":10,"cp":1,"pg":[1,-1,1],"dg":[-1,-1,0],"da":[-1,1,-1],"bain":0,"R":[[0.074915,-0.166667,0.983163],[0.741582,-0.64983,-0.166667],[0.666667,0.741582,0.074915]]},{"id":11,"cp":1,"pg":[1,-1,1],"dg":[0,1,1],"da":[-1,-1,1],"bain":2,"R":[[-0.666667,0.741582,0.074915],[-0.741582,-0.64983,-0.166667],[-0.074915,-0.166667,0.983163]]},{"id":12,"cp":1,"pg":[1,-1,1],"dg":[0,1,1],"da":[-1,1,-1],"bain":1,"R":[[0.666667,0.741582,0.074915],[-0.074915,0.166667,-0.983163],[-0.741582,0.64983,0.166667]]},{"id":13,"cp":2,"pg":[-1,1,1],"dg":[0,-1,1],"da":[-1,-1,1],"bain":2,"R":[[0.666667,-0.741582,-0.074915],[0.741582,0.64983,0.166667],[-0.074915,-0.166667,0.983163]]},{"id":14,"cp":2,"pg":[-1,1,1],"dg":[0,-1,1],"da":[-1,1,-1],"bain":1,"R":[[-0.666667,-0.741582,-0.074915],[0.074915,-0.166667,0.983163],[-0.741582,0.64983,0.166667]]},{"id":15,"cp":2,"pg":[-1,1,1],"dg":[-1,0,-1],"da":[-1,-1,1],"bain":0,"R":[[0.074915,0.166667,-0.983163],[-0.666667,0.741582,0.074915],[0.741582,0.64983,0.166667]]},{"id":16,"cp":2,"pg":[-1,1,1],"dg":[-1,0,-1],"da":[-1,1,-1],"bain":2,"R":[[0.741582,-0.64983,-0.166667],[0.666667,0.741582,0.074915],[0.074915,-0.166667,0.983163]]},{"id":17,"cp":2,"pg":[-1,1,1],"dg":[1,1,0],"da":[-1,-1,1],"bain":1,"R":[[-0.741582,-0.64983,-0.166667],[-0.074915,-0.166667,0.983163],[-0.666667,0.741582,0.074915]]},{"id":18,"cp":2,"pg":[-1,1,1],"dg":[1,1,0],"da":[-1,1,-1],"bain":0,"R":[[-0.074915,0.166667,-0.983163],[-0.741582,0.64983,0.166667],[0.666667,0.741582,0.074915]]},{"id":19,"cp":3,"pg":[1,1,-1],"dg":[-1,1,0],"da":[-1,-1,1],"bain":1,"R":[[0.741582,0.64983,0.166667],[-0.074915,-0.166667,0.983163],[0.666667,-0.741582,-0.074915]]},{"id":20,"cp":3,"pg":[1,1,-1],"dg":[-1,1,0],"da":[-1,1,-1],"bain":0,"R":[[0.074915,-0.166667,0.983163],[-0.741582,0.64983,0.166667],[-0.666667,-0.741582,-0.074915]]},{"id":21,"cp":3,"pg":[1,1,-1],"dg":[0,-1,-1],"da":[-1,-1,1],"bain":2,"R":[[-0.666667,0.741582,0.074915],[0.741582,0.64983,0.166667],[0.074915,0.166667,-0.983163]]},{"id":22,"cp":3,"pg":[1,1,-1],"dg":[0,-1,-1],"da":[-1,1,-1],"bain":1,"R":[[0.666667,0.741582,0.074915],[0.074915,-0.166667,0.983163],[0.741582,-0.64983,-0.166667]]},{"id":23,"cp":3,"pg":[1,1,-1],"dg":[1,0,1],"da":[-1,-1,1],"bain":0,"R":[[-0.074915,-0.166667,0.983163],[-0.666667,0.741582,0.074915],[-0.741582,-0.64983,-0.166667]]},{"id":24,"cp":3,"pg":[1,1,-1],"dg":[1,0,1],"da":[-1,1,-1],"bain":2,"R":[[-0.741582,0.64983,0.166667],[0.666667,0.741582,0.074915],[-0.074915,0.166667,-0.983163]]}],"mis":[[0.0,60.0,60.0,10.53,60.0,49.47,49.47,10.53,50.51,50.51,14.88,57.21,14.88,50.51,57.21,20.61,51.73,47.11,50.51,57.21,20.61,47.11,57.21,21.06],[60.0,0.0,49.47,60.0,10.53,60.0,10.53,49.47,57.21,14.88,50.51,50.51,57.21,50.51,21.06,57.21,47.11,20.61,50.51,14.88,47.11,51.73,20.61,57.21],[60.0,49.47,0.0,60.0,60.0,10.53,50.51,57.21,20.61,47.11,57.21,21.06,49.47,10.53,50.51,50.51,14.88,57.21,14.88,50.51,57.21,20.61,51.73,47.11],[10.53,60.0,60.0,0.0,49.47,60.0,50.51,14.88,47.11,51.73,20.61,57.21,10.53,49.47,57.21,14.88,50.51,50.51,57.21,50.51,21.06,57.21,47.11,20.61],[60.0,10.53,60.0,49.47,0.0,60.0,14.88,50.51,57.21,20.61,51.73,47.11,50.51,57.21,20.61,47.11,57.21,21.06,49.47,10.53,50.51,50.51,14.88,57.21],[49.47,60.0,10.53,60.0,60.0,0.0,57.21,50.51,21.06,57.21,47.11,20.61,50.51,14.88,47.11,51.73,20.61,57.21,10.53,49.47,57.21,14.88,50.51,50.51],[49.47,10.53,50.51,50.51,14.88,57.21,0.0,60.0,60.0,10.53,60.0,49.47,47.11,51.73,20.61,57.21,50.51,14.88,47.11,20.61,57.21,50.51,21.06,57.21],[10.53,49.47,57.21,14.88,50.51,50.51,60.0,0.0,49.47,60.0,10.53,60.0,20.61,47.11,57.21,21.06,50.51,57.21,51.73,47.11,14.88,50.51,57.21,20.61],[50.51,57.21,20.61,47.11,57.21,21.06,60.0,49.47,0.0,60.0,60.0,10.53,57.21,14.88,50.51,50.51,10.53,49.47,20.61,57.21,50.51,14.88,47.11,51.73],[50.51,14.88,47.11,51.73,20.61,57.21,10.53,60.0,60.0,0.0,49.47,60.0,50.51,50.51,14.88,57.21,49.47,10.53,57.21,21.06,50.51,57.21,20.61,47.11],[14.88,50.51,57.21,20.61,51.73,47.11,60.0,10.53,60.0,49.47,0.0,60.0,21.06,57.21,47.11,20.61,57.21,50.51,50.51,50.51,10.53,49.47,57.21,14.88],[57.21,50.51,21.06,57.21,47.11,20.61,49.47,60.0,10.53,60.0,60.0,0.0,57.21,20.61,51.73,47.11,14.88,50.51,14.88,57.21,49.47,10.53,50.51,50.51],[14.88,57.21,49.47,10.53,50.51,50.51,47.11,20.61,57.21,50.51,21.06,57.21,0.0,60.0,60.0,10.53,60.0,49.47,47.11,51.73,20.61,57.21,50.51,14.88],[50.51,50.51,10.53,49.47,57.21,14.88,51.73,47.11,14.88,50.51,57.21,20.61,60.0,0.0,49.47,60.0,10.53,60.0,20.61,47.11,57.21,21.06,50.51,57.21],[57.21,21.06,50.51,57.21,20.61,47.11,20.61,57.21,50.51,14.88,47.11,51.73,60.0,49.47,0.0,60.0,60.0,10.53,57.21,14.88,50.51,50.51,10.53,49.47],[20.61,57.21,50.51,14.88,47.11,51.73,57.21,21.06,50.51,57.21,20.61,47.11,10.53,60.0,60.0,0.0,49.47,60.0,50.51,50.51,14.88,57.21,49.47,10.53],[51.73,47.11,14.88,50.51,57.21,20.61,50.51,50.51,10.53,49.47,57.21,14.88,60.0,10.53,60.0,49.47,0.0,60.0,21.06,57.21,47.11,20.61,57.21,50.51],[47.11,20.61,57.21,50.51,21.06,57.21,14.88,57.21,49.47,10.53,50.51,50.51,49.47,60.0,10.53,60.0,60.0,0.0,57.21,20.61,51.73,47.11,14.88,50.51],[50.51,50.51,14.88,57.21,49.47,10.53,47.11,51.73,20.61,57.21,50.51,14.88,47.11,20.61,57.21,50.51,21.06,57.21,0.0,60.0,60.0,10.53,60.0,49.47],[57.21,14.88,50.51,50.51,10.53,49.47,20.61,47.11,57.21,21.06,50.51,57.21,51.73,47.11,14.88,50.51,57.21,20.61,60.0,0.0,49.47,60.0,10.53,60.0],[20.61,47.11,57.21,21.06,50.51,57.21,57.21,14.88,50.51,50.51,10.53,49.47,20.61,57.21,50.51,14.88,47.11,51.73,60.0,49.47,0.0,60.0,60.0,10.53],[47.11,51.73,20.61,57.21,50.51,14.88,50.51,50.51,14.88,57.21,49.47,10.53,57.21,21.06,50.51,57.21,20.61,47.11,10.53,60.0,60.0,0.0,49.47,60.0],[57.21,20.61,51.73,47.11,14.88,50.51,21.06,57.21,47.11,20.61,57.21,50.51,50.51,50.51,10.53,49.47,57.21,14.88,60.0,10.53,60.0,49.47,0.0,60.0],[21.06,57.21,47.11,20.61,57.21,50.51,57.21,20.61,51.73,47.11,14.88,50.51,14.88,57.21,49.47,10.53,50.51,50.51,49.47,60.0,10.53,60.0,60.0,0.0]],"axes":[["","⟨111⟩","⟨110⟩","⟨110⟩","⟨110⟩","⟨110⟩","⟨111⟩","⟨111⟩","⟨1 0.8 0.24⟩","⟨1 0.66 0.63⟩","⟨1 0.38 0.07⟩","⟨1 0.84 0.5⟩","⟨1 0.38 0.07⟩","⟨1 0.66 0.63⟩","⟨1 0.85 0.33⟩","⟨1 1 0.55⟩","⟨1 1 0.55⟩","⟨1 0.87 0.42⟩","⟨1 0.8 0.24⟩","⟨1 0.84 0.5⟩","⟨1 0.31 0⟩","⟨1 0.87 0.42⟩","⟨1 0.85 0.33⟩","⟨1 0.45 0⟩"],["⟨111⟩","","⟨110⟩","⟨110⟩","⟨110⟩","⟨110⟩","⟨111⟩","⟨111⟩","⟨1 0.84 0.5⟩","⟨1 0.38 0.07⟩","⟨1 0.66 0.63⟩","⟨1 0.8 0.24⟩","⟨1 0.84 0.5⟩","⟨1 0.8 0.24⟩","⟨1 0.45 0⟩","⟨1 0.85 0.33⟩","⟨1 0.87 0.42⟩","⟨1 0.31 0⟩","⟨1 0.66 0.63⟩","⟨1 0.38 0.07⟩","⟨1 0.87 0.42⟩","⟨1 1 0.55⟩","⟨1 1 0.55⟩","⟨1 0.85 0.33⟩"],["⟨110⟩","⟨110⟩","","⟨111⟩","⟨110⟩","⟨110⟩","⟨1 0.8 0.24⟩","⟨1 0.84 0.5⟩","⟨1 0.31 0⟩","⟨1 0.87 0.42⟩","⟨1 0.85 0.33⟩","⟨1 0.45 0⟩","⟨111⟩","⟨111⟩","⟨1 0.8 0.24⟩","⟨1 0.66 0.63⟩","⟨1 0.38 0.07⟩","⟨1 0.84 0.5⟩","⟨1 0.38 0.07⟩","⟨1 0.66 0.63⟩","⟨1 0.85 0.33⟩","⟨1 1 0.55⟩","⟨1 1 0.55⟩","⟨1 0.87 0.42⟩"],["⟨110⟩","⟨110⟩","⟨111⟩","","⟨110⟩","⟨110⟩","⟨1 0.66 0.63⟩","⟨1 0.38 0.07⟩","⟨1 0.87 0.42⟩","⟨1 1 0.55⟩","⟨1 1 0.55⟩","⟨1 0.85 0.33⟩","⟨111⟩","⟨111⟩","⟨1 0.84 0.5⟩","⟨1 0.38 0.07⟩","⟨1 0.66 0.63⟩","⟨1 0.8 0.24⟩","⟨1 0.84 0.5⟩","⟨1 0.8 0.24⟩","⟨1 0.45 0⟩","⟨1 0.85 0.33⟩","⟨1 0.87 0.42⟩","⟨1 0.31 0⟩"],["⟨110⟩","⟨110⟩","⟨110⟩","⟨110⟩","","⟨111⟩","⟨1 0.38 0.07⟩","⟨1 0.66 0.63⟩","⟨1 0.85 0.33⟩","⟨1 1 0.55⟩","⟨1 1 0.55⟩","⟨1 0.87 0.42⟩","⟨1 0.8 0.24⟩","⟨1 0.84 0.5⟩","⟨1 0.31 0⟩","⟨1 0.87 0.42⟩","⟨1 0.85 0.33⟩","⟨1 0.45 0⟩","⟨111⟩","⟨111⟩","⟨1 0.8 0.24⟩","⟨1 0.66 0.63⟩","⟨1 0.38 0.07⟩","⟨1 0.84 0.5⟩"],["⟨110⟩","⟨110⟩","⟨110⟩","⟨110⟩","⟨111⟩","","⟨1 0.84 0.5⟩","⟨1 0.8 0.24⟩","⟨1 0.45 0⟩","⟨1 0.85 0.33⟩","⟨1 0.87 0.42⟩","⟨1 0.31 0⟩","⟨1 0.66 0.63⟩","⟨1 0.38 0.07⟩","⟨1 0.87 0.42⟩","⟨1 1 0.55⟩","⟨1 1 0.55⟩","⟨1 0.85 0.33⟩","⟨111⟩","⟨111⟩","⟨1 0.84 0.5⟩","⟨1 0.38 0.07⟩","⟨1 0.66 0.63⟩","⟨1 0.8 0.24⟩"],["⟨111⟩","⟨111⟩","⟨1 0.8 0.24⟩","⟨1 0.66 0.63⟩","⟨1 0.38 0.07⟩","⟨1 0.84 0.5⟩","","⟨111⟩","⟨110⟩","⟨110⟩","⟨110⟩","⟨110⟩","⟨1 0.87 0.42⟩","⟨1 1 0.55⟩","⟨1 1 0.55⟩","⟨1 0.85 0.33⟩","⟨1 0.66 0.63⟩","⟨1 0.38 0.07⟩","⟨1 0.87 0.42⟩","⟨1 0.31 0⟩","⟨1 0.84 0.5⟩","⟨1 0.8 0.24⟩","⟨1 0.45 0⟩","⟨1 0.85 0.33⟩"],["⟨111⟩","⟨111⟩","⟨1 0.84 0.5⟩","⟨1 0.38 0.07⟩","⟨1 0.66 0.63⟩","⟨1 0.8 0.24⟩","⟨111⟩","","⟨110⟩","⟨110⟩","⟨110⟩","⟨110⟩","⟨1 0.31 0⟩","⟨1 0.87 0.42⟩","⟨1 0.85 0.33⟩","⟨1 0.45 0⟩","⟨1 0.8 0.24⟩","⟨1 0.84 0.5⟩","⟨1 1 0.55⟩","⟨1 0.87 0.42⟩","⟨1 0.38 0.07⟩","⟨1 0.66 0.63⟩","⟨1 0.85 0.33⟩","⟨1 1 0.55⟩"],["⟨1 0.8 0.24⟩","⟨1 0.84 0.5⟩","⟨1 0.31 0⟩","⟨1 0.87 0.42⟩","⟨1 0.85 0.33⟩","⟨1 0.45 0⟩","⟨110⟩","⟨110⟩","","⟨111⟩","⟨110⟩","⟨110⟩","⟨1 0.84 0.5⟩","⟨1 0.38 0.07⟩","⟨1 0.66 0.63⟩","⟨1 0.8 0.24⟩","⟨111⟩","⟨111⟩","⟨1 1 0.55⟩","⟨1 0.85 0.33⟩","⟨1 0.66 0.63⟩","⟨1 0.38 0.07⟩","⟨1 0.87 0.42⟩","⟨1 1 0.55⟩"],["⟨1 0.66 0.63⟩","⟨1 0.38 0.07⟩","⟨1 0.87 0.42⟩","⟨1 1 0.55⟩","⟨1 1 0.55⟩","⟨1 0.85 0.33⟩","⟨110⟩","⟨110⟩","⟨111⟩","","⟨110⟩","⟨110⟩","⟨1 0.8 0.24⟩","⟨1 0.66 0.63⟩","⟨1 0.38 0.07⟩","⟨1 0.84 0.5⟩","⟨111⟩","⟨111⟩","⟨1 0.85 0.33⟩","⟨1 0.45 0⟩","⟨1 0.8 0.24⟩","⟨1 0.84 0.5⟩","⟨1 0.31 0⟩","⟨1 0.87 0.42⟩"],["⟨1 0.38 0.07⟩","⟨1 0.66 0.63⟩","⟨1 0.85 0.33⟩","⟨1 1 0.55⟩","⟨1 1 0.55⟩","⟨1 0.87 0.42⟩","⟨110⟩","⟨110⟩","⟨110⟩","⟨110⟩","","⟨111⟩","⟨1 0.45 0⟩","⟨1 0.85 0.33⟩","⟨1 0.87 0.42⟩","⟨1 0.31 0⟩","⟨1 0.84 0.5⟩","⟨1 0.8 0.24⟩","⟨1 0.66 0.63⟩","⟨1 0.8 0.24⟩","⟨111⟩","⟨111⟩","⟨1 0.84 0.5⟩","⟨1 0.38 0.07⟩"],["⟨1 0.84 0.5⟩","⟨1 0.8 0.24⟩","⟨1 0.45 0⟩","⟨1 0.85 0.33⟩","⟨1 0.87 0.42⟩","⟨1 0.31 0⟩","⟨110⟩","⟨110⟩","⟨110⟩","⟨110⟩","⟨111⟩","","⟨1 0.85 0.33⟩","⟨1 1 0.55⟩","⟨1 1 0.55⟩","⟨1 0.87 0.42⟩","⟨1 0.38 0.07⟩","⟨1 0.66 0.63⟩","⟨1 0.38 0.07⟩","⟨1 0.84 0.5⟩","⟨111⟩","⟨111⟩","⟨1 0.8 0.24⟩","⟨1 0.66 0.63⟩"],["⟨1 0.38 0.07⟩","⟨1 0.84 0.5⟩","⟨111⟩","⟨111⟩","⟨1 0.8 0.24⟩","⟨1 0.66 0.63⟩","⟨1 0.87 0.42⟩","⟨1 0.31 0⟩","⟨1 0.84 0.5⟩","⟨1 0.8 0.24⟩","⟨1 0.45 0⟩","⟨1 0.85 0.33⟩","","⟨111⟩","⟨110⟩","⟨110⟩","⟨110⟩","⟨110⟩","⟨1 0.87 0.42⟩","⟨1 1 0.55⟩","⟨1 1 0.55⟩","⟨1 0.85 0.33⟩","⟨1 0.66 0.63⟩","⟨1 0.38 0.07⟩"],["⟨1 0.66 0.63⟩","⟨1 0.8 0.24⟩","⟨111⟩","⟨111⟩","⟨1 0.84 0.5⟩","⟨1 0.38 0.07⟩","⟨1 1 0.55⟩","⟨1 0.87 0.42⟩","⟨1 0.38 0.07⟩","⟨1 0.66 0.63⟩","⟨1 0.85 0.33⟩","⟨1 1 0.55⟩","⟨111⟩","","⟨110⟩","⟨110⟩","⟨110⟩","⟨110⟩","⟨1 0.31 0⟩","⟨1 0.87 0.42⟩","⟨1 0.85 0.33⟩","⟨1 0.45 0⟩","⟨1 0.8 0.24⟩","⟨1 0.84 0.5⟩"],["⟨1 0.85 0.33⟩","⟨1 0.45 0⟩","⟨1 0.8 0.24⟩","⟨1 0.84 0.5⟩","⟨1 0.31 0⟩","⟨1 0.87 0.42⟩","⟨1 1 0.55⟩","⟨1 0.85 0.33⟩","⟨1 0.66 0.63⟩","⟨1 0.38 0.07⟩","⟨1 0.87 0.42⟩","⟨1 1 0.55⟩","⟨110⟩","⟨110⟩","","⟨111⟩","⟨110⟩","⟨110⟩","⟨1 0.84 0.5⟩","⟨1 0.38 0.07⟩","⟨1 0.66 0.63⟩","⟨1 0.8 0.24⟩","⟨111⟩","⟨111⟩"],["⟨1 1 0.55⟩","⟨1 0.85 0.33⟩","⟨1 0.66 0.63⟩","⟨1 0.38 0.07⟩","⟨1 0.87 0.42⟩","⟨1 1 0.55⟩","⟨1 0.85 0.33⟩","⟨1 0.45 0⟩","⟨1 0.8 0.24⟩","⟨1 0.84 0.5⟩","⟨1 0.31 0⟩","⟨1 0.87 0.42⟩","⟨110⟩","⟨110⟩","⟨111⟩","","⟨110⟩","⟨110⟩","⟨1 0.8 0.24⟩","⟨1 0.66 0.63⟩","⟨1 0.38 0.07⟩","⟨1 0.84 0.5⟩","⟨111⟩","⟨111⟩"],["⟨1 1 0.55⟩","⟨1 0.87 0.42⟩","⟨1 0.38 0.07⟩","⟨1 0.66 0.63⟩","⟨1 0.85 0.33⟩","⟨1 1 0.55⟩","⟨1 0.66 0.63⟩","⟨1 0.8 0.24⟩","⟨111⟩","⟨111⟩","⟨1 0.84 0.5⟩","⟨1 0.38 0.07⟩","⟨110⟩","⟨110⟩","⟨110⟩","⟨110⟩","","⟨111⟩","⟨1 0.45 0⟩","⟨1 0.85 0.33⟩","⟨1 0.87 0.42⟩","⟨1 0.31 0⟩","⟨1 0.84 0.5⟩","⟨1 0.8 0.24⟩"],["⟨1 0.87 0.42⟩","⟨1 0.31 0⟩","⟨1 0.84 0.5⟩","⟨1 0.8 0.24⟩","⟨1 0.45 0⟩","⟨1 0.85 0.33⟩","⟨1 0.38 0.07⟩","⟨1 0.84 0.5⟩","⟨111⟩","⟨111⟩","⟨1 0.8 0.24⟩","⟨1 0.66 0.63⟩","⟨110⟩","⟨110⟩","⟨110⟩","⟨110⟩","⟨111⟩","","⟨1 0.85 0.33⟩","⟨1 1 0.55⟩","⟨1 1 0.55⟩","⟨1 0.87 0.42⟩","⟨1 0.38 0.07⟩","⟨1 0.66 0.63⟩"],["⟨1 0.8 0.24⟩","⟨1 0.66 0.63⟩","⟨1 0.38 0.07⟩","⟨1 0.84 0.5⟩","⟨111⟩","⟨111⟩","⟨1 0.87 0.42⟩","⟨1 1 0.55⟩","⟨1 1 0.55⟩","⟨1 0.85 0.33⟩","⟨1 0.66 0.63⟩","⟨1 0.38 0.07⟩","⟨1 0.87 0.42⟩","⟨1 0.31 0⟩","⟨1 0.84 0.5⟩","⟨1 0.8 0.24⟩","⟨1 0.45 0⟩","⟨1 0.85 0.33⟩","","⟨111⟩","⟨110⟩","⟨110⟩","⟨110⟩","⟨110⟩"],["⟨1 0.84 0.5⟩","⟨1 0.38 0.07⟩","⟨1 0.66 0.63⟩","⟨1 0.8 0.24⟩","⟨111⟩","⟨111⟩","⟨1 0.31 0⟩","⟨1 0.87 0.42⟩","⟨1 0.85 0.33⟩","⟨1 0.45 0⟩","⟨1 0.8 0.24⟩","⟨1 0.84 0.5⟩","⟨1 1 0.55⟩","⟨1 0.87 0.42⟩","⟨1 0.38 0.07⟩","⟨1 0.66 0.63⟩","⟨1 0.85 0.33⟩","⟨1 1 0.55⟩","⟨111⟩","","⟨110⟩","⟨110⟩","⟨110⟩","⟨110⟩"],["⟨1 0.31 0⟩","⟨1 0.87 0.42⟩","⟨1 0.85 0.33⟩","⟨1 0.45 0⟩","⟨1 0.8 0.24⟩","⟨1 0.84 0.5⟩","⟨1 0.84 0.5⟩","⟨1 0.38 0.07⟩","⟨1 0.66 0.63⟩","⟨1 0.8 0.24⟩","⟨111⟩","⟨111⟩","⟨1 1 0.55⟩","⟨1 0.85 0.33⟩","⟨1 0.66 0.63⟩","⟨1 0.38 0.07⟩","⟨1 0.87 0.42⟩","⟨1 1 0.55⟩","⟨110⟩","⟨110⟩","","⟨111⟩","⟨110⟩","⟨110⟩"],["⟨1 0.87 0.42⟩","⟨1 1 0.55⟩","⟨1 1 0.55⟩","⟨1 0.85 0.33⟩","⟨1 0.66 0.63⟩","⟨1 0.38 0.07⟩","⟨1 0.8 0.24⟩","⟨1 0.66 0.63⟩","⟨1 0.38 0.07⟩","⟨1 0.84 0.5⟩","⟨111⟩","⟨111⟩","⟨1 0.85 0.33⟩","⟨1 0.45 0⟩","⟨1 0.8 0.24⟩","⟨1 0.84 0.5⟩","⟨1 0.31 0⟩","⟨1 0.87 0.42⟩","⟨110⟩","⟨110⟩","⟨111⟩","","⟨110⟩","⟨110⟩"],["⟨1 0.85 0.33⟩","⟨1 1 0.55⟩","⟨1 1 0.55⟩","⟨1 0.87 0.42⟩","⟨1 0.38 0.07⟩","⟨1 0.66 0.63⟩","⟨1 0.45 0⟩","⟨1 0.85 0.33⟩","⟨1 0.87 0.42⟩","⟨1 0.31 0⟩","⟨1 0.84 0.5⟩","⟨1 0.8 0.24⟩","⟨1 0.66 0.63⟩","⟨1 0.8 0.24⟩","⟨111⟩","⟨111⟩","⟨1 0.84 0.5⟩","⟨1 0.38 0.07⟩","⟨110⟩","⟨110⟩","⟨110⟩","⟨110⟩","","⟨111⟩"],["⟨1 0.45 0⟩","⟨1 0.85 0.33⟩","⟨1 0.87 0.42⟩","⟨1 0.31 0⟩","⟨1 0.84 0.5⟩","⟨1 0.8 0.24⟩","⟨1 0.85 0.33⟩","⟨1 1 0.55⟩","⟨1 1 0.55⟩","⟨1 0.87 0.42⟩","⟨1 0.38 0.07⟩","⟨1 0.66 0.63⟩","⟨1 0.38 0.07⟩","⟨1 0.84 0.5⟩","⟨111⟩","⟨111⟩","⟨1 0.8 0.24⟩","⟨1 0.66 0.63⟩","⟨110⟩","⟨110⟩","⟨110⟩","⟨110⟩","⟨111⟩",""]],"nwsign":[-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1],"nwpartner":[3,4,5,0,1,2,9,10,11,6,7,8,15,16,17,12,13,14,21,22,23,18,19,20],"habit":[[5,7,5],[5,7,5],[7,5,5],[7,5,5],[5,5,7],[5,5,7],[5,-7,5],[5,-7,5],[5,-5,7],[5,-5,7],[7,-5,5],[7,-5,5],[-7,5,5],[-7,5,5],[-5,7,5],[-5,7,5],[-5,5,7],[-5,5,7],[5,5,-7],[5,5,-7],[7,5,-5],[7,5,-5],[5,7,-5],[5,7,-5]]};
+const V = DATA.variants, MIS = DATA.mis, AXES = DATA.axes, NWS = DATA.nwsign, NWP = DATA.nwpartner, HABIT = DATA.habit;
 const BAIN_NAME = { 2: "B1", 0: "B2", 1: "B3" };
 const BAIN_AXIS = { 2: "[001]", 0: "[100]", 1: "[010]" };
-const state = { sel: 0, show: "sel", color: "cp", custom: null };
+const state = { sel: 0, show: "sel", color: "cp", custom: null, twist: 0, match: true, T: 1000, xi: 1.0, habit: false, dh: 6.19, ori: "hi", oriSym: true, oriAng: 23 };
 try { const s = JSON.parse(localStorage.getItem("ks-state") || "null"); if (s) Object.assign(state, s, { custom: s.custom ? new Set(s.custom) : null }); } catch (e) {}
-function save() { try { localStorage.setItem("ks-state", JSON.stringify({ sel: state.sel, show: state.show, color: state.color, custom: state.custom ? [...state.custom] : null })); } catch (e) {} }
+function save() { try { localStorage.setItem("ks-state", JSON.stringify({ sel: state.sel, show: state.show, color: state.color, custom: state.custom ? [...state.custom] : null, twist: state.twist, match: state.match, T: state.T, xi: state.xi, habit: state.habit, dh: state.dh, ori: state.ori, oriSym: state.oriSym, oriAng: state.oriAng })); } catch (e) {} }
 
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const cpColor = g => css("--g" + g);
@@ -167,6 +481,7 @@ function mi(vec, open, close) {
 const planeStr = v => mi(v.pg, "(", ")") + "<sub>γ</sub>";
 const dgStr = v => mi(v.dg, "[", "]") + "<sub>γ</sub>";
 const daStr = v => mi(v.da, "[", "]") + "<sub>α</sub>";
+const axisStr = a => a ? '<span class="mi">' + a + "</span>" : "";
 
 function shownSet() {
   const s = V[state.sel];
@@ -179,10 +494,24 @@ function shownSet() {
 
 // ---------- linear algebra helpers
 const mul = (R, a) => [0, 1, 2].map(i => R[i][0] * a[0] + R[i][1] * a[1] + R[i][2] * a[2]);
+const mm = (A, B) => A.map((r, i) => [0, 1, 2].map(j => A[i][0] * B[0][j] + A[i][1] * B[1][j] + A[i][2] * B[2][j]));
 const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 const norm = a => { const l = Math.hypot(...a); return a.map(x => x / l); };
-const RATIO = 0.80; // a_alpha / a_gamma for Fe
+function rotM(axis, deg) {
+  const [x, y, z] = norm(axis), t = deg * Math.PI / 180, c = Math.cos(t), s = Math.sin(t), C = 1 - c;
+  return [[c + x * x * C, x * y * C - z * s, x * z * C + y * s], [y * x * C + z * s, c + y * y * C, y * z * C - x * s], [z * x * C - y * s, z * y * C + x * s, c + z * z * C]];
+}
+// lattice parameters, Kop et al. 2001 Table I (Å)
+function lattice() {
+  const T = state.T, xi = state.xi / 100;
+  const aa = 2.8863 * (1 + 17.5e-6 * (T - 800));
+  const ag = (3.6306 + 0.78 * xi) * (1 + (24.9 - 50 * xi) * 1e-6 * (T - 1000));
+  return { aa, ag, ratio: aa / ag };
+}
+// orientation of variant i after the twist (only the selected variant is twisted)
+const Rtw = i => i === state.sel && state.twist ? mm(rotM(V[i].pg, NWS[i] * state.twist), V[i].R) : V[i].R;
+const boundaryType = (i, j) => i === j ? "" : V[i].cp !== V[j].cp ? '<span class="pill">packet</span>' : V[i].bain === V[j].bain ? '<span class="pill sb">sub-block</span>' : '<span class="pill bl">block</span>';
 
 // ---------- detail panel
 function renderDetail() {
@@ -190,6 +519,8 @@ function renderDetail() {
   const sibs = V.filter(w => w.cp === v.cp);
   const R = v.R;
   const c = cpColor(v.cp);
+  const twin = V.find(w => w.id !== v.id && w.cp === v.cp && w.dg.join() === v.dg.join());
+  const part = V[NWP[state.sel]];
   document.getElementById("detail").innerHTML = `
     <p class="eyebrow">Selected variant</p>
     <p class="vname" style="color:${c}">V${v.id}</p>
@@ -198,6 +529,10 @@ function renderDetail() {
       <dt>Plane group</dt><dd><span class="tag"><span class="sw" style="background:${c}"></span>${mi(v.pg, "(", ")")}<sub>γ</sub> packet</span></dd>
       <dt>Bain group</dt><dd><span class="tag"><span class="sw" style="background:${bainColor(v.bain)}"></span>${BAIN_NAME[v.bain]}, compressed along ${BAIN_AXIS[v.bain]}<sub>γ</sub></span></dd>
       <dt>From V1</dt><dd class="mi">${MIS[0][state.sel].toFixed(2)}°</dd>
+      <dt>Lath habit</dt><dd>${mi(HABIT[state.sel], "(", ")")}<sub>γ</sub>, 9.45° from ${planeStr(v)}</dd>
+      <dt>Long axis</dt><dd>${dgStr(v)}, the shared row</dd>
+      <dt>Sub-block partner</dt><dd>V${part.id}: 10.53° away, NW halfway between</dd>
+      <dt>Same-row twin</dt><dd>V${twin.id}: 60° about ${axisStr(AXES[state.sel][twin.id - 1])}<sub>α</sub></dd>
       <dt>Matrix</dt><dd><div class="mat" aria-label="rotation matrix, columns are the alpha cube axes in austenite coordinates">${R.map(r => r.map(x => (x >= 0 ? "" : "−") + Math.abs(x).toFixed(3)).map(s => "<span>" + s + "</span>").join("")).join("")}</div>
         <div class="hint" style="margin-top:4px">Columns are [100]<sub>α</sub>, [010]<sub>α</sub>, [001]<sub>α</sub> written in γ axes.</div></dd>
     </dl>
@@ -212,14 +547,16 @@ function renderTable() {
   let h = "";
   for (let g = 0; g < 4; g++) {
     const first = V.find(v => v.cp === g);
-    h += `<tr class="grp"><td colspan="7"><span class="sw" style="background:${cpColor(g)}"></span>${mi(first.pg, "(", ")")}<sub>γ</sub> plane group</td></tr>`;
+    h += `<tr class="grp"><td colspan="9"><span class="sw" style="background:${cpColor(g)}"></span>${mi(first.pg, "(", ")")}<sub>γ</sub> plane group</td></tr>`;
     V.filter(v => v.cp === g).forEach(v => {
       const i = v.id - 1, m = MIS[state.sel][i];
       h += `<tr class="v${i === state.sel ? " sel" : ""}" data-v="${i}" tabindex="0">
         <td><input type="checkbox" id="chk-${i}" aria-label="Draw V${v.id}" ${shown.has(i) ? "checked" : ""}></td>
         <td><b>V${v.id}</b></td><td>${planeStr(v)}</td><td>${dgStr(v)}</td><td>${daStr(v)}</td>
         <td><span class="sw" style="background:${bainColor(v.bain)}"></span>${BAIN_NAME[v.bain]}</td>
-        <td class="num ${m === 0 ? "mis-0" : ""}">${m.toFixed(2)}°</td></tr>`;
+        <td class="num ${m === 0 ? "mis-0" : ""}">${m.toFixed(2)}°</td>
+        <td>${i === state.sel ? "" : axisStr(AXES[state.sel][i])}</td>
+        <td>${boundaryType(state.sel, i)}</td></tr>`;
     });
   }
   document.getElementById("tbody").innerHTML = h;
@@ -236,28 +573,75 @@ function renderTable() {
   });
 }
 
+// ---------- 2-D correspondence in the terrace plane (own calculation, see section 1)
+function planeFrame(v) {
+  const n = norm(v.pg);
+  const firstDir = V.find(w => w.cp === v.cp).dg;
+  const ex = norm(firstDir), ey = cross(n, ex);
+  return { n, ex, ey };
+}
+function invariantTwists(i) {
+  // returns slider positions (deg) where the 2-D correspondence leaves a line unstretched and unrotated
+  const v = V[i], { aa, ag } = lattice();
+  const n = norm(v.pg), ex = norm(v.dg), ey = cross(n, ex);
+  const P = p => [dot(p, ex), dot(p, ey)];
+  const a1 = P(mul(v.R, v.da.map(t => t * aa / 2)));
+  const other = v.da[1] === -1 ? [1, -1, 1] : [1, 1, -1]; // the second <111> in (011)alpha
+  const a2 = P(mul(v.R, other.map(t => t * aa / 2)));
+  const g1 = P(v.dg.map(t => t * ag / 2));
+  const cands = [[1, -1, 0], [-1, 1, 0], [0, 1, -1], [0, -1, 1], [1, 0, -1], [-1, 0, 1], [1, 1, 0], [-1, -1, 0], [0, 1, 1], [0, -1, -1], [1, 0, 1], [-1, 0, -1]]
+    .filter(c => Math.abs(dot(c, v.pg)) < 1e-9).map(c => P(c.map(t => t * ag / 2)));
+  const g2 = cands.reduce((b, c) => Math.hypot(c[0] - a2[0], c[1] - a2[1]) < Math.hypot(b[0] - a2[0], b[1] - a2[1]) ? c : b);
+  const det = a1[0] * a2[1] - a2[0] * a1[1];
+  const Ai = [[a2[1] / det, -a2[0] / det], [-a1[1] / det, a1[0] / det]];
+  const F = [[g1[0] * Ai[0][0] + g2[0] * Ai[1][0], g1[0] * Ai[0][1] + g2[0] * Ai[1][1]], [g1[1] * Ai[0][0] + g2[1] * Ai[1][0], g1[1] * Ai[0][1] + g2[1] * Ai[1][1]]];
+  const L = th => { const w = [Math.cos(th), Math.sin(th)]; return Math.hypot(F[0][0] * w[0] + F[0][1] * w[1], F[1][0] * w[0] + F[1][1] * w[1]) - 1; };
+  const out = [], N = 720;
+  for (let k = 0; k < N; k++) {
+    let t0 = Math.PI * k / N, t1 = Math.PI * (k + 1) / N;
+    if (L(t0) * L(t1) > 0) continue;
+    for (let it = 0; it < 40; it++) { const tm = (t0 + t1) / 2; if (L(t0) * L(tm) <= 0) t1 = tm; else t0 = tm; }
+    const w = [Math.cos(t0), Math.sin(t0)], fw = [F[0][0] * w[0] + F[0][1] * w[1], F[1][0] * w[0] + F[1][1] * w[1]];
+    let phi = (Math.atan2(fw[1], fw[0]) - t0) * 180 / Math.PI;
+    phi = ((phi + 180) % 360 + 360) % 360 - 180;
+    out.push(phi / NWS[i]); // twist about +n by phi  ==  slider value phi / sign
+  }
+  return out;
+}
+
 // ---------- close-packed plane view (2D)
 function renderPlane() {
   const v = V[state.sel];
   const svg = document.getElementById("plane");
-  const n = norm(v.pg);
-  const firstDir = V.find(w => w.cp === v.cp).dg;
-  const ex = norm(firstDir), ey = cross(n, ex);
+  const { n, ex, ey } = planeFrame(v);
+  const { aa, ag, ratio } = lattice();
+  const R = Rtw(state.sel);
   const S = 58, RMAX = 3.3;
   const pr = p => [dot(p, ex) * S, -dot(p, ey) * S];
   let g = "", a = "";
-  const L = 10;
+  const L = 10, gpts = [], apts = [];
   for (let i = -L; i <= L; i++) for (let j = -L; j <= L; j++) for (let k = -L; k <= L; k++) {
     if (((i + j + k) % 2 + 2) % 2 === 0 && v.pg[0] * i + v.pg[1] * j + v.pg[2] * k === 0) {
       const p = [i / 2, j / 2, k / 2];
-      if (Math.hypot(...p) <= RMAX) { const [x, y] = pr(p); g += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="16" fill="var(--gamma-fill)" stroke="var(--gamma)" stroke-width="1"/>`; }
+      if (Math.hypot(...p) <= RMAX + 0.5) gpts.push(pr(p));
     }
     const allSame = ((i % 2) + 2) % 2 === ((j % 2) + 2) % 2 && ((j % 2) + 2) % 2 === ((k % 2) + 2) % 2;
     if (allSame && j + k === 0) {
-      const p = mul(v.R, [i / 2 * RATIO, j / 2 * RATIO, k / 2 * RATIO]);
-      if (Math.hypot(...p) <= RMAX) { const [x, y] = pr(p); a += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5.5" fill="${cpColor(v.cp)}"/>`; }
+      const p = mul(R, [i / 2 * ratio, j / 2 * ratio, k / 2 * ratio]);
+      if (Math.hypot(...p) <= RMAX) apts.push(pr(p));
     }
   }
+  gpts.forEach(([x, y]) => { if (Math.hypot(x, y) <= (RMAX + 0.3) * S) g += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="16" fill="var(--gamma-fill)" stroke="var(--gamma)" stroke-width="1"/>`; });
+  const nnPx = S / Math.SQRT2;
+  apts.forEach(([x, y]) => {
+    let op = 1, ring = "";
+    if (state.match) {
+      let dmin = Infinity; gpts.forEach(([gx, gy]) => { const d = Math.hypot(gx - x, gy - y); if (d < dmin) dmin = d; });
+      const f = Math.min(1, dmin / (0.3 * nnPx)); op = 1 - 0.8 * f;
+      if (f < 0.12) ring = `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="9" fill="none" stroke="var(--good)" stroke-width="1.4"/>`;
+    }
+    a += ring + `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5.5" fill="${cpColor(v.cp)}" fill-opacity="${op.toFixed(2)}"/>`;
+  });
   // the three <110> rows of this plane, and the parallel one
   let rows = "";
   const dirs = [...new Set(V.filter(w => w.cp === v.cp).map(w => w.dg.join(",")))].map(s => s.split(",").map(Number));
@@ -269,12 +653,50 @@ function renderPlane() {
   const u = norm(v.dg); const [ax, ay] = pr(u.map(t => t * RMAX * 1.12));
   const ang = Math.atan2(ay, ax);
   const head = `<path d="M${ax},${ay} l${(-12 * Math.cos(ang - 0.4)).toFixed(1)},${(-12 * Math.sin(ang - 0.4)).toFixed(1)} M${ax},${ay} l${(-12 * Math.cos(ang + 0.4)).toFixed(1)},${(-12 * Math.sin(ang + 0.4)).toFixed(1)}" stroke="var(--ink)" stroke-width="1.6" fill="none"/>`;
-    const neg = x => x < 0 ? "-" + (-x) : "" + x;
-  const lbl = `<text x="-220" y="208" font-size="12" fill="var(--ink)">→ [${v.dg.map(neg).join(" ")}]γ ∥ [${v.da.map(neg).join(" ")}]α</text>`;
+  // alpha close-packed row after the twist
+  const ua = norm(mul(R, v.da)); const [bx, by] = pr(ua.map(t => t * RMAX * 1.05));
+  const arow = state.twist ? `<line x1="${-bx}" y1="${-by}" x2="${bx}" y2="${by}" stroke="${cpColor(v.cp)}" stroke-width="1.4" stroke-dasharray="6 3"/>` : "";
+  const neg = x => x < 0 ? "-" + (-x) : "" + x;
+  const lbl = `<text x="-220" y="208" font-size="12" fill="var(--ink)">→ [${v.dg.map(neg).join(" ")}]γ ∥ [${v.da.map(neg).join(" ")}]α${state.twist ? " at KS" : ""}</text>`;
   svg.innerHTML = `<defs><clipPath id="cpc"><circle r="${RMAX * S + 6}"/></clipPath></defs>
     <circle r="${RMAX * S + 6}" fill="none" stroke="var(--line)"/>
-    <g clip-path="url(#cpc)">${g}${rows}${a}</g>${head}${lbl}
+    <g clip-path="url(#cpc)">${g}${rows}${a}${arow}</g>${head}${lbl}
     <text x="-220" y="-196" font-size="12" fill="var(--muted)">view ∥ [${v.pg.map(neg).join(" ")}]γ, V${v.id}</text>`;
+  renderTwistUI();
+}
+function nameTwist(t) {
+  const marks = [[0, "KS"], [2.5, "GT"], [5.26, "NW"], [8.03, "GT"], [10.53, "KS"]];
+  const m = marks.find(([x]) => Math.abs(t - x) < 0.13);
+  return m ? m[1] : "";
+}
+function renderTwistUI() {
+  const v = V[state.sel], part = V[NWP[state.sel]];
+  const { aa, ag } = lattice();
+  const t = state.twist;
+  const tk = document.getElementById("ticks"), inp = document.getElementById("twist");
+  const min = +inp.min, max = +inp.max, pos = x => ((x - min) / (max - min) * 100).toFixed(2) + "%";
+  const il = invariantTwists(state.sel).filter(x => x >= min && x <= max);
+  tk.innerHTML = [[0, `KS<br>V${v.id}`], [2.5, "GT"], [5.26, "NW"], [8.03, "GT"], [10.53, `KS<br>V${part.id}`]].map(([x, s]) => `<span style="left:${pos(x)}">${s}</span>`).join("")
+    + il.map(x => `<span class="il" style="left:${pos(x)}" title="2-D invariant line">IL</span>`).join("");
+  inp.value = t;
+  document.getElementById("twist-out").textContent = `${t.toFixed(2)}° from KS${nameTwist(t) ? " (" + nameTwist(t) + ")" : ""}`;
+  // angles after the twist
+  const R = Rtw(state.sel), n = norm(v.pg);
+  const rowsG = [[1, -1, 0], [0, 1, -1], [1, 0, -1], [1, 1, 0], [0, 1, 1], [1, 0, 1]].filter(c => Math.abs(dot(c, v.pg)) < 1e-9).map(norm);
+  const minAng = d => Math.min(...rowsG.map(r => Math.acos(Math.min(1, Math.abs(dot(d, r)))) * 180 / Math.PI));
+  const inPlane = d => { const p = d.map((x, k) => x - dot(d, n) * n[k]); return norm(p); };
+  const a111 = minAng(norm(mul(R, v.da)));
+  const a100 = Math.min(...[[1, 0, 0], [0, 1, 0], [0, 0, 1]].map(e => { const d = mul(R, e); return Math.abs(dot(norm(d), n)) < 0.05 ? minAng(inPlane(d)) : 99; }));
+  const nnG = ag / Math.SQRT2, nnA = Math.sqrt(3) / 2 * aa, rwG = ag * Math.sqrt(6) / 4, rwA = aa * Math.sqrt(2 / 3);
+  const pct = (a, b) => ((a - b) / b * 100);
+  document.getElementById("readout").innerHTML = `
+    <div><small>Along the row (α vs γ)</small><b>${pct(nnA, nnG).toFixed(1)}%</b><small>${nnA.toFixed(3)} vs ${nnG.toFixed(3)} Å</small></div>
+    <div><small>Across the rows</small><b>${pct(rwA, rwG) >= 0 ? "+" : ""}${pct(rwA, rwG).toFixed(1)}%</b><small>${rwA.toFixed(3)} vs ${rwG.toFixed(3)} Å</small></div>
+    <div><small>⟨111⟩<sub>α</sub> to nearest ⟨110⟩<sub>γ</sub></small><b>${a111.toFixed(2)}°</b><small>0 at KS</small></div>
+    <div><small>⟨100⟩<sub>α</sub> to nearest ⟨110⟩<sub>γ</sub></small><b>${a100.toFixed(2)}°</b><small>0 at NW</small></div>`;
+  document.getElementById("tk-out").textContent = `${state.T} K (${state.T - 273} °C)`;
+  const wt = state.xi / 100 * 12.011 / (state.xi / 100 * 12.011 + (1 - state.xi / 100) * 55.845) * 100;
+  document.getElementById("xi-out").textContent = `${state.xi.toFixed(2)} at.% (${wt.toFixed(2)} wt%), a_α/a_γ = ${(aa / ag).toFixed(4)}`;
 }
 
 // ---------- pole figure
@@ -284,7 +706,6 @@ function renderPole() {
   const S = 190, shown = shownSet();
   let h = `<circle r="${S}" fill="var(--soft)" stroke="var(--muted)" stroke-width="1"/>
     <line x1="${-S}" y1="0" x2="${S}" y2="0" stroke="var(--line)"/><line x1="0" y1="${-S}" x2="0" y2="${S}" stroke="var(--line)"/>`;
-  // gamma reference poles
   const sq = (x, y) => `<rect x="${x - 6}" y="${y - 6}" width="12" height="12" fill="none" stroke="var(--ink)" stroke-width="1.4"/>`;
   h += sq(0, 0) + sq(S, 0) + sq(-S, 0) + sq(0, S) + sq(0, -S);
   [[1, 1, 1], [-1, 1, 1], [1, -1, 1], [-1, -1, 1]].forEach(p => { const [x, y] = stereo(p); h += `<path d="M${x * S},${-y * S - 7} l6,10 h-12z" fill="none" stroke="var(--muted)" stroke-width="1.2"/>`; });
@@ -336,19 +757,17 @@ function render3D() {
   if (!scene) return;
   if (root) scene.remove(root);
   root = new THREE.Group(); scene.add(root);
+  const RATIO = lattice().ratio;
   const off = new THREE.Vector3(-0.5, -0.5, -0.5);
   const P = a => new THREE.Vector3(a[0], a[1], a[2]).add(off);
   const lines = (pts, color, opacity = 1) => { const g = new THREE.BufferGeometry().setFromPoints(pts); root.add(new THREE.LineSegments(g, new THREE.LineBasicMaterial({ color: col3(color), transparent: opacity < 1, opacity }))); };
-  // fcc cube
   const cub = []; const C = [[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0], [0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1]];
   [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]].forEach(([a, b]) => cub.push(P(C[a]), P(C[b])));
   lines(cub, css("--muted"));
   const atomMat = new THREE.MeshLambertMaterial({ color: col3(css("--gamma")) });
   const sph = new THREE.SphereGeometry(0.055, 16, 12);
   [...C, [.5, .5, 0], [.5, .5, 1], [.5, 0, .5], [.5, 1, .5], [0, .5, .5], [1, .5, .5]].forEach(p => { const m = new THREE.Mesh(sph, atomMat); m.position.copy(P(p)); root.add(m); });
-  // axes labels
   [["a1 [100]γ", [1.12, 0, 0]], ["a2 [010]γ", [0, 1.12, 0]], ["a3 [001]γ", [0, 0, 1.1]]].forEach(([t, p]) => { const s = label(t, css("--muted")); s.position.copy(P(p)); root.add(s); });
-  // {111} planes
   const v = V[state.sel]; const shown = shownSet();
   const cps = new Set([...shown].map(i => V[i].cp)); cps.add(v.cp);
   for (let g = 0; g < 4; g++) {
@@ -358,12 +777,12 @@ function render3D() {
     root.add(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: col3(cpColor(g)), transparent: true, opacity: g === v.cp ? 0.30 : active ? 0.16 : 0.05, side: THREE.DoubleSide, depthWrite: false })));
     lines([tri[0], tri[1], tri[1], tri[2], tri[2], tri[0]], cpColor(g), g === v.cp ? 1 : active ? 0.6 : 0.2);
   }
-  // alpha cells
   [...shown].sort((a, b) => (a === state.sel) - (b === state.sel)).forEach(i => {
     const w = V[i], sel = i === state.sel, color = colorOf(w);
+    const Rw = Rtw(i);
     const tri = PLANE_TRI[w.pg.join(",")];
     const ctr = P([0, 1, 2].map(k => (tri[0][k] + tri[1][k] + tri[2][k]) / 3));
-    const T = a => { const r = mul(w.R, a.map(t => t * RATIO)); return new THREE.Vector3(r[0], r[1], r[2]).add(ctr); };
+    const T = a => { const r = mul(Rw, a.map(t => t * RATIO)); return new THREE.Vector3(r[0], r[1], r[2]).add(ctr); };
     const corners = C.map(c => c.map(t => t - 0.5));
     const seg = [];
     [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]].forEach(([a, b]) => seg.push(T(corners[a]), T(corners[b])));
@@ -375,6 +794,15 @@ function render3D() {
       const q = [[-.5, .5, -.5], [.5, .5, -.5], [.5, -.5, .5], [-.5, -.5, .5]].map(T);
       const qg = new THREE.BufferGeometry().setFromPoints(q); qg.setIndex([0, 1, 2, 0, 2, 3]);
       root.add(new THREE.Mesh(qg, new THREE.MeshBasicMaterial({ color: col3(color), transparent: true, opacity: 0.28, side: THREE.DoubleSide, depthWrite: false })));
+      if (state.habit) {
+        const hn = norm(HABIT[i]), d1 = norm(w.dg), d2 = norm(cross(hn, d1)), s = 0.62;
+        const hq = [[1, 1], [-1, 1], [-1, -1], [1, -1]].map(([p, r]) => ctr.clone().add(new THREE.Vector3(...d1.map((x, k) => s * (p * x + r * d2[k])))));
+        const hg = new THREE.BufferGeometry().setFromPoints(hq); hg.setIndex([0, 1, 2, 0, 2, 3]);
+        root.add(new THREE.Mesh(hg, new THREE.MeshBasicMaterial({ color: col3(css("--accent")), transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false })));
+        lines([hq[0], hq[1], hq[1], hq[2], hq[2], hq[3], hq[3], hq[0]], css("--accent"));
+        const neg = x => x < 0 ? "-" + (-x) : "" + x;
+        const s3 = label("(" + HABIT[i].map(neg).join(" ") + ")γ", css("--accent")); s3.position.copy(hq[0]); root.add(s3);
+      }
     }
     const d = norm(w.dg), len = sel ? 0.75 : 0.45;
     const start = ctr.clone().sub(new THREE.Vector3(...d).multiplyScalar(len / 2));
@@ -386,16 +814,222 @@ function render3D() {
     : [2, 0, 1].map(b => `<span><span class="sw" style="background:${bainColor(b)}"></span>${BAIN_NAME[b]} ${BAIN_AXIS[b]}<sub>γ</sub></span>`).join("");
 }
 
+// ---------- terraces and disconnections
+function renderSteps() {
+  const svg = document.getElementById("steps");
+  const dh = state.dh, h = 14, d = dh * h, W = 460, x0 = 30, y0 = 190;
+  const psi = Math.atan(1 / dh) * 180 / Math.PI;
+  let path = `M${x0},${y0}`, x = x0, y = y0, k = 0;
+  while (x + d < W - 20 && k < 40) { x += d; path += ` H${x.toFixed(1)} V${(y - h).toFixed(1)}`; y -= h; k++; }
+  path += ` H${W - 20}`;
+  let dis = ""; let xx = x0;
+  for (let j = 0; j < k; j++) { xx += d; const yy = y0 - j * h; dis += `<path d="M${xx - 5},${yy - h / 2} h10 M${xx},${yy - h / 2} v-8" stroke="var(--accent)" stroke-width="1.6" fill="none"/>`; }
+  const xe = W - 20, ye = y0 - (xe - x0) / dh;
+  svg.innerHTML = `
+    <path d="${path} V${y0 + 40} H${x0} Z" fill="var(--gamma-fill)" stroke="none"/>
+    <path d="${path}" fill="none" stroke="var(--ink)" stroke-width="1.6"/>
+    ${dis}
+    <line x1="${x0}" y1="${y0}" x2="${xe}" y2="${ye.toFixed(1)}" stroke="var(--g0)" stroke-width="1.6" stroke-dasharray="6 4"/>
+    <line x1="${x0}" y1="${y0}" x2="${xe}" y2="${y0}" stroke="var(--muted)" stroke-width="1" stroke-dasharray="2 3"/>
+    <text x="${x0}" y="${y0 + 30}" font-size="12" fill="var(--ink)">austenite (γ)</text>
+    <text x="${x0}" y="40" font-size="12" fill="var(--ink)">martensite (α′)</text>
+    <text x="${xe - 150}" y="${y0 + 18}" font-size="11" fill="var(--muted)">(111)γ terrace</text>
+    <text x="${x0}" y="${(y0 - 70).toFixed(1)}" font-size="11.5" fill="var(--g0)">- - habit plane, ψ = ${psi.toFixed(2)}°</text>
+    <text x="${W - 140}" y="40" font-size="11" fill="var(--accent)">⊥ disconnection</text>`;
+  const out = document.getElementById("dh-out"); out.textContent = `d/h = ${dh.toFixed(2)}`;
+  document.getElementById("step-readout").innerHTML = `
+    <div><small>Tilt from the terrace</small><b>${psi.toFixed(2)}°</b><small>ψ = tan⁻¹(h/d)</small></div>
+    <div><small>Howe et al. GT network</small><b>9.18°</b><small>d/h = ${(1 / Math.tan(9.18 * Math.PI / 180)).toFixed(2)}</small></div>
+    <div><small>Exact (575)<sub>γ</sub></small><b>9.45°</b><small>d/h = ${(1 / Math.tan(9.446 * Math.PI / 180)).toFixed(2)}</small></div>`;
+}
+
+// ---------- pair finder
+function renderPairs() {
+  const svg = document.getElementById("pairs");
+  const s = state.sel, v = V[s];
+  const others = V.map((w, i) => i).filter(i => i !== s).sort((a, b) => MIS[s][a] - MIS[s][b] || a - b);
+  const x0 = 160, x1 = 405, sc = (x1 - x0) / 62.8, rowH = 19, y0 = 26;
+  let h = `<text x="${x0}" y="14" font-size="10.5" fill="var(--muted)">0°</text>`;
+  [15, 30, 45, 60].forEach(a => { const x = x0 + a * sc; h += `<line x1="${x}" y1="20" x2="${x}" y2="${y0 + others.length * rowH}" stroke="${a === 15 ? "var(--warn)" : "var(--line)"}" stroke-dasharray="${a === 15 ? "4 3" : ""}"/><text x="${x - 8}" y="14" font-size="10.5" fill="${a === 15 ? "var(--warn)" : "var(--muted)"}">${a}°</text>`; });
+  others.forEach((i, k) => {
+    const w = V[i], m = MIS[s][i], y = y0 + k * rowH, same = w.cp === v.cp, bain = w.bain === v.bain;
+    const fill = same ? cpColor(v.cp) : css("--gamma");
+    const axs = AXES[s][i];
+    h += `<g class="pb" data-v="${i}" style="cursor:pointer" tabindex="0" role="button" aria-label="V${w.id}, ${m.toFixed(2)} degrees">
+      <rect x="0" y="${y - 2}" width="460" height="${rowH}" fill="transparent"/>
+      <text x="4" y="${y + 11}" font-size="11.5" fill="var(--ink)" font-weight="500">V${w.id}</text>
+      <text x="40" y="${y + 11}" font-size="10.5" fill="var(--muted)">${axs}</text>
+      <rect x="${x0}" y="${y + 1}" width="${Math.max(2, m * sc).toFixed(1)}" height="${rowH - 6}" rx="2" fill="${fill}" fill-opacity="${same ? 0.9 : 0.75}" stroke="${bain ? "var(--good)" : "none"}" stroke-width="1.5"/>
+      <text x="${x0 + m * sc + 5}" y="${y + 11}" font-size="10.5" fill="var(--ink)">${m.toFixed(2)}°</text></g>`;
+  });
+  svg.setAttribute("viewBox", `0 0 460 ${y0 + others.length * rowH + 6}`);
+  svg.innerHTML = h;
+  svg.querySelectorAll(".pb").forEach(g => { g.onclick = () => select(+g.dataset.v); g.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(+g.dataset.v); } }; });
+  document.getElementById("pair-sw-same").style.background = cpColor(v.cp);
+  const low = others.filter(i => MIS[s][i] < 15);
+  const lowSame = low.filter(i => V[i].cp === v.cp), lowDiff = low.filter(i => V[i].cp !== v.cp);
+  const minDiff = Math.min(...others.filter(i => V[i].cp !== v.cp).map(i => MIS[s][i]));
+  document.getElementById("pair-summary").innerHTML = `Substrate <b>V${v.id}</b>. ${low.length} of 23 variants are within 15°: ${lowSame.map(i => "V" + V[i].id).join(", ") || "none"} on the same {111}<sub>γ</sub> and ${lowDiff.map(i => "V" + V[i].id).join(", ") || "none"} on other planes. The closest variant on a different {111}<sub>γ</sub> is ${minDiff.toFixed(2)}° away, so plates on two octahedral planes can still meet at a small-angle boundary.`;
+}
+
+// ---------- habit-plane triangle
+function renderIPF() {
+  const svg = document.getElementById("ipf");
+  const S = 880, ox = 40, oy = 350;
+  const proj = p => { const a = norm(p.map(Math.abs)).sort((x, y) => x - y); return [ox + S * a[1] / (1 + a[2]), oy - S * a[0] / (1 + a[2])]; };
+  let arc = "";
+  for (let k = 0; k <= 40; k++) { const t = k / 40; const p = proj([t, 1, 1]); arc += (k ? " L" : "M") + p[0].toFixed(1) + "," + p[1].toFixed(1); }
+  const [x011, y011] = proj([0, 1, 1]), [x111, y111] = proj([1, 1, 1]);
+  let h = `<path d="M${ox},${oy} L${x011.toFixed(1)},${y011.toFixed(1)} ${arc.replace("M", "L")} Z" fill="var(--soft)" stroke="var(--muted)" stroke-width="1"/>`;
+  h += `<text x="${ox - 8}" y="${oy + 18}" font-size="11.5" fill="var(--muted)">001</text><text x="${x011 - 12}" y="${y011 + 18}" font-size="11.5" fill="var(--muted)">011</text><text x="${x111 - 8}" y="${y111 - 10}" font-size="11.5" fill="var(--muted)">111</text>`;
+  const C = { ks: css("--ink"), m: css("--g0"), lb: css("--g2"), ub: css("--g1"), calc: css("--accent"), lit: css("--muted") };
+  const pts = [
+    { p: [1, 1, 1], c: C.ks, s: "tri", t: "{111} KS terrace" },
+    { p: [5, 5, 7], c: C.calc, s: "ring", t: "{557}" },
+    { p: [0.505, 0.700, 0.505], c: C.calc, s: "x", t: "Howe GT calc." },
+    { p: [0.49, 0.70, 0.52], c: C.m, s: "dot" }, { p: [0.47, 0.71, 0.52], c: C.m, s: "dot" }, { p: [0.48, 0.70, 0.52], c: C.m, s: "dot" }, { p: [0.49, 0.70, 0.53], c: C.m, s: "dot", t: "martensite (Q)" },
+    { p: [0.41, 0.71, 0.58], c: C.lb, s: "dot", t: "lower bainite" },
+    { p: [0.51, 0.61, 0.61], c: C.ub, s: "dot", t: "upper bainite" },
+    { p: [0.373, 0.663, 0.649], c: C.lit, s: "sq", t: "Sandvik plates" },
+    { p: [2, 9, 5], c: C.lit, s: "circ5", t: "(295) ±5°" },
+    { p: [1, 2, 2], c: C.lit, s: "circ5", t: "(122) ±5°" },
+  ];
+  const r5 = S * Math.tan(2.5 * Math.PI / 180); // 5° cone, approx radius near the centre of the triangle
+  pts.forEach(o => {
+    const [x, y] = proj(o.p);
+    if (o.s === "dot") h += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="${o.c}"/>`;
+    if (o.s === "ring") h += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="6.5" fill="none" stroke="${o.c}" stroke-width="1.6"/>`;
+    if (o.s === "x") h += `<path d="M${x - 5},${y - 5} l10,10 M${x + 5},${y - 5} l-10,10" stroke="${o.c}" stroke-width="1.8"/>`;
+    if (o.s === "tri") h += `<path d="M${x},${y - 7} l6,10 h-12z" fill="none" stroke="${o.c}" stroke-width="1.5"/>`;
+    if (o.s === "sq") h += `<rect x="${x - 4}" y="${y - 4}" width="8" height="8" fill="none" stroke="${o.c}" stroke-width="1.5"/>`;
+    if (o.s === "circ5") h += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r5.toFixed(1)}" fill="none" stroke="${o.c}" stroke-dasharray="3 3"/><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2" fill="${o.c}"/>`;
+  });
+  const lab = (p, t, dx, dy, c) => { const [x, y] = proj(p); return `<text x="${(x + dx).toFixed(1)}" y="${(y + dy).toFixed(1)}" font-size="11" fill="${c}">${t}</text>`; };
+  h += lab([1, 1, 1], "{111}γ", -54, 4, C.ks) + lab([5, 5, 7], "{557}γ", 10, -8, C.calc) + lab([2, 9, 5], "(295)", 12, 26, C.lit) + lab([1, 2, 2], "(122)", 10, -18, C.lit);
+  svg.innerHTML = h;
+  document.getElementById("ipf-legend").innerHTML = [
+    [C.m, "martensite, quenched (Nyyssönen)"], [C.lb, "lower bainite"], [C.ub, "upper bainite"], [C.calc, "{557}γ and Howe's GT plane (×)"], [C.lit, "earlier bainite studies, as cited"], [C.ks, "{111}γ KS terrace (△)"]
+  ].map(([c, t]) => `<span><span class="sw" style="background:${c}"></span>${t}</span>`).join("");
+}
+
+// ---------- oriented vs unoriented lattices boundaries (schematic)
+function hatch(id, ang, gap, clip, stroke, op) {
+  const r = 700, t = ang * Math.PI / 180, c = Math.cos(t), s = Math.sin(t);
+  let d = "";
+  for (let k = -r; k <= r; k += gap) { const x = 280 - s * k, y = 190 + c * k; d += `M${(x - c * r).toFixed(1)},${(y - s * r).toFixed(1)}L${(x + c * r).toFixed(1)},${(y + s * r).toFixed(1)}`; }
+  return `<path d="${d}" stroke="${stroke}" stroke-width="1" opacity="${op}" clip-path="url(#${clip})" fill="none"/>`;
+}
+function atoms(cx0, cy0, w, h, nn, ang, keep, fill, stroke) {
+  // triangular-ish lattice rotated by ang, kept where keep(x,y) is true
+  const t = ang * Math.PI / 180, c = Math.cos(t), s = Math.sin(t), out = [];
+  for (let i = -30; i <= 30; i++) for (let j = -30; j <= 30; j++) {
+    const u = i * nn + j * nn / 2, v = j * nn * 0.866;
+    const x = cx0 + u * c - v * s, y = cy0 + u * s + v * c;
+    if (x > 4 && x < w - 4 && y > 4 && y < h - 4 && keep(x, y)) out.push(`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(nn * 0.3).toFixed(1)}" fill="${fill}" stroke="${stroke}" stroke-width="0.8"/>`);
+  }
+  return out.join("");
+}
+function renderOriented() {
+  const svg = document.getElementById("ori"); if (!svg) return;
+  const v = V[state.sel], col = cpColor(v.cp), lo = state.ori === "lo", g2a = state.oriAng;
+  const ink = css("--ink"), muted = css("--muted"), gam = css("--gamma");
+  document.querySelectorAll("[data-ori]").forEach(b => b.setAttribute("aria-pressed", b.dataset.ori === state.ori));
+  document.getElementById("ori-sym").checked = state.oriSym;
+  document.getElementById("ori-ang").value = g2a;
+  document.getElementById("ori-ang-out").textContent = g2a + "°";
+  document.getElementById("ori-v").textContent = "V" + v.id;
+  const GB = 190;
+  const top = "M140,190 L162,176 H230 V173 H300 V170 H372 L400,190";
+  const bulge = lo ? 232 : 282;
+  const bottom = `Q270,${bulge + (lo ? 8 : 18)} 140,190`;
+  const allo = `${top} Q${lo ? 330 : 345},${bulge} 270,${bulge} ${bottom} Z`;
+  const plates = lo ? [[176, 176], [214, 176], [252, 173], [292, 173], [332, 170]].map(([x, y], k) => {
+    const L = 120 + (k % 2) * 30, a = -58 * Math.PI / 180, w = 15;
+    const tx = x + w / 2 + L * Math.cos(a), ty = y + L * Math.sin(a);
+    return `M${x},${y} L${tx.toFixed(1)},${ty.toFixed(1)} L${x + w},${y} Z`;
+  }) : [];
+  const alpha = allo + plates.join("");
+  let h = `<defs>
+    <clipPath id="c-g1"><rect x="0" y="0" width="560" height="${GB}"/></clipPath>
+    <clipPath id="c-g2"><rect x="0" y="${GB}" width="560" height="${380 - GB}"/></clipPath>
+    <clipPath id="c-al"><path d="${alpha}"/></clipPath></defs>
+    <rect x="0" y="0" width="560" height="${GB}" fill="var(--soft)"/>
+    <rect x="0" y="${GB}" width="560" height="${380 - GB}" fill="var(--gamma-fill)" fill-opacity="0.45"/>
+    ${hatch("h1", 30, 13, "c-g1", gam, 0.55)}${hatch("h2", 30 + g2a + 15, 13, "c-g2", gam, 0.55)}
+    <path d="M0,${GB} C120,${GB - 6} 180,${GB + 5} 280,${GB} S460,${GB - 4} 560,${GB}" stroke="${muted}" stroke-width="2" fill="none"/>
+    <path d="${alpha}" fill="${col}" fill-opacity="0.38"/>
+    ${hatch("ha", 30, 13, "c-al", col, 0.9)}
+    <path d="${top}" stroke="${ink}" stroke-width="2.4" fill="none"/>
+    <path d="M400,190 Q${lo ? 330 : 345},${bulge} 270,${bulge} ${bottom}" stroke="${ink}" stroke-width="1.4" stroke-dasharray="5 3" fill="none"/>
+    ${plates.map(p => `<path d="${p}" fill="none" stroke="${ink}" stroke-width="1.3"/>`).join("")}`;
+  // labels
+  h += `<text x="12" y="22" font-size="13" fill="${ink}" font-weight="500">γ1</text><text x="12" y="38" font-size="11" fill="${muted}">the grain it nucleated in</text>
+    <text x="12" y="362" font-size="13" fill="${ink}" font-weight="500">γ2</text><text x="40" y="362" font-size="11" fill="${muted}">no rational OR</text>
+    <text x="548" y="${GB - 6}" text-anchor="end" font-size="10.5" fill="${muted}">γ1/γ2 grain boundary</text>`;
+  h += `<path d="M376,150 L360,168" stroke="${ink}" stroke-width="1"/><text x="548" y="140" text-anchor="end" font-size="11.5" fill="${ink}" font-weight="500">oriented-lattices boundary</text><text x="548" y="154" text-anchor="end" font-size="10.5" fill="${muted}">KS with γ1: flat, ledged, slow</text>`;
+  h += `<path d="M450,${bulge + 44} L${lo ? 330 : 340},${bulge - (lo ? 12 : 22)}" stroke="${ink}" stroke-width="1"/><text x="548" y="${bulge + 58}" text-anchor="end" font-size="11.5" fill="${ink}" font-weight="500">unoriented-lattices boundary</text><text x="548" y="${bulge + 72}" text-anchor="end" font-size="10.5" fill="${muted}">incoherent: curved, mobile</text>`;
+  h += `<text x="${lo ? 300 : 230}" y="${lo ? 210 : 232}" font-size="13" fill="${ink}" font-weight="500">α</text>`;
+  // growth arrows
+  const arrow = (x1, y1, x2, y2) => { const a = Math.atan2(y2 - y1, x2 - x1); return `<path d="M${x1},${y1} L${x2},${y2} M${x2},${y2} l${(-9 * Math.cos(a - 0.45)).toFixed(1)},${(-9 * Math.sin(a - 0.45)).toFixed(1)} M${x2},${y2} l${(-9 * Math.cos(a + 0.45)).toFixed(1)},${(-9 * Math.sin(a + 0.45)).toFixed(1)}" stroke="var(--accent)" stroke-width="2.2" fill="none"/>`; };
+  if (lo) {
+    h += arrow(415, 118, 437, 82) + `<text x="548" y="64" text-anchor="end" font-size="11" fill="var(--accent)">plates grow into γ1</text>`;
+    h += `<text x="12" y="${GB + 72}" font-size="11" fill="var(--accent)">growth only through the KS interface</text>`;
+  } else {
+    h += arrow(270, bulge - 4, 270, bulge + 46) + `<text x="282" y="${bulge + 40}" font-size="11" fill="var(--accent)">thickens into γ2</text>`;
+    h += `<text x="168" y="164" font-size="10.5" fill="var(--accent)">barely moves</text>`;
+  }
+  if (state.oriSym) {
+    const star = (x, y) => `<path d="M${x},${y - 7} L${x + 2},${y - 2} L${x + 7},${y - 2} L${x + 3},${y + 1.5} L${x + 4.5},${y + 7} L${x},${y + 3.5} L${x - 4.5},${y + 7} L${x - 3},${y + 1.5} L${x - 7},${y - 2} L${x - 2},${y - 2} Z" fill="var(--good)"/>`;
+    const sites = lo ? [[196, 168], [272, 165], [352, 162], [240, 120]] : [[196, 168], [272, 165], [352, 162]];
+    h += sites.map(([x, y]) => star(x, y)).join("");
+    h += `<path d="M196,${bulge + 2} m-6,-6 l12,12 m0,-12 l-12,12" stroke="var(--warn)" stroke-width="2"/>`;
+    h += `<text x="12" y="${lo ? 66 : 66}" font-size="10.5" fill="var(--good)">★ occasional sympathetic nucleation</text><text x="12" y="80" font-size="10.5" fill="var(--warn)">✕ rarely, if ever</text>`;
+  }
+  svg.innerHTML = h;
+  // close-ups
+  const nn = 14;
+  const flat = x => (x < 135 ? 95 : 95 - nn * 0.866);
+  document.getElementById("ori-a").innerHTML = `<rect x="0" y="0" width="270" height="190" rx="8" fill="var(--soft)"/>
+    ${atoms(10, 95, 270, 190, nn, 0, (x, y) => y < flat(x) - 3, css("--gamma-fill"), gam)}
+    ${atoms(10, 95 + 0.3, 270, 190, nn * 0.975, 0, (x, y) => y > flat(x) + 3, col, "none")}
+    <path d="M0,95 H135 V${(95 - nn * 0.866).toFixed(1)} H270" stroke="${ink}" stroke-width="1.6" fill="none"/>
+    <rect x="3" y="3" width="232" height="33" rx="5" fill="var(--soft)" fill-opacity="0.92"/><text x="8" y="16" font-size="11" fill="${ink}" font-weight="500">oriented side</text><text x="8" y="30" font-size="10" fill="${muted}">γ1 above, α below; rows parallel (KS)</text>
+    <rect x="137" y="${(95 - nn * 0.866 - 19).toFixed(1)}" width="32" height="14" rx="3" fill="var(--soft)"/><text x="140" y="${(95 - nn * 0.866 - 8).toFixed(1)}" font-size="10" fill="var(--accent)">ledge</text>`;
+  const rough = x => 95 + 7 * Math.sin(x / 11) + 5 * Math.sin(x / 4.3);
+  let rp = "M0," + rough(0).toFixed(1); for (let x = 3; x <= 270; x += 3) rp += " L" + x + "," + rough(x).toFixed(1);
+  document.getElementById("ori-b").innerHTML = `<rect x="0" y="0" width="270" height="190" rx="8" fill="var(--soft)"/>
+    ${atoms(10, 95, 270, 190, nn * 0.975, 0, (x, y) => y < rough(x) - 4, col, "none")}
+    ${atoms(10, 95, 270, 190, nn, g2a + 15, (x, y) => y > rough(x) + 4, css("--gamma-fill"), gam)}
+    <path d="${rp}" stroke="${ink}" stroke-width="1.4" stroke-dasharray="4 3" fill="none"/>
+    <rect x="3" y="3" width="200" height="33" rx="5" fill="var(--soft)" fill-opacity="0.92"/><text x="8" y="16" font-size="11" fill="${ink}" font-weight="500">unoriented side</text><text x="8" y="30" font-size="10" fill="${muted}">α above, γ2 below; rows at ${g2a + 15}°</text>`;
+}
+
 // ---------- wiring
 function syncButtons() {
   document.querySelectorAll("[data-show]").forEach(b => b.setAttribute("aria-pressed", !state.custom && b.dataset.show === state.show));
   document.querySelectorAll("[data-color]").forEach(b => b.setAttribute("aria-pressed", b.dataset.color === state.color));
+  document.getElementById("show-habit").checked = state.habit;
+  document.getElementById("match").checked = state.match;
+  document.getElementById("tk").value = state.T; document.getElementById("xi").value = state.xi; document.getElementById("dh").value = state.dh;
 }
-function renderAllButTable() { syncButtons(); renderDetail(); renderPlane(); renderPole(); render3D(); }
-function renderAll() { renderAllButTable(); renderTable(); }
-function select(i) { state.sel = i; save(); renderAll(); }
+function renderAllButTable() { syncButtons(); renderDetail(); renderPlane(); renderPole(); render3D(); renderPairs(); renderOriented(); }
+function renderAll() { renderAllButTable(); renderTable(); renderSteps(); renderIPF(); }
+function select(i) { state.sel = i; state.twist = 0; save(); renderAll(); }
 document.querySelectorAll("[data-show]").forEach(b => b.onclick = () => { state.show = b.dataset.show; state.custom = null; save(); renderAll(); });
 document.querySelectorAll("[data-color]").forEach(b => b.onclick = () => { state.color = b.dataset.color; save(); renderAll(); });
+document.getElementById("twist").oninput = e => {
+  let t = +e.target.value;
+  [0, 2.5, 5.26, 8.03, 10.53].forEach(m => { if (Math.abs(t - m) < 0.08) t = m; });
+  state.twist = t; save(); renderPlane(); render3D();
+};
+document.getElementById("match").onchange = e => { state.match = e.target.checked; save(); renderPlane(); };
+document.getElementById("show-habit").onchange = e => { state.habit = e.target.checked; save(); render3D(); };
+document.getElementById("tk").oninput = e => { state.T = +e.target.value; save(); renderPlane(); render3D(); };
+document.getElementById("xi").oninput = e => { state.xi = +e.target.value; save(); renderPlane(); render3D(); };
+document.querySelectorAll("[data-ori]").forEach(b => b.onclick = () => { state.ori = b.dataset.ori; save(); renderOriented(); });
+document.getElementById("ori-sym").onchange = e => { state.oriSym = e.target.checked; save(); renderOriented(); };
+document.getElementById("ori-ang").oninput = e => { state.oriAng = +e.target.value; save(); renderOriented(); };
+document.getElementById("dh").oninput = e => { state.dh = +e.target.value; save(); renderSteps(); };
 init3D(); renderAll();
 const mq = matchMedia("(prefers-color-scheme: dark)"); mq.addEventListener && mq.addEventListener("change", renderAll);
 new MutationObserver(renderAll).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
