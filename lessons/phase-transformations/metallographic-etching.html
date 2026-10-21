@@ -35,7 +35,13 @@ a{color:var(--ferrite)}
 .grid2{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:18px;align-items:start}
 @media (max-width:820px){.grid2{grid-template-columns:minmax(0,1fr)}}
 .panel{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:14px;display:grid;gap:10px;min-width:0}
+canvas{display:block;width:100%;max-width:100%;height:auto;border-radius:4px}
+svg.fig{display:block;width:100%;max-width:100%;height:auto}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}
+.rule{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:12px 14px;display:grid;gap:6px;align-content:start;min-width:0}
+.rule b{font-family:var(--display);font-size:17px}
+.rule .k{font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 button,select{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--rule);border-radius:4px;padding:6px 11px;cursor:pointer}
 button:hover{border-color:var(--ferrite)}
 button[aria-pressed="true"]{border-color:var(--c,var(--ferrite));background:var(--panel);font-weight:600;box-shadow:inset 0 -3px 0 var(--c,var(--ferrite))}
@@ -96,7 +102,7 @@ table.matrix td.s3{background:var(--tip);color:#fff;font-weight:600}
     <a href="martensite-traces.html">Martensite traces in 3D</a>
   </div>
   <nav class="toc" aria-label="Sections">
-    <a href="#why">Why etch</a><a href="#mechanism">The chemistry</a><a href="#carbon">Carbon &amp; low-alloy steels</a><a href="#pagb">Prior-austenite grain boundaries</a><a href="#stainless">Stainless steels</a><a href="#electrolytic">Electrolytic etching</a><a href="#matrix">What attacks what</a><a href="#safety">Safety</a><a href="#sources">Sources</a>
+    <a href="#why">Why etch</a><a href="#mechanism">The chemistry</a><a href="#rules">Rules of thumb</a><a href="#carbon">Carbon &amp; low-alloy steels</a><a href="#pagb">Prior-austenite grain boundaries</a><a href="#stainless">Stainless steels</a><a href="#electrolytic">Electrolytic etching</a><a href="#matrix">What attacks what</a><a href="#safety">Safety</a><a href="#sources">Sources</a>
   </nav>
 </header>
 
@@ -137,12 +143,88 @@ table.matrix td.s3{background:var(--tip);color:#fff;font-weight:600}
       </ul>
     </div>
   </div>
-  <p class="callout c">This is the whole logic behind having dozens of named reagents instead of one. Nital&rsquo;s nitric acid finds grain-boundary disorder in ferrite and little else to grab onto, so it draws ferrite grain boundaries. Picric acid instead finds the ferrite/carbide interface energetically attractive, so it draws cementite and pearlite outlines and mostly ignores the ferrite grains themselves. The two etchants are not interchangeable &mdash; they are tuned to different electrochemical targets.</p>
+  <p class="callout c">This is the logic behind having dozens of named reagents instead of one. Each reagent sets up a different set of anodic and cathodic sites on the same surface, so each one reads out a different feature. The next section turns that into rules of thumb you can use to predict what a reagent will do.</p>
+</section>
+
+<!-- ============ RULES OF THUMB ============ -->
+<section id="rules">
+  <span class="eyebrow">3 · Rules of thumb</span>
+  <h2>Why acids outline carbides, and what it takes to attack the carbide itself</h2>
+  <p>Vander Voort notes that most etchants were found by trial and error, and that the job of each ingredient &ldquo;cannot always be determined with certainty&rdquo; (p. 169). A handful of patterns still explain most of what you see on steels.</p>
+
+  <div class="rules">
+    <div class="rule">
+      <span class="k">Rule 1 · the recipe</span>
+      <b>A corrosive agent, a modifier, and an oxidizer</b>
+      <p class="note">&ldquo;Chemical etchants usually have three main components: a corrosive agent (such as hydrochloric, sulfuric, phosphoric, or acetic acid), a modifier (such as alcohol or glycerin) that reduces ionization, and an oxidizer (such as hydrogen peroxide, Fe³⁺, or Cu²⁺). In some etchants one component serves two of these functions, such as nitric acid in nital. In electrolytic etchants, the applied current acts as the oxidizer.&rdquo; (p. 166)</p>
+      <p class="note">Read any recipe this way. Marshall&rsquo;s reagent is H₂SO₄ + oxalic acid (corrosive) with H₂O₂ (oxidizer). Kalling&rsquo;s is HCl (corrosive) with ethanol (modifier) and CuCl₂ (Cu²⁺ oxidizer). Glyceregia is HCl with HNO₃ (oxidizer) moderated by glycerol.</p>
+    </div>
+    <div class="rule">
+      <span class="k">Rule 2 · acid etchants</span>
+      <b>Carbides are cathodic, so acids dissolve the ferrite around them</b>
+      <p class="note">&ldquo;The cementite lamellae are cathodic to the ferrite lamellae, with a substantial potential difference. Etching with 4% picric acid in alcohol (picral) produces a slow, uniform, smooth dissolution of the ferrite lamellae, with the cathodic cementite lamellae in relief.&rdquo; (p. 167) Under high magnification &ldquo;the cementite lamellae are not attacked but appear outlined because of dissolution of the ferrite lamellae&rdquo; (p. 168).</p>
+      <p class="note">So nital, picral and Vilella&rsquo;s do not etch cementite. They show it by recessing and roughening the ferrite next to it. The same applies to σ phase and alloy carbides in stainless steel under most acid reagents.</p>
+    </div>
+    <div class="rule">
+      <span class="k">Rule 3 · nital vs picral</span>
+      <b>Nital is sensitive to orientation; picral is not</b>
+      <p class="note">Picral gives uniform darkening of pearlite colonies. Nital &ldquo;produces a wide range of gray-level contrast because of the orientation sensitivity of nital&rdquo;, and some lightly etched pearlite colonies &ldquo;may be mistaken for ferrite&rdquo; (p. 167&ndash;168).</p>
+      <p class="note">The same orientation sensitivity is what lets nital show ferrite grains and their boundaries, which picral does not. Use picral to measure pearlite fraction and nital to measure ferrite grain size.</p>
+    </div>
+    <div class="rule">
+      <span class="k">Rule 4 · alkaline oxidizing reagents</span>
+      <b>To attack the carbide itself, switch to a hot alkaline oxidizer</b>
+      <p class="note">Boiling alkaline sodium picrate colours cementite only (Fig. 3-37, p. 213). Murakami&rsquo;s (alkaline ferricyanide) and Groesbeck&rsquo;s (alkaline permanganate) stain carbides and σ while the ferrite and austenite matrix stays bright. For Murakami&rsquo;s, Vander Voort gives the reaction and the reason (p. 230):</p>
+      <div class="comp">2K₃Fe(CN)₆ + 2KOH → 2K₄Fe(CN)₆ + H₂O + ½O₂</div>
+      <p class="note">&ldquo;The ferricyanide acts as an oxidizer, however, whether or not a particular constituent is etched depends on the passivation response of the constituent by either nascent oxygen or excess alkali.&rdquo; (p. 230)</p>
+    </div>
+    <div class="rule">
+      <span class="k">Rule 5 · stainless steels</span>
+      <b>Chloride breaks the passive film, and the oxidizer is kept mild</b>
+      <p class="note">Stainless steel passivates, so its etchants rely on reducing acids (HCl, H₂SO₄, HF), with alcohol or glycerol lowering dissociation so that strong acid stays controllable (ASM Vol. 9, p. 679). The oxidizer is often Cu²⁺ (Kalling&rsquo;s, Fry&rsquo;s, Marble&rsquo;s) rather than nitric acid on its own, which tends to keep the film intact.</p>
+    </div>
+    <div class="rule">
+      <span class="k">Rule 6 · tint etchants</span>
+      <b>Films grow on anodic phases or cathodic phases, never both</b>
+      <p class="note">Beraha classified tint etchants as anodic reagents, which film and colour only the anodic constituents, cathodic reagents, which film only the cathodic ones, and complex reagents (p. 175). Metabisulfite decomposes on the surface to SO₂ and H₂S. SO₂ depassivates stainless steel and H₂S supplies sulfide for the film, so &ldquo;the anodic microconstituents, i.e., ferrite and austenite, are colored, while the cathodic constituents, i.e., carbides and nitrides, are bright and unaffected&rdquo; (p. 175). Selenic-acid and molybdate reagents do the opposite: they are reduced and deposit on the cathodic areas.</p>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="panel">
+      <h3>Pearlite in section after a picral etch</h3>
+      <svg class="fig" viewBox="0 0 480 170" role="img" aria-label="Cross-section of pearlite after picral: ferrite lamellae are recessed below the original polish plane, cementite lamellae stand in relief, and light reflected from the rough ferrite troughs scatters away from the objective">
+        <line x1="10" y1="60" x2="470" y2="60" style="stroke:var(--muted)" stroke-dasharray="5 4" stroke-width="1"></line>
+        <text x="12" y="52" style="fill:var(--muted);font:11px var(--mono)">original polish plane</text>
+        <rect x="10" y="90" width="460" height="70" style="fill:var(--gamma)"></rect>
+        <g id="pearliteProfile"></g>
+        <text x="12" y="155" style="fill:var(--muted);font:11px var(--mono)">ferrite (anodic, dissolved)</text>
+        <text x="468" y="155" text-anchor="end" style="fill:var(--tip);font:11px var(--mono)">cementite (cathodic, in relief)</text>
+      </svg>
+      <p class="note">Schematic, not to scale. The ferrite between the cementite plates is dissolved back below the polish plane and roughened, so it scatters light and looks dark in bright field. The cementite is untouched and stays at the original plane. When the lamellae are finer than the microscope can resolve, the whole colony just reads as dark.</p>
+    </div>
+    <div class="panel">
+      <h3>Acid versus alkaline oxidizing reagents</h3>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Reagent type</th><th>Attacked</th><th>Left bright</th></tr></thead>
+          <tbody>
+            <tr><td>Acid + oxidizer in alcohol (nital, picral, Vilella&rsquo;s)</td><td>Fe-rich matrix: ferrite, martensite</td><td>Cementite, alloy carbides</td></tr>
+            <tr><td>HCl + Cu²⁺ (Kalling&rsquo;s, Fry&rsquo;s, Marble&rsquo;s)</td><td>Ferrite and martensite; σ (Marble&rsquo;s)</td><td>Austenite (mostly), carbides</td></tr>
+            <tr><td>Hot alkaline oxidizer (Murakami&rsquo;s, Groesbeck&rsquo;s, alkaline sodium picrate)</td><td>Carbides, σ</td><td>Ferrite, austenite</td></tr>
+            <tr><td>Anodic tint (Beraha metabisulfite, Klemm&rsquo;s)</td><td>Ferrite, austenite coloured</td><td>Carbides, nitrides</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">Rows are summarised from Vander Voort (p. 166&ndash;175, 213, 229&ndash;231) and ASM Vol. 9 Table 8. My reading, not stated in either source: one likely reason the selectivity flips in alkali is that iron-rich ferrite and austenite passivate in strong alkali, while chromium-rich carbides and σ can be oxidized to soluble chromate. Kegley&rsquo;s passivation statement above supports this, but neither source gives the chromate step, so treat it as a hypothesis.</p>
+    </div>
+  </div>
+  <p class="callout">Overetching can reverse the picture. If etching continues too long, &ldquo;the phase that was initially anodic may undergo a change in potential, perhaps by deposition of reaction products&hellip; If this occurs, the phase that was originally cathodic can undergo dissolution&rdquo;. Vander Voort&rsquo;s rule of thumb is that &ldquo;as the magnification increases, the degree of etch attack must be reduced&rdquo; (p. 167).</p>
 </section>
 
 <!-- ============ CARBON STEELS ============ -->
 <section id="carbon">
-  <span class="eyebrow">3 · Carbon and low-alloy steels</span>
+  <span class="eyebrow">4 · Carbon and low-alloy steels</span>
   <h2>Nital draws ferrite boundaries; picral draws carbide boundaries</h2>
   <div class="grid2">
     <div class="panel">
@@ -170,7 +252,7 @@ table.matrix td.s3{background:var(--tip);color:#fff;font-weight:600}
 
 <!-- ============ PAGB ============ -->
 <section id="pagb">
-  <span class="eyebrow">4 · A thesis-relevant case</span>
+  <span class="eyebrow">5 · A thesis-relevant case</span>
   <h2>Revealing prior-austenite grain boundaries in a steel that is no longer austenite</h2>
   <p>For allotriomorphic ferrite and Widmanstätten sideplates, the prior-austenite grain boundary is the nucleation site and the reference frame for everything that grows from it &mdash; so being able to see it in a quenched or partially transformed sample matters as much as seeing the ferrite itself.</p>
   <div class="grid2">
@@ -189,12 +271,12 @@ sulfonate (40% soln.), 5 drops HCl</div>
       <p class="note">&ldquo;To delineate prior austenite grain boundaries.&rdquo; <span class="m">&mdash; same source, p. 615</span>. The picric acid in alcohol (A) is mixed with the aqueous surfactant (B) just before use.</p>
     </div>
   </div>
-  <p class="callout">Both work because the boundary itself, not the ferrite or the martensite either side of it, is what carries the highest density of segregated impurity and residual stress from its time as an austenite grain boundary &mdash; so it is the most anodic line on the whole section, picric acid's preferred target. See <a href="dilatometry.html#isothermal">Reading a dilatometer</a> for where these boundaries sit in a DIL805 trace, and <a href="widmanstatten-transition.html">Planar to Widmanstätten ferrite</a> for why the boundary's crystallography, not just its position, controls what nucleates there.</p>
+  <p class="callout">These reagents depend on impurity segregation to the old boundary. Vander Voort: &ldquo;Some phosphorus segregates to grain boundaries during austenitization, and additional segregation occurs during aging between about 350 and 575 °C. The presence of phosphorus at the austenite grain boundaries has been shown to promote grain-boundary etching with saturated aqueous picric acid&rdquo;, while steels free of phosphorus do not etch this way (p. 224). Grange&rsquo;s workaround for difficult samples was a deliberate embrittling hold, 16 h at 510 °C, before etching in boiling saturated aqueous picric acid. That revealed the austenite boundaries even in ferrite&ndash;pearlite (p. 224). For your own samples, a sample with very low P may not show prior-austenite boundaries with picric acid at all, and an extra temper-embrittling hold is the classic remedy. See <a href="dilatometry.html#isothermal">Reading a dilatometer</a> for where these boundaries sit in a DIL805 trace, and <a href="widmanstatten-transition.html">Planar to Widmanstätten ferrite</a> for why the boundary's crystallography, not just its position, controls what nucleates there.</p>
 </section>
 
 <!-- ============ STAINLESS ============ -->
 <section id="stainless">
-  <span class="eyebrow">5 · Stainless steels</span>
+  <span class="eyebrow">6 · Stainless steels</span>
   <h2>The thing that makes stainless steel corrosion-resistant also makes it hard to etch</h2>
   <p>A chromium oxide passive film is exactly what most etchants rely on an active (non-passivating) acid to prevent. Reducing acids &mdash; HCl, H₂SO₄, HF &mdash; are preferred over oxidizing ones; nitric acid is used only in combination, as aqua regia or with a chloride, because on its own it tends to repassivate the surface rather than attack it.</p>
   <blockquote>&ldquo;As the corrosion resistance of the alloys increases, stronger and stronger etchants must be used&hellip; Because alcohol reduces dissociation, alcohol-based reagents can be made more concentrated without becoming too powerful for controlled etching. Stainless steel surfaces passivate; therefore, reducing conditions are preferred to oxidizing conditions that promote passivity.&rdquo;<cite>Vander Voort, Lucas &amp; Manilova, ASM Handbook Vol. 9, p. 679</cite></blockquote>
@@ -223,7 +305,7 @@ sulfonate (40% soln.), 5 drops HCl</div>
 
 <!-- ============ ELECTROLYTIC ============ -->
 <section id="electrolytic">
-  <span class="eyebrow">6 · Electrolytic etching</span>
+  <span class="eyebrow">7 · Electrolytic etching</span>
   <h2>Applying a voltage turns "etch for longer" into "etch at a chosen rate"</h2>
   <div class="grid2">
     <div class="panel">
@@ -240,7 +322,7 @@ sulfonate (40% soln.), 5 drops HCl</div>
 
 <!-- ============ MATRIX ============ -->
 <section id="matrix">
-  <span class="eyebrow">7 · What attacks what</span>
+  <span class="eyebrow">8 · What attacks what</span>
   <h2>The same reagent is rarely neutral to every constituent in the field of view</h2>
   <p>Reading down any column shows why a metallographer reaches for a specific named reagent instead of "the strongest acid in the cabinet": every etchant here is selective, just not for the same thing.</p>
   <div class="matrixwrap">
@@ -261,7 +343,7 @@ sulfonate (40% soln.), 5 drops HCl</div>
 
 <!-- ============ SAFETY ============ -->
 <section id="safety">
-  <span class="eyebrow">8 · Safety</span>
+  <span class="eyebrow">9 · Safety</span>
   <h2>These are the hazards the handbook itself calls out, not an exhaustive MSDS</h2>
   <div class="warn">
     <ul class="tight">
@@ -284,7 +366,7 @@ sulfonate (40% soln.), 5 drops HCl</div>
     <li>B.L. Bramfitt and S.J. Lawrence, &ldquo;Metallography and Microstructures of Carbon and Low-Alloy Steels,&rdquo; <i>Metallography and Microstructures</i>, Vol. 9, <i>ASM Handbook</i>, ASM International, 2004, p. 608&ndash;626.</li>
     <li>&ldquo;Metallography and Microstructures of Low-Carbon Sheet Steels,&rdquo; <i>Metallography and Microstructures</i>, Vol. 9, <i>ASM Handbook</i>, ASM International, 2004, p. 588&ndash;607.</li>
     <li>G.F. Vander Voort, G.M. Lucas, and E.P. Manilova, &ldquo;Metallography and Microstructures of Stainless Steels and Maraging Steels,&rdquo; <i>Metallography and Microstructures</i>, Vol. 9, <i>ASM Handbook</i>, ASM International, 2004, p. 670&ndash;700.</li>
-    <li>G.F. Vander Voort, <i>Metallography: Principles and Practice</i>, McGraw-Hill, 1984; reprinted ASM International, 1999.</li>
+    <li>G.F. Vander Voort, <i>Metallography: Principles and Practice</i>, McGraw-Hill, 1984; reprinted ASM International, 1999. Ch. 3: &sect;3-2.1 &ldquo;Etching Theory&rdquo; p. 166&ndash;171; tint etching p. 175; carbide and prior-austenite etching p. 213&ndash;224; alkaline ferricyanide (Kegley) p. 229&ndash;231. Printed page numbers.</li>
     <li>G. Petzow, <i>Metallographic Etching</i>, 2nd ed., ASM International, 1999 &mdash; cited within Ref. 1 above for etching nomenclature.</li>
   </ol>
   <p class="note">All of these are in your agents/books/books_metallurgy library. Page numbers above are the handbook's own running page headers, not PDF page indices.</p>
@@ -521,6 +603,32 @@ matrixRows.forEach(function(row){
   matrixBody.appendChild(tr);
 });
 
+/* ---------- pearlite cross-section profile ---------- */
+(function(){
+  var g=document.getElementById("pearliteProfile"); if(!g) return;
+  var ns="http://www.w3.org/2000/svg", x=10;
+  while(x<470){
+    var fw=24, cw=7;
+    var r=document.createElementNS(ns,"rect");
+    r.setAttribute("x",x); r.setAttribute("y",60); r.setAttribute("width",cw); r.setAttribute("height",30);
+    r.setAttribute("style","fill:var(--tip)");
+    g.appendChild(r);
+    x+=cw+fw;
+  }
+  var trough=document.createElementNS(ns,"path");
+  var pts=[], x2=10;
+  pts.push("M10 90");
+  while(x2<470){
+    pts.push("L"+(x2+7)+" 78");
+    for(var j=1;j<=6;j++){ var xa=Math.min(x2+7+24*j/6,470); pts.push("L"+xa.toFixed(1)+" "+(74+((j%2)?4:-3))); }
+    x2+=31;
+  }
+  pts.push("L470 90 Z");
+  trough.setAttribute("d",pts.join(" "));
+  trough.setAttribute("style","fill:var(--gamma);stroke:var(--ferrite);stroke-width:1.2");
+  g.insertBefore(trough,g.firstChild);
+})();
+
 /* ---------- small sketch canvas: nital vs picral ---------- */
 var skCv = document.getElementById("cvFerritePicral");
 var skCaption = document.getElementById("sketchCaption");
@@ -537,15 +645,9 @@ function drawSketch(){
   var ink = cs.getPropertyValue("--ink").trim();
   var panel = cs.getPropertyValue("--panel").trim();
   ctx.fillStyle = panel; ctx.fillRect(0,0,w,h);
-  // draw a few irregular ferrite grains with pearlite patches
-  var grains = [
-    [[20,20],[140,10],[160,90],[90,120],[20,100]],
-    [[140,10],[280,25],[260,100],[160,90]],
-    [[20,100],[90,120],[100,200],[20,210]],
-    [[90,120],[160,90],[260,100],[230,200],[100,200]],
-    [[260,100],[280,25],[380,30],[400,120],[230,200]],
-    [[400,120],[460,30],[460,210],[230,200]].map(function(p){return [p[0]*(w/480<1?1:1),p[1]];})
-  ];
+  // five ferrite grains tiling a 480 x 196 field
+  var A=[2,2],B=[150,2],C=[300,2],D=[478,2],E=[2,100],F=[120,95],G=[260,112],H=[370,80],I=[478,95],J=[2,196],K=[170,196],L=[330,196],M=[478,196];
+  var grains = [[A,B,F,E],[B,C,H,G,F],[C,D,I,H],[E,F,G,K,J],[G,H,I,M,L,K]];
   function poly(pts, fill){
     ctx.beginPath();
     ctx.moveTo(pts[0][0]*(w/480), pts[0][1]);
@@ -553,27 +655,28 @@ function drawSketch(){
     ctx.closePath();
     ctx.fillStyle = fill; ctx.fill();
   }
-  grains.forEach(function(g,i){ poly(g, i%2===0 ? "color-mix(in srgb, "+ferrite+" 12%, "+panel+")" : "color-mix(in srgb, "+ferrite+" 6%, "+panel+")"); });
+  grains.forEach(function(g,i){ ctx.globalAlpha = i%2===0 ? 0.14 : 0.07; poly(g, ferrite); }); ctx.globalAlpha = 1;
   // boundaries
   ctx.lineWidth = skMode==="nital" ? 3 : 1;
-  ctx.strokeStyle = skMode==="nital" ? ferrite : "color-mix(in srgb, "+ink+" 25%, "+panel+")";
+  ctx.strokeStyle = skMode==="nital" ? ferrite : ink; ctx.globalAlpha = skMode==="nital" ? 1 : 0.25;
   grains.forEach(function(g){
     ctx.beginPath();
     ctx.moveTo(g[0][0]*(w/480), g[0][1]);
     for(var i=1;i<g.length;i++) ctx.lineTo(g[i][0]*(w/480), g[i][1]);
     ctx.closePath(); ctx.stroke();
   });
+  ctx.globalAlpha = 1;
   // pearlite patches (small dark blobs near grain edges) -- these darken under picral
-  var patches = [[150,60,18],[220,130,22],[330,70,16],[70,160,14],[300,170,20]];
+  var patches = [[145,45,18],[250,150,22],[400,45,16],[70,150,14],[410,150,20]];
   patches.forEach(function(p){
     var x=p[0]*(w/480), y=p[1], r=p[2]*(w/480);
     ctx.beginPath(); ctx.ellipse(x,y,r,r*0.6,0.4,0,Math.PI*2);
-    ctx.fillStyle = skMode==="picral" ? carbide : "color-mix(in srgb, "+carbide+" 35%, "+panel+")";
-    ctx.fill();
+    ctx.fillStyle = carbide; ctx.globalAlpha = skMode==="picral" ? 1 : 0.35;
+    ctx.fill(); ctx.globalAlpha = 1;
     if(skMode==="picral"){ ctx.lineWidth=1.5; ctx.strokeStyle=carbide; ctx.stroke(); }
   });
   ctx.font = "12px monospace"; ctx.fillStyle = cs.getPropertyValue("--muted").trim();
-  ctx.fillText(skMode==="nital" ? "ferrite grain boundaries drawn dark" : "carbide/pearlite patches drawn dark", 8, h-8);
+  ctx.fillText(skMode==="nital" ? "ferrite grain boundaries drawn dark" : "carbide/pearlite patches drawn dark", 8, h-6);
 }
 document.getElementById("btnNitalSketch").addEventListener("click", function(){
   skMode="nital";
@@ -608,8 +711,8 @@ function drawCell(){
   var bx=w*0.15, by=40, bw=w*0.7, bh=140;
   ctx.strokeStyle=muted; ctx.lineWidth=2;
   ctx.strokeRect(bx,by,bw,bh); // beaker
-  ctx.fillStyle="color-mix(in srgb, "+ferrite+" 10%, "+panel+")";
-  ctx.fillRect(bx+2,by+40,bw-4,bh-42); // electrolyte
+  ctx.fillStyle=ferrite; ctx.globalAlpha=0.12;
+  ctx.fillRect(bx+2,by+40,bw-4,bh-42); ctx.globalAlpha=1; // electrolyte
   // specimen (anode)
   ctx.fillStyle=ferrite;
   ctx.fillRect(bx+bw*0.25-10, by+50, 20, 90);
