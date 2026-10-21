@@ -197,6 +197,23 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:5px;font-size:14px;color:var
   <p>AW used a hemispherical nucleus on a planar boundary (their Eqs. 2–7). At an austenite grain boundary the cap and the base are both α:γ, and the base destroys γ:γ area. At an α:γ face the base becomes an α:α boundary and destroys α:γ area. With E the strain energy:</p>
   <div class="eq">ΔF*<sub>γγ</sub> = π(3σ<sub>γα</sub> − σ<sub>γγ</sub>)³ / [3(ΔF<sub>v</sub><sup>γγ</sup> + E)²]  (Eq. 4)    ΔF*<sub>γα</sub> = π(σ<sub>γα</sub> + σ<sub>αα</sub>)³ / [3(ΔF<sub>v</sub><sup>γα</sup> + E)²]  (Eq. 7)</div>
   <p>With AW’s inputs, σ<sub>γγ</sub> = 850 erg cm⁻², σ<sub>γα</sub>/σ<sub>γγ</sub> = 0.74 and σ<sub>γα</sub>/σ<sub>αα</sub> = 0.71 [AW1956] p. 1221 (PDF 6), these reproduce their printed Eq. 10 (1.60 × 10⁻¹⁴ (cal cm⁻²)³; recomputed here 1.59) and Eq. 11 (5.01 × 10⁻¹⁴; recomputed 4.97), which confirms how Eqs. 4 and 7 read under the image. The ratio of the two barriers is a product of an interfacial factor and a driving-force factor Φ = ΔG<sub>sym</sub>/ΔG<sub>bulk</sub>.</p>
+  <div class="panel">
+    <canvas id="cvNuc" height="300" data-min="210" data-ratio="0.42" aria-label="Schematic of a hemispherical nucleus growing on an austenite grain boundary and on an austenite-ferrite interface"></canvas>
+    <div class="key"><span style="--c:var(--ferrite)">new ferrite (cap, α:γ)</span><span style="--c:var(--tip)">α:γ area</span><span style="--c:var(--mart)">γ:γ boundary</span><span style="--c:var(--ok)">α:α boundary</span></div>
+    <div class="ctl"><label for="nR"><span>nucleus radius r / r*</span> <output id="nRO">0.60</output></label><input id="nR" type="range" min="0.1" max="1.5" step="0.05" value="0.60"></div>
+    <p class="note">Schematic, not to scale: a hemispherical cap of radius r standing on a planar boundary, as in AW’s Eqs. 2–7 (cross-section). Left: the base lies on an austenite grain boundary, so growing it removes γ:γ area and adds a second α:γ face. Right: the base lies on an existing ferrite crystal, so growing it removes α:γ area and adds α:α boundary. The dashed ring marks a reference radius r* (the same in both panels, only to give the slider a scale). The sketch shows the geometry only; the barrier maths is in the equations above.</p>
+    <p class="note"><b>Why the base differs <span class="tag own">my reading</span></b> The nucleus is a crystal of ferrite, and every surface of it touches something. At an austenite grain boundary both neighbours are austenite crystals, so wherever the nucleus touches either grain it is a ferrite:austenite interface, the cap against grain 1 and the base against grain 2. The base has no ferrite to join, so it keeps the α:γ energy (and it destroys a patch of γ:γ boundary, which pays back some energy). At an α:γ interface the base touches an existing ferrite crystal, not austenite. The new crystal and the old one are both ferrite, so the base is an α:α boundary, whose energy is low and falls towards zero as the two orientations approach each other. That swap, a costly α:γ base for a cheap α:α base, is the whole gain of sympathetic nucleation in Eq. 7, and why σ<sub>αα</sub> appears there in place of σ<sub>γα</sub> in the base term. The page’s Eqs. 4 and 7 are AW’s; the cap and base split above is from the text description around them, since the equations themselves are images in the PDF.</p>
+  </div>
+  <div class="panel">
+    <h3>Reading Eqs. 4 and 7 <span class="tag own">my derivation</span></h3>
+    <p class="note">Both equations are the same calculation with a different bookkeeping of the base. Take a hemisphere of radius r. Its volume is (2/3)πr³, so the bulk term is (2/3)πr³(ΔF<sub>v</sub> + E), negative because ΔF<sub>v</sub> is. Its curved cap has area 2πr² and costs σ<sub>γα</sub> per unit area. The flat base has area πr² and is where the two sites differ:</p>
+    <div class="eq">grain boundary: cap 2πr²σ<sub>γα</sub> + base πr²σ<sub>γα</sub> − πr²σ<sub>γγ</sub> = πr²(3σ<sub>γα</sub> − σ<sub>γγ</sub>)<br>α:γ face: cap 2πr²σ<sub>γα</sub> + base πr²σ<sub>αα</sub> − πr²σ<sub>γα</sub> = πr²(σ<sub>γα</sub> + σ<sub>αα</sub>)</div>
+    <p class="note">Call that bracket Σ, the net interfacial energy per πr². Then ΔF(r) = (2π/3)r³(ΔF<sub>v</sub> + E) + πr²Σ. The first term falls with r and the second rises, so ΔF has a maximum. Setting dΔF/dr = 0 gives the critical radius r* = Σ / |ΔF<sub>v</sub> + E|, and substituting back gives ΔF* = πΣ³ / [3(ΔF<sub>v</sub> + E)²], which is Eq. 4 with Σ = 3σ<sub>γα</sub> − σ<sub>γγ</sub> and Eq. 7 with Σ = σ<sub>γα</sub> + σ<sub>αα</sub>. This reproduces the printed form, which supports reading the grain-boundary base as α:γ.</p>
+    <div class="pair">
+      <div><h3>What it says</h3><p class="note">The barrier grows as the cube of the interfacial energy and falls as the square of the net driving force. Interfaces cost; driving force pays. Because the exponents differ, a modest loss of driving force hurts more than the same gain in interfacial energy helps. Halving ΔF<sub>v</sub> quadruples the barrier; halving Σ divides it by eight.</p></div>
+      <div><h3>Why it matters here</h3><p class="note">Nucleation rate goes as exp(−ΔF*/kT), so a barrier ratio is an exponent, not a small correction. At the face, Σ shrinks (σ<sub>αα</sub> is below σ<sub>γα</sub>, so Σ can be below the grain-boundary value) but ΔF<sub>v</sub> also shrinks, since the austenite there sits near the Ae3. The ratio below is that contest: the interfacial factor [(σ<sub>γα</sub> + σ<sub>αα</sub>)/(3σ<sub>γα</sub> − σ<sub>γγ</sub>)]³ against the driving-force factor 1/Φ², with E set to zero.</p></div>
+    </div>
+  </div>
   <div class="grid2">
     <div class="panel">
       <canvas id="cvMap" height="340" aria-label="Map of driving force ratio against alpha-alpha boundary energy, showing where sympathetic nucleation has the lower barrier"></canvas>
@@ -449,6 +466,13 @@ function drawParadox(){
   // phase diagram
   let {g,w,h}=setup($('cvPD'));let o={x0:0,x1:3,y0:450,y1:800,L:44,R:10,T:10,B:34,w,h,xt:[0,0.5,1,1.5,2,2.5,3],yt:[450,500,550,600,650,700,750,800],xl:'carbon, wt.%',yl:'T, °C',xf:v=>v};
   let {X:PX,Y:PY}=axes(g,o);
+  const bd=[];for(let t=450;t<=800;t+=10)bd.push([PX(ae3(t)),PY(t)]);
+  g.globalAlpha=.3;
+  g.fillStyle=css('--ple');g.beginPath();g.moveTo(PX(3),PY(450));bd.forEach(q=>g.lineTo(q[0],q[1]));g.lineTo(PX(3),PY(800));g.closePath();g.fill();
+  g.globalAlpha=.18;g.fillStyle=css('--mart');g.beginPath();g.moveTo(PX(0),PY(450));bd.forEach(q=>g.lineTo(q[0],q[1]));g.lineTo(PX(0),PY(800));g.closePath();g.fill();
+  g.globalAlpha=1;
+  txt(g,'austenite (γ)',PX(2.2),PY(770),css('--ink'),'center');
+  txt(g,'ferrite + austenite (α + γ)',PX(1.0),PY(490),css('--ink'),'center');
   line(g,AE3.filter(p=>p[0]>=727).map(p=>[PX(p[1]),PY(p[0])]),css('--ferrite'),2.4);
   line(g,AE3.filter(p=>p[0]<=727).map(p=>[PX(p[1]),PY(p[0])]),css('--ferrite'),2.4,[6,4]);
   line(g,[[PX(0),PY(727)],[PX(3),PY(727)]],css('--muted'),1,[2,3]);txt(g,'727 °C',PX(2.55),PY(727)-8,css('--muted'));
@@ -504,6 +528,39 @@ function drawTan(){
   $('tXO').textContent=f===0?'bulk':f>=0.999?'on the Ae3':(100*f).toFixed(0)+' % of the way to Ae3';
 }
 $('tX').addEventListener('input',drawTan);
+
+/* ---------- 4a. nucleus geometry schematic ---------- */
+function drawNuc(){
+  const f=+$('nR').value;$('nRO').textContent=f.toFixed(2);
+  const {g,w,h}=setup($('cvNuc'));const hw=w/2,yb=h*0.66;
+  const R0=Math.min(hw*0.26,h*0.36),r=f*R0;
+  const F=css('--ferrite'),T=css('--tip'),M=css('--mart'),K=css('--ok'),I=css('--ink');
+  const sm='11px "Source Sans 3",system-ui,sans-serif';
+  [0,1].forEach(k=>{
+    const cx=hw*k+hw/2;
+    g.save();g.beginPath();g.rect(hw*k+6,6,hw-12,h-12);g.clip();
+    g.fillStyle=css('--gamma');g.fillRect(hw*k,0,hw,h);
+    if(k===1){g.globalAlpha=.35;g.fillStyle=F;g.fillRect(hw*k,yb,hw,h-yb);g.globalAlpha=1}
+    const bd=k===0?M:T;
+    line(g,[[hw*k+6,yb],[cx-r,yb]],bd,2.2,k===0?[6,4]:null);
+    line(g,[[cx+r,yb],[hw*(k+1)-6,yb]],bd,2.2,k===0?[6,4]:null);
+    g.save();g.setLineDash([4,4]);g.strokeStyle=I;g.lineWidth=1;g.globalAlpha=.55;g.beginPath();g.arc(cx,yb,R0,Math.PI,2*Math.PI);g.stroke();g.restore();
+    g.globalAlpha=.55;g.fillStyle=F;g.beginPath();g.arc(cx,yb,r,Math.PI,2*Math.PI);g.closePath();g.fill();g.globalAlpha=1;
+    g.strokeStyle=T;g.lineWidth=2.4;g.beginPath();g.arc(cx,yb,r,Math.PI,2*Math.PI);g.stroke();
+    line(g,[[cx-r,yb],[cx+r,yb]],k===0?T:K,k===0?2.6:3.2);
+    line(g,[[cx,yb],[cx+r*0.71,yb-r*0.71]],I,1.2);
+    txt(g,'r',cx+r*0.38+5,yb-r*0.5-6,I,'left');
+    g.restore();
+    txt(g,k===0?'austenite grain boundary':'austenite : ferrite interface',hw*k+hw/2,14,I,'center','600 12px "Source Sans 3",system-ui,sans-serif');
+    txt(g,k===0?'γ grain 1':'austenite',hw*k+14,h*0.2,css('--muted'),'left',sm);
+    txt(g,k===0?'γ grain 2':'ferrite',hw*k+14,h-14,css('--muted'),'left',sm);
+    const nr=w<600;txt(g,nr?'cap α:γ':'cap: new α:γ, σγα',cx,yb-r-10,T,'center',sm);
+    txt(g,nr?(k===0?'base α:γ':'base α:α'):(k===0?'base: α:γ replaces γ:γ':'base: α:α replaces α:γ'),cx,yb+16,k===0?T:K,'center',sm);
+    txt(g,'r*',cx-R0*0.71-4,yb-R0*0.71-6,I,'right',sm);
+  });
+  line(g,[[hw,10],[hw,h-10]],css('--rule'),1);
+}
+$('nR').addEventListener('input',drawNuc);
 
 /* ---------- 4. barrier map ---------- */
 const sGG=850,sGA=0.74*850,K=(3*sGA-sGG)/sGA; // interfacial factor normalised by sigma_ga
@@ -575,7 +632,7 @@ function drawLedge(){
 $('lT').addEventListener('input',drawLedge);
 
 /* ---------- boot & redraw ---------- */
-function all(){drawCfg();drawParadox();drawTan();drawMap();drawRS();drawLedge();}
+function all(){drawCfg();drawNuc();drawParadox();drawTan();drawMap();drawRS();drawLedge();}
 all();let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(all,120)});
 try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',all)}catch(e){}
 new MutationObserver(all).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
