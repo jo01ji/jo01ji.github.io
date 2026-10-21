@@ -250,7 +250,12 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:5px;font-size:14px;color:var
     <div class="panel">
       <h3>The tip, drawn to scale</h3>
       <canvas id="cvTip" aria-label="Plate tip drawn to scale with the stress concentration ahead of it and the plastic zone for viscoplastic cases"></canvas>
-      <div class="key"><span style="--c:var(--ferrite)">plate (α)</span><span style="--c:var(--carbon)">von Mises stress, schematic</span><span class="dash" style="--c:var(--tip)">plastic zone, schematic</span><span class="dash" style="--c:var(--muted)">elastic tip outline, for comparison</span></div>
+      <div class="row">
+        <button type="button" id="tipPlay" aria-pressed="false">Play</button>
+        <span class="note" id="tipClock">t = 7.5 min · tip at 0.389 µm</span>
+      </div>
+      <div class="key"><span style="--c:var(--ferrite)">plate (α)</span><span style="--c:var(--carbon)">von Mises stress, schematic</span><span class="dash" style="--c:var(--tip)">plastic zone, schematic</span><span class="dash" style="--c:var(--muted)">elastic tip at the same time</span><span style="--c:var(--ink)">fixed points in γ, and a mark on the plate every 10 nm of growth</span></div>
+      <p class="note">The frame moves with the tip, so the tip stays put and the austenite streams past it at V<sub>p</sub>. Play runs the same clock as the replay below. In the viscoplastic cases the dashed outline is where the elastic tip would be at the same moment; it pulls ahead by (V<sub>el</sub> − V<sub>p</sub>)·t.</p>
       <p class="note" id="tipText"></p>
     </div>
     <div class="panel">
@@ -624,6 +629,13 @@ function drawTip(){
   // world window in nm
   const span=70, sc=w/span, cxT=w*0.58, cy=h/2; // tip at cxT
   const X=xn=>cxT+xn*sc, Y=yn=>cy-yn*sc;
+  const grown=d.V*raceT*60; // nm advanced since t=0
+  // fixed points in the austenite, streaming past the tip
+  ctx.fillStyle=alpha(css('--ink'),0.45);
+  const sp=6, off=grown%sp;
+  for(let xn=-span-sp;xn<span;xn+=sp)for(let yn=-40;yn<=40;yn+=sp){
+    const xx=xn-off; if(xx<=0&&yn*yn<=2*d.R*(-xx))continue;
+    ctx.beginPath();ctx.arc(X(xx),Y(yn),1.5,0,7);ctx.fill();}
   // stress field schematic (low-res raster)
   const step=4, amp=acc==='el'?1:(acc==='vp10'?0.7:0.5);
   const base=css('--carbon');
@@ -650,13 +662,23 @@ function drawTip(){
     if(fill){ctx.lineTo(0,Y(Math.sqrt(2*Rp*span)));ctx.lineTo(0,Y(-Math.sqrt(2*Rp*span)));ctx.closePath();ctx.fillStyle=fill;ctx.fill();}
     ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.setLineDash(dash||[]);ctx.stroke();ctx.setLineDash([]);};
   drawPlate(d.R,alpha(css('--ferrite'),0.55),css('--ferrite'));
-  if(acc!=='el')drawPlate(ACC.el.R,null,css('--muted'),[3,4]);
+  // growth marks on the plate every 10 nm of lengthening
+  ctx.strokeStyle=alpha(css('--ink'),0.35);ctx.lineWidth=1;
+  for(let m=Math.floor(grown/10)*10;m>grown-span-10&&m>=0;m-=10){const xx=m-grown; if(xx>-1)continue;const hh=Math.sqrt(2*d.R*(-xx));
+    ctx.beginPath();ctx.moveTo(X(xx),Y(hh));ctx.lineTo(X(xx),Y(-hh));ctx.stroke();}
+  if(acc!=='el'){
+    const lead=(ACC.el.V-d.V)*raceT*60;
+    ctx.save();ctx.translate(lead*sc,0);drawPlate(ACC.el.R,null,css('--muted'),[3,4]);ctx.restore();
+    const lx=Math.min(w-8,X(lead)+4);
+    txt(ctx,'elastic tip +'+lead.toFixed(0)+' nm'+(X(lead)>w?' →':''),lx,cy+(acc==='vp0'?-36:36),css('--muted'),X(lead)>w-90?'right':'left');
+  }
   // radius marker
   ctx.strokeStyle=css('--ink');ctx.lineWidth=1;ctx.beginPath();ctx.arc(X(-d.R),cy,d.R*sc,-0.9,0.9);ctx.stroke();
   // scale bar 10 nm
   ctx.strokeStyle=css('--ink');ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(10,h-12);ctx.lineTo(10+10*sc,h-12);ctx.stroke();
   txt(ctx,'10 nm',10+5*sc,h-17,css('--ink'),'center');
   txt(ctx,'Rp ≈ '+d.R.toFixed(1)+' nm',w-8,16,css(d.col),'right',12);
+  $('tipClock').textContent='t = '+raceT.toFixed(1)+' min · tip at '+(0.02+grown/1000).toFixed(3)+' µm';
   txt(ctx,'growth →',w-8,h-8,css('--muted'),'right');
 }
 function drawRV(){
@@ -693,9 +715,11 @@ function drawRace(){
     txt(ctx,p.name,L-8,y+4,css(p.col),'right');
     txt(ctx,x.toFixed(3),Math.min(xs(x)+8,R+2),y+4,css('--muted'),'left');});
 }
-function raceLoop(ts){if(!raceRun)return;const dt=raceLast?Math.min(0.05,(ts-raceLast)/1000):0;raceLast=ts;raceT=Math.min(7.5,raceT+dt*1.5);drawRace();if(raceT>=7.5){raceRun=false;$('racePlay').textContent='Play';$('racePlay').setAttribute('aria-pressed','false');return;}requestAnimationFrame(raceLoop);}
-$('racePlay').addEventListener('click',()=>{if(reduce){raceT=7.5;drawRace();return;}if(!raceRun&&raceT>=7.5)raceT=0;raceRun=!raceRun;$('racePlay').textContent=raceRun?'Pause':'Play';$('racePlay').setAttribute('aria-pressed',String(raceRun));raceLast=0;requestAnimationFrame(raceLoop);});
-$('sT').addEventListener('input',()=>{raceRun=false;$('racePlay').textContent='Play';raceT=+$('sT').value;drawRace();});
+function raceLoop(ts){if(!raceRun)return;const dt=raceLast?Math.min(0.05,(ts-raceLast)/1000):0;raceLast=ts;raceT=Math.min(7.5,raceT+dt*0.75);drawRace();drawTip();if(raceT>=7.5){setPlay(false);return;}requestAnimationFrame(raceLoop);}
+function setPlay(on){raceRun=on;['racePlay','tipPlay'].forEach(id=>{$(id).textContent=on?'Pause':'Play';$(id).setAttribute('aria-pressed',String(on));});}
+function togglePlay(){if(reduce){raceT=7.5;drawRace();drawTip();return;}if(!raceRun&&raceT>=7.5)raceT=0;setPlay(!raceRun);raceLast=0;if(raceRun)requestAnimationFrame(raceLoop);}
+['racePlay','tipPlay'].forEach(id=>$(id).addEventListener('click',togglePlay));
+$('sT').addEventListener('input',()=>{setPlay(false);raceT=+$('sT').value;drawRace();drawTip();});
 const accIds={accEl:'el',accVp10:'vp10',accVp0:'vp0'};
 Object.keys(accIds).forEach(id=>$(id).addEventListener('click',()=>{acc=accIds[id];press(Object.keys(accIds),id);drawTip();drawRV();drawRace();}));
 
