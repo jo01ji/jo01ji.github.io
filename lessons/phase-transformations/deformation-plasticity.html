@@ -1,0 +1,763 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Deformation and Plasticity in Phase Selection</title>
+</head>
+<body>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: the lab notebook on etched-steel grey, honey/gold/amber/rust palette of the other ferrite lessons; each section pairs one claim with one instrument that tests it */
+:root{
+  --bg:#eef1f3; --panel:#f8fafb; --ink:#17212b; --muted:#56636f; --rule:#cfd6dc;
+  --ferrite:#a8650a; --carbon:#e07b12; --tip:#b4480e; --ple:#d29a12; --gamma:#f5e6bd; --mart:#5b6670; --ok:#3f7d4e;
+  --display:"Spectral",Georgia,serif; --body:"Source Sans 3","Segoe UI",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12171c; --panel:#1a2128; --ink:#e3e8ec; --muted:#9aa6b1; --rule:#2d3740;
+  --ferrite:#f2b84b; --carbon:#f39a3c; --tip:#ff7a3d; --ple:#f5c542; --gamma:#3a3221; --mart:#aab4bd; --ok:#74c08a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12171c; --panel:#1a2128; --ink:#e3e8ec; --muted:#9aa6b1; --rule:#2d3740;
+  --ferrite:#f2b84b; --carbon:#f39a3c; --tip:#ff7a3d; --ple:#f5c542; --gamma:#3a3221; --mart:#aab4bd; --ok:#74c08a; color-scheme:dark}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 var(--body)}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px}
+h1,h2,h3{font-family:var(--display);font-weight:600;text-wrap:balance;margin:0}
+h1{font-size:clamp(30px,4.6vw,46px);line-height:1.08}
+h2{font-size:clamp(22px,3vw,28px);margin-top:8px}
+h3{font-size:18px}
+p{margin:0;max-width:68ch}
+.lede{color:var(--muted);font-size:17px;margin-top:10px}
+.eyebrow{font:500 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+section{display:grid;gap:14px;padding-block:34px;border-top:1px solid var(--rule)}
+header{display:grid;gap:6px;padding-bottom:26px}
+.links{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:10px;font-size:15px}
+nav.toc{display:flex;flex-wrap:wrap;gap:6px 8px;margin-top:14px}
+nav.toc a{font:500 12px var(--mono);text-decoration:none;border:1px solid var(--rule);border-radius:3px;padding:3px 8px;color:var(--muted)}
+nav.toc a:hover{border-color:var(--ferrite);color:var(--ink)}
+a{color:var(--ferrite)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:18px;align-items:start}
+.grid2e{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:820px){.grid2,.grid2e{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:14px;display:grid;gap:10px;min-width:0}
+canvas{display:block;width:100%;max-width:100%;touch-action:pan-y;border-radius:4px}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 18px}
+.ctl{display:grid;gap:2px;font-size:14px}
+.ctl label{display:flex;justify-content:space-between;gap:8px}
+.ctl output{font:500 13px var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+input[type=range]{width:100%;accent-color:var(--ferrite)}
+select,button{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--rule);border-radius:4px;padding:5px 10px}
+button{cursor:pointer}
+button:hover{border-color:var(--ferrite)}
+button[aria-pressed="true"]{border-color:var(--c,var(--ferrite));background:var(--panel);font-weight:600;box-shadow:inset 0 -3px 0 var(--c,var(--ferrite))}
+:focus-visible{outline:2px solid var(--ferrite);outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.key{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted)}
+.key span::before{content:"";display:inline-block;width:14px;height:4px;border-radius:2px;margin-right:6px;vertical-align:middle;background:var(--c)}
+.key span.dash::before{background:repeating-linear-gradient(90deg,var(--c) 0 4px,transparent 4px 7px)}
+.note{font-size:14px;color:var(--muted)}
+.callout{border-left:3px solid var(--tip);padding:4px 0 4px 12px;font-size:15px;max-width:none}
+.callout.c{border-left-color:var(--carbon)}
+.callout.p{border-left-color:var(--ple)}
+.callout.mt{border-left-color:var(--mart)}
+blockquote{margin:0;padding:6px 0 6px 14px;border-left:2px solid var(--rule);font-family:var(--display);font-size:17px;max-width:70ch}
+blockquote cite{display:block;font:500 12px var(--mono);font-style:normal;color:var(--muted);margin-top:4px}
+.defs{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.defs div{display:grid;gap:4px;align-content:start;min-width:0}
+.defs b{font-family:var(--display);font-size:17px}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;font-size:14px;width:100%}
+th,td{padding:6px 10px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font:500 12px var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+td.m,code,.m{font:13px var(--mono);font-variant-numeric:tabular-nums}
+.eq{font:14px var(--mono);background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:8px 12px;overflow-x:auto;max-width:100%;white-space:nowrap}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px 18px;font-size:13px}
+.stats div{display:grid;gap:0}
+.stats span{color:var(--muted)}
+.stats b{font:500 14px var(--mono);font-variant-numeric:tabular-nums}
+.tag{display:inline-block;font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--rule);border-radius:3px;padding:1px 6px;color:var(--muted);vertical-align:middle}
+.tag.own{border-color:var(--tip);color:var(--tip)}
+.tag.read{border-color:var(--carbon);color:var(--carbon)}
+ul.tight,ol.tight{margin:0;padding-left:20px;display:grid;gap:6px;max-width:72ch}
+ol.refs{margin:0;padding-left:22px;display:grid;gap:5px;font-size:14px;color:var(--muted);max-width:92ch}
+.spectrum{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--rule);border-radius:6px;overflow:hidden;background:var(--panel)}
+.spectrum>div{padding:12px;border-right:1px solid var(--rule);display:grid;gap:6px;align-content:start;min-width:0}
+.spectrum>div:last-child{border-right:none}
+.spectrum h3{font-size:16px}
+.spectrum .val{font:500 14px var(--mono);font-variant-numeric:tabular-nums}
+.bar{height:8px;border-radius:2px;background:var(--rule);position:relative;overflow:hidden}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:var(--c,var(--ferrite))}
+.bar.na i{background:repeating-linear-gradient(135deg,var(--mart) 0 3px,transparent 3px 7px);width:100%}
+@media (max-width:760px){.spectrum{grid-template-columns:minmax(0,1fr)}.spectrum>div{border-right:none;border-bottom:1px solid var(--rule)}.spectrum>div:last-child{border-bottom:none}}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">Phase transformations · ferrite morphology</span>
+  <h1>Deformation and plasticity in phase selection</h1>
+  <p class="lede">A ferrite plate changes the shape of the austenite it replaces as well as its composition. This page follows that shape change from the nucleus to the growing tip: how it raises the nucleation barrier, how interface defects produce it, how its elastic anisotropy picks the plate shape, and how plastic relaxation at the tip slows the plate down without changing what kind of plate it is.</p>
+  <div class="links">
+    <a href="widmanstatten-transition.html">Planar to Widmanstätten ferrite</a>
+    <a href="sympathetic-nucleation.html#barrier">Sympathetic nucleation, the nucleus</a>
+    <a href="dilatometry.html#stress">Reading a dilatometer, transformation under stress</a>
+    <a href="martensite-traces.html">Martensite traces in 3D</a>
+  </div>
+  <nav class="toc" aria-label="Sections">
+    <a href="#energy">The barrier</a><a href="#ips">Shape strain</a><a href="#disconnections">Disconnections</a><a href="#anisotropy">Elastic selection</a><a href="#relaxation">Tip relaxation</a><a href="#applied">Applied stress</a><a href="#spectrum">The spectrum</a><a href="#thesis">Your thesis</a><a href="#open">Open questions</a><a href="#sources">Sources</a>
+  </nav>
+</header>
+
+<!-- ============ 1. THE BARRIER ============ -->
+<section id="energy">
+  <span class="eyebrow">1 · Nucleation</span>
+  <h2>Strain energy is subtracted from the driving force, and the barrier goes as its inverse square</h2>
+  <p>The pillbox model used for grain-boundary and sympathetic nucleation of ferrite writes the critical-nucleus energy with a denominator Φ, the sum of the volume free-energy change and the elastic strain energy. The volume term drives nucleation and the strain term holds it back, so strain energy shrinks |Φ|, and the barrier rises as 1/Φ².</p>
+  <blockquote>“Φ is the sum of the Helmholtz volume free energy change ΔG<sub>v</sub> driving nucleation and the elastic strain energy usually acting to restrain nucleation.”<cite>[A1995] text under Eq. 3, p. 115</cite></blockquote>
+  <div class="grid2">
+    <div class="panel">
+      <div class="eq">ΔG*<sub>s</sub> = 4π (σ<sup>αβ</sup><sub>e</sub>)² ε / Φ<sub>s</sub>² ,  Φ = ΔG<sub>v</sub> + ΔG<sub>ε</sub></div>
+      <canvas id="cvBar" aria-label="Barrier ratio against the strain-energy fraction of the driving force"></canvas>
+      <div class="controls">
+        <div class="ctl"><label for="sEps"><span>Strain energy as a fraction of |ΔG<sub>v</sub>|</span> <output id="sEpsO">0.20</output></label><input id="sEps" type="range" min="0" max="0.8" step="0.01" value="0.2"></div>
+        <div class="ctl"><label for="sG0"><span>Strain-free barrier ΔG*₀ / kT</span> <output id="sG0O">20</output></label><input id="sG0" type="range" min="5" max="60" step="1" value="20"></div>
+      </div>
+      <div class="stats">
+        <div><span>ΔG* / ΔG*₀</span><b id="barRatio">1.56</b></div>
+        <div><span>Nucleation rate J / J₀</span><b id="barRate">1.3e-5</b></div>
+      </div>
+      <p class="note">Φ is Aaronson's symbol, the same one behind Φ<sub>SN</sub>/Φ<sub>Full</sub> in the <a href="sympathetic-nucleation.html#terraces">sympathetic nucleation lesson</a>. The ratio uses only the 1/Φ² form of Eq. 3 (σ, ε and the site geometry cancel). The rate ratio uses J ∝ exp(−ΔG*/kT) from Eq. 2 of the same paper and needs a strain-free barrier, which is an input here, not a value from any steel.</p>
+    </div>
+    <div class="panel">
+      <h3>Why the square matters</h3>
+      <p class="note">A strain term worth one fifth of the chemical driving force raises the barrier by about 56 %. Because the rate depends on the barrier exponentially, that is several orders of magnitude in J. This is why the 1995 overview says the critical nucleus shape is “by far the most important factor governing nucleation kinetics” at small driving forces, and why it treats its strain-free pillbox analysis as a simplification: the analysis is done “in the absence of the considerable complications introduced by dilatometric and shear strain energies.” [A1995, p. 114]</p>
+      <p class="note">A pillbox is bounded entirely by low-energy coherent faces, which the overview calls “some highly qualitative justification” for the model. [A1995, p. 114]</p>
+      <p class="callout">Strain energy enters twice in what follows: as a penalty in Φ at nucleation, and as a stored energy in the grown plate (§7). Bhadeshia's 50 J mol⁻¹ for Widmanstätten ferrite, the number behind your sample-01 Ws estimate, is the second kind.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. SHAPE STRAIN ============ -->
+<section id="ips">
+  <span class="eyebrow">2 · The shape change</span>
+  <h2>An invariant-plane strain, and why two opposing plates cost far less than one</h2>
+  <p>An invariant-plane strain (IPS) leaves one plane, the habit plane, unrotated and undistorted. Every point moves parallel to one direction by an amount proportional to its distance from that plane. A plate that crosses a polished surface therefore tilts the surface over its width, which is the surface relief seen on Widmanstätten ferrite, bainite and martensite. Bhadeshia uses the form of that relief to explain why Widmanstätten ferrite stores so much less strain energy than bainite.</p>
+  <blockquote>“The displacive formation of Widmanstätten ferrite seems to involve the cooperative growth of mutually accommodating crystallographic variants. The resulting surface relief thus consists of two adjacent and opposing invariant-plane strains, so that the elastically accommodated strain energy accompanying plate formation is rather small (of the order of 50 J mol⁻¹). Bainite plates … show surface-relief effects corresponding to single invariant-plane strains, so that the strain-energy term is larger, amounting to about 400 J mol⁻¹.”<cite>[B1985] p. 501</cite></blockquote>
+  <div class="grid2">
+    <div class="panel">
+      <div class="row" role="group" aria-label="Plate arrangement">
+        <button type="button" id="ipsSingle" aria-pressed="true">One plate (bainite-like)</button>
+        <button type="button" id="ipsPair" aria-pressed="false">Opposing pair (Widmanstätten)</button>
+      </div>
+      <canvas id="cvIPS" aria-label="Cross-section of a block with a plate crossing the top surface, showing surface relief"></canvas>
+      <div class="controls">
+        <div class="ctl"><label for="sShear"><span>Shear component s</span> <output id="sShearO">0.22</output></label><input id="sShear" type="range" min="0" max="0.4" step="0.01" value="0.22"></div>
+        <div class="ctl"><label for="sDil"><span>Normal (dilatation) component δ</span> <output id="sDilO">0.03</output></label><input id="sDil" type="range" min="0" max="0.06" step="0.005" value="0.03"></div>
+      </div>
+      <div class="key"><span style="--c:var(--rule)">undeformed reference</span><span style="--c:var(--ferrite)">plate</span><span style="--c:var(--ink)">free surface after the IPS</span><span style="--c:var(--tip)">offset the matrix beyond must take up</span></div>
+      <div class="stats">
+        <div><span>Vertical offset beyond the plates</span><b id="ipsOffY">—</b></div>
+        <div><span>Horizontal offset beyond the plates</span><b id="ipsOffX">—</b></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Reading the picture</h3>
+      <p class="note">The habit plane here is vertical and the shape change is drawn unconstrained, as if the plate were free to move. A single plate shears everything to its right by s·t, where t is the plate thickness. A real matrix cannot do that, so the misfit is stored as long-range elastic energy or relaxed by plastic flow.</p>
+      <p class="note">With two adjacent plates of opposite shear, the surface forms a tent and the vertical offset beyond the pair returns to zero. The shear no longer reaches the far matrix. The dilatation does not cancel, because both plates expand, so the pair still carries some misfit. This is what Bhadeshia's “two adjacent and opposing invariant-plane strains” means, and why the pair costs about 50 J mol⁻¹ against about 400 J mol⁻¹ for a single bainite plate.</p>
+      <p class="note">The strain values on the sliders are for drawing only. Neither source gives the IPS shear or dilatation of Widmanstätten ferrite in your steel.</p>
+      <p class="callout mt">Martensite has the same geometry with no diffusion at all. The full crystallography (Bain strain, lattice-invariant shear, habit plane) is in the <a href="martensite-traces.html">martensite traces lesson</a>, and variant pairing in the <a href="ks-variant-atlas.html">KS variant atlas</a>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. DISCONNECTIONS ============ -->
+<section id="disconnections">
+  <span class="eyebrow">3 · Where the shape strain comes from</span>
+  <h2>A train of disconnections moves the interface and shears what it leaves behind</h2>
+  <p>Howe, Pond and Hirth describe a transformation interface as terraces separated by <b>disconnections</b>: line defects that are both a step of height h and a dislocation with Burgers vector b. When one sweeps along the interface, the interface advances by h and the material it converts is strained by b. A train of them therefore produces a plastic shape change whose components are b/h, on the terrace plane. That is an invariant-plane strain made by defect motion.</p>
+  <blockquote>“When h is finite, the defect is a disconnection, characterised by (b, h) … The long-range elastic field is that of the dislocation, while the overlap step produces no long-range elastic field but does produce an offset of the interface.”<cite>[H2009] §2.1, p. 795</cite></blockquote>
+  <div class="grid2">
+    <div class="panel">
+      <canvas id="cvDisc" aria-label="Animated train of disconnections moving along a ferrite-austenite interface, with fiducial lines sheared in the transformed layers"></canvas>
+      <div class="row">
+        <button type="button" id="discPlay" aria-pressed="false">Play</button>
+        <button type="button" id="discReset">Reset</button>
+      </div>
+      <div class="controls">
+        <div class="ctl"><label for="sBx"><span>b<sub>x</sub> / h (shear per step)</span> <output id="sBxO">0.30</output></label><input id="sBx" type="range" min="0" max="0.6" step="0.02" value="0.30"></div>
+        <div class="ctl"><label for="sBz"><span>b<sub>z</sub> / h (normal per step)</span> <output id="sBzO">0.02</output></label><input id="sBz" type="range" min="-0.05" max="0.05" step="0.005" value="0.02"></div>
+      </div>
+      <div class="key"><span style="--c:var(--ferrite)">α (product)</span><span style="--c:var(--ple)">γ (parent)</span><span style="--c:var(--tip)">disconnection (b, h)</span><span style="--c:var(--ink)">fiducial lines</span></div>
+      <div class="stats">
+        <div><span>Layers transformed</span><b id="discN">0</b></div>
+        <div><span>Shear in new α, γ<sub>xz</sub></span><b id="discG">0.30</b></div>
+        <div><span>Normal strain in new α, ε<sub>zz</sub></span><b id="discE">0.020</b></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>What the animation shows</h3>
+      <p class="note">Each pass of a step converts one layer of γ, of thickness h, to α. The fiducial lines stay straight in the γ below and kink where they enter the new α, because each new layer is sheared by b<sub>x</sub>. The old α above the original interface is not strained; it is translated, which shows at a free surface as relief. Eq. 17 of the paper gives the strain of a train with spacing d<sup>D</sup> moving by dy as (dy/d<sup>D</sup>)·b·n, and the volume converted as h·dy/d<sup>D</sup>. Their ratio is b/h. [H2009, §3.2, pp. 805–806]</p>
+      <p class="note">The paper separates three kinetic classes. Fast martensite: disconnections move at close to the speed of sound. Slow martensite: kink pairs. Diffusional transformations: also kink-pair nucleation and propagation, but “the kink motion is diffusion controlled as the components have to interchange to produce the composition change.” [H2009, §3.1, p. 805]</p>
+      <p class="callout c">This is the bridge between the diffusional and the displacive views of Widmanstätten ferrite. The same defect carries the shape change and, through its kinks, the diffusion. Howe et al. also note that an exact invariant plane is “a sufficient but not necessary condition” for a glissile semi-coherent interface. [H2009, p. 805]</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. ELASTIC SELECTION ============ -->
+<section id="anisotropy">
+  <span class="eyebrow">4 · Cottura, Appolaire, Finel &amp; Le Bouar, Acta Mater. 72 (2014)</span>
+  <h2>The diffusion problem allows any tip radius; elastic anisotropy picks one</h2>
+  <p>A parabolic tip growing at constant speed into a supersaturated matrix satisfies the diffusion equation for a whole family of radius and velocity pairs. Ivantsov's solution fixes only their product, through the Péclet number P = R<sub>p</sub>V<sub>p</sub>/2D. Something else has to choose the point on the curve. In solidification it is the anisotropy of the interface energy. Cottura et al. note that phase-field models of Widmanstätten ferrite needed interface anisotropies “with orders of magnitude which may legitimately be questioned” [C2014, p. 201], and they show that an anisotropic transformation eigenstrain does the job instead.</p>
+  <div class="grid2">
+    <div class="panel">
+      <h3>One supersaturation, many tips</h3>
+      <canvas id="cvIv" aria-label="Ivantsov family of tip radius and velocity pairs for the chosen supersaturation"></canvas>
+      <div class="ctl"><label for="sOm"><span>Supersaturation Ω</span> <output id="sOmO">0.24</output></label><input id="sOm" type="range" min="0.05" max="0.6" step="0.01" value="0.24"></div>
+      <div class="stats">
+        <div><span>Ivantsov Péclet number P(Ω)</span><b id="ivP">—</b></div>
+        <div><span>R<sub>p</sub>·V<sub>p</sub> = 2DP</span><b id="ivRV">—</b></div>
+      </div>
+      <p class="note">Ω = √(πP)·e<sup>P</sup>·erfc(√P), solved here for P [C2014, p. 204]. The curve uses the diffusivity of their Table 1, D = 5.21×10⁻¹⁷ m² s⁻¹ (52.1 nm² s⁻¹). The dot is their stationary elastic tip, R<sub>p</sub> = 3.8 nm and V<sub>p</sub> = 0.7 nm s⁻¹ at an effective Ω ≈ 0.24 [pp. 202–204]. From those three numbers P = 0.0255, against 0.0259 from Ivantsov at Ω = 0.24 (my arithmetic). That is the agreement they describe as “remarkably close”, even though the tip is not a parabola.</p>
+    </div>
+    <div class="panel">
+      <div class="row" role="group" aria-label="Eigenstrain shape">
+        <button type="button" id="eigSingle" aria-pressed="true">One soft direction (ε<sub>22</sub> only)</button>
+        <button type="button" id="eigShear" aria-pressed="false">Pure shear (two soft directions)</button>
+      </div>
+      <canvas id="cvPolar" aria-label="Schematic polar plot of elastic energy against interface orientation"></canvas>
+      <canvas id="cvGrowth" aria-label="Schematic tip position against time for the chosen eigenstrain"></canvas>
+      <p class="note" id="polarText"></p>
+      <p class="note">Both plots are schematic. The lobes reproduce the shape of their Figs. 1 and 6 (minimum at θ = π/2 for one soft direction, at π/4 and 3π/4 for pure shear), not their values.</p>
+    </div>
+  </div>
+  <p class="callout c">They tested the idea on real alloys: θ′ in Al–Cu, cube–cube orientation relationship with misfit along one ⟨100⟩, matches the one-soft-direction case and is reported to lengthen at constant velocity; Widmanstätten α in Ti alloys with the Burgers relationship is the second case. [C2014, §4.2, p. 207]. Bhadeshia's 1985 analysis of ferrite plates instead selects the tip with the maximum-velocity hypothesis and notes that “if the maximum-velocity hypothesis is incorrect (as it is for dendritic solidification), the above-mentioned discrepancies would be larger.” [B1985, abstract, p. 497]</p>
+</section>
+
+<!-- ============ 5. TIP RELAXATION ============ -->
+<section id="relaxation">
+  <span class="eyebrow">5 · Cottura, Appolaire, Finel &amp; Le Bouar, Scripta Mater. 108 (2015)</span>
+  <h2>Plastic relaxation at the tip: a blunter, slower plate of the same kind</h2>
+  <p>The usual argument for leaving elasticity out of diffusional growth models is that the austenite is soft at the reaction temperature and simply yields. Cottura et al. tested this by adding strain-gradient viscoplasticity to their 2014 model, with only the matrix allowed to flow. The plate still grows at a constant rate. Plastic flow, confined mainly to the region just ahead of the tip, relaxes the coherency stresses there, and the tip settles at a larger radius and a lower velocity.</p>
+  <div class="row" role="group" aria-label="Accommodation mode">
+    <button type="button" id="accEl" style="--c:var(--ok)" aria-pressed="true">Elastic only</button>
+    <button type="button" id="accVp10" style="--c:var(--ple)" aria-pressed="false">Viscoplastic, ξ = 10 nm</button>
+    <button type="button" id="accVp0" style="--c:var(--tip)" aria-pressed="false">Viscoplastic, ξ = 0</button>
+  </div>
+  <div class="grid2">
+    <div class="panel">
+      <h3>The tip, drawn to scale</h3>
+      <canvas id="cvTip" aria-label="Plate tip drawn to scale with the stress concentration ahead of it and the plastic zone for viscoplastic cases"></canvas>
+      <div class="row">
+        <button type="button" id="tipPlay" aria-pressed="false">Play</button>
+        <span class="note" id="tipClock">t = 7.5 min · tip at 0.389 µm</span>
+      </div>
+      <div class="key"><span style="--c:var(--ferrite)">plate (α)</span><span style="--c:var(--carbon)">von Mises stress, schematic</span><span class="dash" style="--c:var(--tip)">plastic zone, schematic</span><span class="dash" style="--c:var(--muted)">elastic tip at the same time</span><span style="--c:var(--ink)">reference marks fixed in γ (not atoms), and a line on the plate every 10 nm of growth</span></div>
+      <p class="note">The frame moves with the tip, so the tip stays put and the austenite streams past it at V<sub>p</sub>. The small crosses are reference marks fixed in the parent austenite, spaced about 14 nm apart, not atoms; they are there only to make the flow visible. Play runs the same clock as the replay below. In the viscoplastic cases the dashed outline is where the elastic tip would be at the same moment; it pulls ahead by (V<sub>el</sub> − V<sub>p</sub>)·t.</p>
+      <p class="note" id="tipText"></p>
+    </div>
+    <div class="panel">
+      <h3>Same product, new operating point</h3>
+      <canvas id="cvRV" aria-label="Tip velocity against tip radius for the three cases, with a curve of constant product"></canvas>
+      <div class="stats">
+        <div><span>R<sub>p</sub> (nm)</span><b id="rvR">—</b></div>
+        <div><span>V<sub>p</sub> (nm s⁻¹)</span><b id="rvV">—</b></div>
+        <div><span>R<sub>p</sub>·V<sub>p</sub> (nm² s⁻¹)</span><b id="rvP">—</b></div>
+      </div>
+      <p class="note"><span class="tag read">read from figure</span> Values read off the inset of their Fig. 2, about ±0.1 nm and ±0.01 nm s⁻¹. The text gives the elastic case as 8 nm and 0.9 nm s⁻¹ [p. 119]. The dotted curve is constant R<sub>p</sub>V<sub>p</sub> through the elastic point, as in the inset.</p>
+    </div>
+  </div>
+  <div class="panel">
+    <h3>Lengthening, replayed</h3>
+    <canvas id="cvRace" aria-label="Three plates lengthening side by side at the read velocities"></canvas>
+    <div class="row">
+      <button type="button" id="racePlay" aria-pressed="false">Play</button>
+      <div class="ctl" style="flex:1;min-width:200px"><label for="sT"><span>Simulated time</span> <output id="sTO">7.5 min</output></label><input id="sT" type="range" min="0" max="7.5" step="0.05" value="7.5"></div>
+    </div>
+    <p class="note">Positions follow x = 0.02 µm + V<sub>p</sub>·t with the velocities above, which reproduces their Fig. 1 (left) to within the line width: about 0.39, 0.36 and 0.32 µm at 7.5 min. The early transient, under a minute in their runs, is left out.</p>
+  </div>
+  <div class="grid2e">
+    <div class="panel">
+      <h3>Their four conclusions</h3>
+      <ol class="tight note">
+        <li>The case without mechanics is not a limit of plastic relaxation: “with a shear dominated eigenstrain, neglecting elasticity would simply generate circular precipitates.”</li>
+        <li>Stationary growth survives isotropic plasticity, with or without a plastic length: “plasticity only modifies the couple tip radius/growth rate.”</li>
+        <li>Conventional viscoplasticity is the upper bound for relaxation and so the lower bound for the lengthening rate. Its effect resembles a smaller eigenstrain, but probably not quantitatively, because the plastic strain is so inhomogeneous.</li>
+        <li>The plastic length scale has only a moderate effect and “cannot be considered as the main selection mechanism for the tip radius.”</li>
+      </ol>
+      <p class="note">[C2015, p. 120]</p>
+    </div>
+    <div class="panel">
+      <h3>Why ξ = 10 nm relaxes less</h3>
+      <p class="note">The intrinsic plastic length ξ = √(A/E) (ξ̃ in the paper) comes from a gradient term in the plastic free energy. When plasticity is confined to a small region in front of the tip, that gradient term hardens it. So with ξ = 10 nm the plastic strain varies more smoothly and is weaker, and the plate behaves closer to the elastic case; increasing ξ pushes it further that way. [C2015, Eq. 6–8, p. 118; Fig. 3 discussion, p. 120]</p>
+      <p class="callout">The same plastic flow is the origin of the stored energy in the grown plate. Bhattacharya et al.: “At higher temperature, lower yield-strength of γ causes the plastic relaxation which results in large dislocation-density. The precipitated α′ inherits these dislocations which ultimately raises its stored energy.” [Bh2017, §2.3.1, p. 320]</p>
+      <p class="note">Their parameters are generic, “not those of a particular alloy” [p. 118], and they warn the model “may not be directly applied to study the growth of acicular structures in steels, in particular sheaves of subunits as more commonly observed in bainite.” [p. 120]</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. APPLIED STRESS ============ -->
+<section id="applied">
+  <span class="eyebrow">6 · Denis, Gautier, Simon &amp; Beck, Mater. Sci. Technol. 1 (1985)</span>
+  <h2>Under an applied stress the shape change becomes a measurable strain</h2>
+  <p>Denis et al. separate two effects of stress on a transformation in steel. The “metallurgical interaction” changes the kinetics and “sometimes leads to a different morphology in the phase produced”. Transformation plasticity is a permanent strain that appears during transformation even when the applied stress is below the yield stress. [D1985, p. 805] Two mechanisms are offered for the second.</p>
+  <div class="grid2">
+    <div class="panel">
+      <div class="eq">Greenwood–Johnson, Eq. 3:  ε<sup>pt</sup> = (5/6)(σ/Y)(ΔV/V)</div>
+      <div class="eq">Abrassart, Eq. 4 at m = 1:  ε<sup>pt</sup> = (1/4)(σ/Y)(ΔV/V)</div>
+      <canvas id="cvGJ" aria-label="Transformation plasticity against applied stress for the two models"></canvas>
+      <div class="controls">
+        <div class="ctl"><label for="gjSigma"><span>Applied stress σ (MPa)</span> <output id="gjSigmaO">150</output></label><input id="gjSigma" type="range" min="0" max="400" step="5" value="150"></div>
+        <div class="ctl"><label for="gjY"><span>Yield stress of the weaker phase Y (MPa)</span> <output id="gjYO">285</output></label><input id="gjY" type="range" min="50" max="400" step="5" value="285"></div>
+        <div class="ctl"><label for="gjDv"><span>Volume change ΔV/V</span> <output id="gjDvO">0.010</output></label><input id="gjDv" type="range" min="0.002" max="0.05" step="0.001" value="0.010"></div>
+      </div>
+      <div class="stats">
+        <div><span>Greenwood–Johnson ε<sup>pt</sup></span><b id="gjOut">—</b></div>
+        <div><span>Abrassart (m = 1) ε<sup>pt</sup></span><b id="abOut">—</b></div>
+      </div>
+      <p class="note">Y defaults to the austenite yield stress, about 285 MN m⁻², quoted for the 60NCD11 steel of Fig. 5; transformation plasticity was linear in σ below it [D1985, p. 807]. ΔV/V is an input: compute yours from lattice parameters as in the <a href="dilatometry.html#volume">dilatometry lesson</a>. Above Y the lines are drawn dashed, because the relation is no longer meant to hold.</p>
+    </div>
+    <div class="panel">
+      <h3>Two mechanisms</h3>
+      <p class="note"><b>Greenwood–Johnson.</b> The volume change sets up internal stresses; an applied stress, added to them, makes the weaker phase yield in its own direction below the macroscopic yield stress. Eq. 3, built on the Levy–von Mises criterion. For the 60NCD11 steel the measured values fell between the two relations, much closer to Greenwood–Johnson. [D1985, p. 808, Fig. 5 p. 807]</p>
+      <p class="note"><b>Magee.</b> Under stress, the product chooses the orientations that minimise the total energy including the work of the applied stress, so plates whose shape strain helps the stress form preferentially. This version works even when ΔV/V is very small, and is reversible in thermoelastic alloys. [D1985, p. 808]</p>
+      <p class="note">For martensite they conclude both operate and “the contribution of each mechanism is however difficult to predict quantitatively.” [p. 808]</p>
+      <p class="callout">Magee's mechanism is the IPS of §2 seen from outside: an applied stress does work on the shape strain, so it selects variants. In your DIL805A/D runs under load, this is what the <a href="dilatometry.html#stress">stress section of the dilatometry lesson</a> is about.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7. THE SPECTRUM ============ -->
+<section id="spectrum">
+  <span class="eyebrow">7 · Putting it together</span>
+  <h2>Stored strain energy across the ferrite morphologies</h2>
+  <p>Bhadeshia's 1985 calculation of plate lengthening rates uses three stored energies for the ferrite: 0, 50 and 400 J mol⁻¹. They map onto the morphologies on this site. The bars are drawn to the same scale.</p>
+  <div class="spectrum">
+    <div>
+      <span class="eyebrow">Reference</span>
+      <h3>Allotriomorphic ferrite</h3>
+      <div class="val">0 J mol⁻¹</div>
+      <div class="bar" style="--c:var(--ferrite)"><i style="width:0.5%"></i></div>
+      <p class="note">The zero-stored-energy reference curve in Bhadeshia's Figs. 1–3. Treated as reconstructive, with no IPS relief invoked.</p>
+    </div>
+    <div>
+      <span class="eyebrow">Opposing IPS pair</span>
+      <h3>Widmanstätten ferrite</h3>
+      <div class="val">≈ 50 J mol⁻¹</div>
+      <div class="bar" style="--c:var(--carbon)"><i style="width:12.5%"></i></div>
+      <p class="note">Mutually accommodating variants, tent-shaped relief (§2). Bhattacharya et al. use the same 50 J mol⁻¹ in phase-field growth. [B1985 p. 501; Bh2017 p. 318]</p>
+    </div>
+    <div>
+      <span class="eyebrow">Single IPS</span>
+      <h3>Bainite</h3>
+      <div class="val">≈ 400 J mol⁻¹</div>
+      <div class="bar" style="--c:var(--tip)"><i style="width:100%"></i></div>
+      <p class="note">Single-IPS relief. Bhadeshia: sheaves grow “much faster than expected from carbon diffusion-controlled growth.” [B1985 pp. 497, 501]</p>
+    </div>
+    <div>
+      <span class="eyebrow">Lattice correspondence</span>
+      <h3>Martensite</h3>
+      <div class="val">not given here</div>
+      <div class="bar na"><i></i></div>
+      <p class="note">No diffusion, full IPS with lattice-invariant shear. No stored-energy value in these sources; crystallography in the martensite lessons.</p>
+    </div>
+  </div>
+  <p class="note">These strain-energy terms “shift the γ/(γ+α) phase boundary to lower carbon levels”, and Bhadeshia notes they “are, however, often ignored but … can have a significant influence on growth rates.” [B1985, p. 501, Fig. 1]</p>
+</section>
+
+<!-- ============ 8. YOUR THESIS ============ -->
+<section id="thesis">
+  <span class="eyebrow">8 · Link to your thesis</span>
+  <h2>The allotriomorph-to-Widmanstätten transition is the first step on that scale</h2>
+  <ul class="tight note">
+    <li><b>Your Ws estimate already contains this physics.</b> The 670 °C Bhadeshia-criterion value for sample-01 in your ws_estimates note comes from requiring the paraequilibrium driving force to exceed the 50 J mol⁻¹ stored energy of §7. Your own sensitivity check gives about 682 °C at 30 J mol⁻¹ and 660 °C at 70 J mol⁻¹, so the mechanical term moves Ws by roughly ±10 K for ±20 J mol⁻¹.</li>
+    <li><b>That 50 J mol⁻¹ is a relaxation product.</b> On Bhattacharya's reading (§5), it is the dislocation density the plate inherits from plastic relaxation of the austenite. Cottura's results say the same relaxation changes the tip radius and speed. So the stored energy and the lengthening rate are tied to one process, which none of the Ws criteria treat explicitly.</li>
+    <li><b>Elastic selection as a candidate mechanism.</b> The <a href="widmanstatten-transition.html#explD">planar-to-Widmanstätten lesson</a> lists explanations A–D for the morphological transition. Cottura's result (§4) is a selection mechanism of the D kind that does not depend on interface-energy anisotropy.</li>
+    <li><span class="tag own">suggestion</span> In-situ confocal microscopy sees the free surface. Tent-shaped relief across adjacent plates (§2) against single tilts would be a direct test of the mutual-accommodation picture at the moment sideplates form. Paired variants in your in-situ EBSD maps would be the crystallographic counterpart.</li>
+    <li><span class="tag own">limit</span> No source here gives the eigenstrain, elastic constants or viscoplastic parameters for Fe–0.43C–1.9Mn–0.04Si. Pushing this beyond a qualitative picture needs those from the literature or from your own measurements, not estimates.</li>
+  </ul>
+</section>
+
+<!-- ============ 9. OPEN QUESTIONS ============ -->
+<section id="open">
+  <span class="eyebrow">9 · Open questions</span>
+  <h2>What this page leaves unresolved</h2>
+  <ul class="tight note">
+    <li>Cottura's models are 2-D with 3-D elasticity, one generic eigenstrain, isotropic plasticity and no carbon–Mn chemistry. No paper in your folder runs the equivalent calculation for a hypoeutectoid Fe–C–Mn steel with a measured Widmanstätten eigenstrain. They list anisotropic viscoplasticity (slip systems) and colonies of plates as next steps. [C2015, p. 120]</li>
+    <li>The disconnection description (§3) and the elastic-anisotropy description (§4) are of the same interface at different scales. Neither paper connects disconnection density and Burgers vector to the tip-selection result.</li>
+    <li>Bhadeshia's 50 and 400 J mol⁻¹ are single values. How the stored energy depends on temperature, through the austenite yield stress that sets the plastic relaxation, is not addressed in these sources.</li>
+    <li>Denis et al. (1985) leave the balance between Greenwood–Johnson and Magee unresolved, and this folder holds nothing more recent on transformation plasticity.</li>
+  </ul>
+</section>
+
+<!-- ============ 10. SOURCES ============ -->
+<section id="sources">
+  <span class="eyebrow">Sources</span>
+  <ol class="refs">
+    <li>[A1995] H.I. Aaronson, G. Spanos, R.A. Masumura, R.G. Vardiman, D.W. Moon, E.S.K. Menon, M.G. Hall (1995). Sympathetic nucleation: an overview. <i>Mater. Sci. Eng. B</i> 32, 107–123.</li>
+    <li>[B1985] H.K.D.H. Bhadeshia (1985). Critical assessment: diffusion-controlled growth of ferrite plates in plain-carbon steels. <i>Mater. Sci. Technol.</i> 1, 497–504.</li>
+    <li>[H2009] J.M. Howe, R.C. Pond, J.P. Hirth (2009). The role of disconnections in phase transformations. <i>Prog. Mater. Sci.</i> 54, 792–838.</li>
+    <li>[C2014] M. Cottura, B. Appolaire, A. Finel, Y. Le Bouar (2014). Phase field study of acicular growth: role of elasticity in Widmanstätten structure. <i>Acta Mater.</i> 72, 200–210.</li>
+    <li>[C2015] M. Cottura, B. Appolaire, A. Finel, Y. Le Bouar (2015). Plastic relaxation during diffusion-controlled growth of Widmanstätten plates. <i>Scripta Mater.</i> 108, 117–121.</li>
+    <li>[Bh2017] A. Bhattacharya, K. Ankit, B. Nestler (2017). Phase-field simulations of curvature-induced cascading of Widmanstätten-ferrite plates. <i>Acta Mater.</i> 123, 317–328.</li>
+    <li>[D1985] S. Denis, E. Gautier, A. Simon, G. Beck (1985). Stress–phase-transformation interactions: basic principles, modelling, and calculation of internal stresses. <i>Mater. Sci. Technol.</i> 1, 805–814.</li>
+  </ol>
+  <p class="note">Page numbers are the journal's printed pages, read from the PDFs in phd_2/03-literature/papers/phase transformations/. Values marked “read from figure” were read off the plotted curves, not printed in the text. The sample-01 Ws numbers are from your ws_estimates note.</p>
+</section>
+</div>
+
+<script>
+(function(){
+"use strict";
+const root=document.documentElement;
+const css=n=>getComputedStyle(root).getPropertyValue(n).trim();
+const MONO=()=>css('--mono'), BODY=()=>css('--body');
+const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function fit(c,ratio,minH,maxH){
+  const d=window.devicePixelRatio||1;
+  const w=Math.max(200,c.clientWidth||c.parentElement.clientWidth||300);
+  const h=Math.round(Math.max(minH,Math.min(maxH,w*ratio)));
+  c.style.height=h+'px';
+  if(c.width!==Math.round(w*d)||c.height!==Math.round(h*d)){c.width=Math.round(w*d);c.height=Math.round(h*d);}
+  const ctx=c.getContext('2d');ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,w,h);
+  return {ctx,w,h};
+}
+function alpha(col,a){ // hex -> rgba
+  const m=col.replace('#','');const n=m.length===3?m.split('').map(x=>x+x).join(''):m;
+  const v=parseInt(n,16);return `rgba(${(v>>16)&255},${(v>>8)&255},${v&255},${a})`;
+}
+function axes(ctx,x0,y0,x1,y1){ctx.strokeStyle=css('--rule');ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x0,y1);ctx.lineTo(x1,y1);ctx.stroke();}
+function txt(ctx,s,x,y,col,align,size,font){ctx.fillStyle=col||css('--muted');ctx.textAlign=align||'left';ctx.font=(size||11)+'px '+(font||MONO());ctx.fillText(s,x,y);}
+const $=id=>document.getElementById(id);
+function press(ids,on){ids.forEach(id=>$(id).setAttribute('aria-pressed',String(id===on)));}
+
+/* ---------- 1. barrier ---------- */
+function drawBar(){
+  const s=+$('sEps').value, g0=+$('sG0').value;
+  $('sEpsO').textContent=s.toFixed(2);$('sG0O').textContent=g0;
+  const r=1/((1-s)*(1-s));
+  $('barRatio').textContent=r.toFixed(2)+'×';
+  const lr=-g0*(r-1)/Math.LN10;
+  $('barRate').textContent=lr>-0.005?'1':'10^'+lr.toFixed(1);
+  const {ctx,w,h}=fit($('cvBar'),0.42,170,260);
+  const L=44,R=w-12,T=12,B=h-30;
+  axes(ctx,L,T,R,B);
+  const xs=v=>L+(v/0.8)*(R-L), ys=v=>B-(Math.log10(v)/Math.log10(30))*(B-T);
+  [1,3,10,30].forEach(v=>{const y=ys(v);ctx.strokeStyle=alpha(css('--rule'),0.6);ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(R,y);ctx.stroke();txt(ctx,v+'×',L-6,y+4,null,'right');});
+  [0,0.2,0.4,0.6,0.8].forEach(v=>txt(ctx,v.toFixed(1),xs(v),B+14,null,'center'));
+  txt(ctx,'ΔG_ε / |ΔG_v|',(L+R)/2,h-3,null,'center');
+  txt(ctx,'ΔG*/ΔG*₀ (log)',L+4,T+10,null,'left');
+  ctx.strokeStyle=css('--ferrite');ctx.lineWidth=2;ctx.beginPath();
+  for(let i=0;i<=160;i++){const v=i/160*0.8;const y=ys(1/((1-v)*(1-v)));i?ctx.lineTo(xs(v),y):ctx.moveTo(xs(v),y);}ctx.stroke();
+  ctx.fillStyle=css('--tip');ctx.beginPath();ctx.arc(xs(s),ys(r),5,0,7);ctx.fill();
+}
+['sEps','sG0'].forEach(id=>$(id).addEventListener('input',drawBar));
+
+/* ---------- 2. IPS surface relief ---------- */
+let ipsMode='single';
+function drawIPS(){
+  const s=+$('sShear').value, dl=+$('sDil').value;
+  $('sShearO').textContent=s.toFixed(2);$('sDilO').textContent=dl.toFixed(3);
+  const {ctx,w,h}=fit($('cvIPS'),0.5,200,320);
+  const top=h*0.42, bot=h-14, x0=14, x1=w-14;
+  const t=Math.min(70,(x1-x0)*0.13); // plate thickness px
+  const a=(x0+x1)/2-(ipsMode==='pair'?t:t/2);
+  const plates=ipsMode==='pair'?[[a,a+t,1],[a+t,a+2*t,-1]]:[[a,a+t,1]];
+  // displacement u(x) (unconstrained): accumulate across plates
+  function u(x){let ux=0,uy=0;for(const [p0,p1,sg] of plates){const d=Math.max(0,Math.min(x,p1)-p0);ux+=dl*d;uy+=sg*s*d;}return [ux,uy];}
+  // reference block
+  ctx.fillStyle=alpha(css('--gamma'),0.55);ctx.fillRect(x0,top,x1-x0,bot-top);
+  ctx.strokeStyle=css('--rule');ctx.lineWidth=1;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(x0,top);ctx.lineTo(x1,top);ctx.stroke();ctx.setLineDash([]);
+  // plates (draw deformed region)
+  for(const [p0,p1] of plates){
+    ctx.fillStyle=alpha(css('--ferrite'),0.35);
+    ctx.beginPath();const ua=u(p0),ub=u(p1);
+    ctx.moveTo(p0+ua[0],top-ua[1]);ctx.lineTo(p1+ub[0],top-ub[1]);ctx.lineTo(p1+ub[0],bot);ctx.lineTo(p0+ua[0],bot);ctx.closePath();ctx.fill();
+    ctx.strokeStyle=css('--ferrite');ctx.lineWidth=1.5;ctx.stroke();
+  }
+  // vertical fiducial grid in deformed state
+  ctx.strokeStyle=alpha(css('--ink'),0.25);ctx.lineWidth=1;
+  for(let gx=x0+12;gx<x1-4;gx+=18){const d=u(gx);ctx.beginPath();ctx.moveTo(gx+d[0],top-d[1]+3);ctx.lineTo(gx+d[0],bot);ctx.stroke();}
+  // free surface
+  ctx.strokeStyle=css('--ink');ctx.lineWidth=2.2;ctx.beginPath();
+  for(let i=0;i<=300;i++){const x=x0+(x1-x0)*i/300;const d=u(x);i?ctx.lineTo(x+d[0],top-d[1]):ctx.moveTo(x+d[0],top-d[1]);}ctx.stroke();
+  // far-field offset marker
+  const far=u(x1);
+  if(Math.abs(far[1])>0.5){ctx.strokeStyle=css('--tip');ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x1-8,top);ctx.lineTo(x1-8,top-far[1]);ctx.stroke();txt(ctx,'offset',x1-12,top-far[1]/2+4,css('--tip'),'right');}
+  txt(ctx,ipsMode==='pair'?'tent: shear cancels beyond the pair':'single tilt: shear carried to the far matrix',x0+4,16,css('--muted'),'left',12);
+  txt(ctx,'free surface',x0+4,top-8,css('--muted'),'left');
+  $('ipsOffY').textContent=ipsMode==='pair'?'0':(s.toFixed(2)+' · t');
+  $('ipsOffX').textContent=(dl*(ipsMode==='pair'?2:1)).toFixed(3)+' · t';
+}
+['sShear','sDil'].forEach(id=>$(id).addEventListener('input',drawIPS));
+$('ipsSingle').addEventListener('click',()=>{ipsMode='single';press(['ipsSingle','ipsPair'],'ipsSingle');drawIPS();});
+$('ipsPair').addEventListener('click',()=>{ipsMode='pair';press(['ipsSingle','ipsPair'],'ipsPair');drawIPS();});
+
+/* ---------- 3. disconnection train ---------- */
+let discT=0, discRun=false, discLast=0;
+const NMAX=6;
+function drawDisc(){
+  const bx=+$('sBx').value, bz=+$('sBz').value;
+  $('sBxO').textContent=bx.toFixed(2);$('sBzO').textContent=bz.toFixed(3);
+  $('discG').textContent=bx.toFixed(2);$('discE').textContent=bz.toFixed(3);
+  const {ctx,w,h}=fit($('cvDisc'),0.5,210,320);
+  const hpx=Math.max(14,Math.min(22,h/14)), dD=Math.max(90,w*0.28), v=60;
+  const yI0=h*0.34, x0=0, x1=w;
+  const front=discT*v; // position of the leading step
+  function N(x){const k=Math.floor((front-x)/dD)+1;return Math.max(0,Math.min(NMAX,k));}
+  const done=Math.min(NMAX,Math.max(0,Math.floor((front-x1)/dD)+1));
+  $('discN').textContent=done;
+  // phases
+  ctx.fillStyle=alpha(css('--gamma'),0.9);ctx.fillRect(0,0,w,h);
+  ctx.fillStyle=alpha(css('--ferrite'),0.32);
+  ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(w,0);
+  for(let x=w;x>=0;x-=2){ctx.lineTo(x,yI0+N(x)*hpx);}ctx.closePath();ctx.fill();
+  // terrace guides
+  ctx.strokeStyle=alpha(css('--ferrite'),0.25);ctx.lineWidth=1;ctx.setLineDash([2,4]);
+  for(let k=1;k<=NMAX;k++){ctx.beginPath();ctx.moveTo(0,yI0+k*hpx);ctx.lineTo(w,yI0+k*hpx);ctx.stroke();}ctx.setLineDash([]);
+  // interface line
+  ctx.strokeStyle=css('--ferrite');ctx.lineWidth=2;ctx.beginPath();
+  let px=0,py=yI0+N(0)*hpx;ctx.moveTo(px,py);
+  for(let x=2;x<=w;x+=2){const y=yI0+N(x)*hpx;if(y!==py){ctx.lineTo(x,py);ctx.lineTo(x,y);}else ctx.lineTo(x,y);py=y;}ctx.stroke();
+  // disconnection symbols at steps
+  for(let k=0;k<NMAX;k++){const xs=front-k*dD;if(xs<0||xs>w)continue;const y=yI0+k*hpx;
+    ctx.strokeStyle=css('--tip');ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(xs-8,y+hpx/2);ctx.lineTo(xs+8,y+hpx/2);ctx.moveTo(xs,y+hpx/2);ctx.lineTo(xs,y+hpx/2-10);ctx.stroke();}
+  // fiducial lines
+  ctx.strokeStyle=css('--ink');ctx.lineWidth=1.3;
+  for(let xf=24;xf<w;xf+=Math.max(46,w/9)){
+    const n=N(xf), yi=yI0+n*hpx;
+    ctx.beginPath();ctx.moveTo(xf,h);ctx.lineTo(xf,yi); // in gamma: vertical
+    // transformed layers: shear proportional to distance above current interface
+    const xTop=xf+bx*(n*hpx);
+    ctx.lineTo(xTop,yI0);ctx.lineTo(xTop,4);ctx.stroke();
+  }
+  txt(ctx,'α',8,18,css('--ink'),'left',13,BODY());
+  txt(ctx,'γ',8,h-10,css('--ink'),'left',13,BODY());
+  txt(ctx,'original interface',w-6,yI0-5,css('--muted'),'right');
+  if(done>=NMAX&&discRun){discRun=false;$('discPlay').textContent='Play';$('discPlay').setAttribute('aria-pressed','false');}
+}
+function discLoop(ts){if(!discRun)return;const dt=discLast?Math.min(0.05,(ts-discLast)/1000):0;discLast=ts;discT+=dt;drawDisc();requestAnimationFrame(discLoop);}
+$('discPlay').addEventListener('click',()=>{
+  const wpx=$('cvDisc').clientWidth, dD=Math.max(90,wpx*0.28);
+  if(discT*60>wpx+dD*(NMAX-1)+5)discT=0;
+  discRun=!discRun;$('discPlay').textContent=discRun?'Pause':'Play';$('discPlay').setAttribute('aria-pressed',String(discRun));
+  if(reduce&&discRun){discT=(wpx+dD*(NMAX-1)+1)/60;discRun=false;$('discPlay').textContent='Play';drawDisc();return;}
+  discLast=0;requestAnimationFrame(discLoop);
+});
+$('discReset').addEventListener('click',()=>{discT=0;drawDisc();});
+['sBx','sBz'].forEach(id=>$(id).addEventListener('input',drawDisc));
+
+/* ---------- 4a. Ivantsov ---------- */
+function erfcx(x){ // exp(x^2) erfc(x), x>=0; A&S 7.1.26 for small x, asymptotic for large
+  if(x<3){const t=1/(1+0.3275911*x);const y=t*(0.254829592+t*(-0.284496736+t*(1.421413741+t*(-1.453152027+t*1.061405429))));return y;}
+  const x2=x*x;return (1/(x*Math.sqrt(Math.PI)))*(1-1/(2*x2)+3/(4*x2*x2));
+}
+function ivOm(P){return Math.sqrt(Math.PI*P)*erfcx(Math.sqrt(P));}
+function ivP(Om){let lo=1e-9,hi=50;for(let i=0;i<120;i++){const m=Math.sqrt(lo*hi);if(ivOm(m)<Om)lo=m;else hi=m;}return Math.sqrt(lo*hi);}
+const D14=52.1; // nm^2/s, Cottura 2014 Table 1
+function drawIv(){
+  const Om=+$('sOm').value;$('sOmO').textContent=Om.toFixed(2);
+  const P=ivP(Om), K=2*D14*P;
+  $('ivP').textContent=P.toFixed(4);$('ivRV').textContent=K.toFixed(2)+' nm² s⁻¹';
+  const {ctx,w,h}=fit($('cvIv'),0.55,200,300);
+  const L=40,R=w-12,T=12,B=h-30, rMax=12, vMax=3;
+  axes(ctx,L,T,R,B);
+  const xs=r=>L+r/rMax*(R-L), ys=v=>B-v/vMax*(B-T);
+  [0,3,6,9,12].forEach(r=>txt(ctx,String(r),xs(r),B+14,null,'center'));
+  [0,1,2,3].forEach(v=>txt(ctx,String(v),L-6,ys(v)+4,null,'right'));
+  txt(ctx,'tip radius Rp (nm)',(L+R)/2,h-3,null,'center');
+  txt(ctx,'Vp (nm/s)',L+4,T+10);
+  ctx.strokeStyle=css('--ferrite');ctx.lineWidth=2;ctx.beginPath();let st=false;
+  for(let i=1;i<=300;i++){const r=i/300*rMax;const v=K/r;if(v>vMax){st=false;continue;}const X=xs(r),Y=ys(v);st?ctx.lineTo(X,Y):ctx.moveTo(X,Y);st=true;}ctx.stroke();
+  // Cottura 2014 point
+  ctx.fillStyle=css('--tip');ctx.beginPath();ctx.arc(xs(3.8),ys(0.7),5,0,7);ctx.fill();
+  txt(ctx,'C2014 elastic tip',xs(3.8)+8,ys(0.7)-8,css('--tip'));
+  txt(ctx,'every point on the curve solves the diffusion problem',R,T+10,css('--muted'),'right');
+}
+$('sOm').addEventListener('input',drawIv);
+
+/* ---------- 4b. polar + growth ---------- */
+let eigMode='single';
+function drawPolar(){
+  const {ctx,w,h}=fit($('cvPolar'),0.5,170,230);
+  const cx=w/2, cy=h/2, Rr=Math.min(w,h)*0.40;
+  ctx.strokeStyle=css('--rule');ctx.lineWidth=1;
+  ctx.beginPath();ctx.arc(cx,cy,Rr,0,Math.PI*2);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(cx-Rr,cy);ctx.lineTo(cx+Rr,cy);ctx.moveTo(cx,cy-Rr);ctx.lineTo(cx,cy+Rr);ctx.stroke();
+  txt(ctx,'[100]',cx+Rr+4,cy+4,null,'left');txt(ctx,'[010]',cx,cy-Rr-5,null,'center');
+  const f=th=>eigMode==='single'?Math.cos(th)**2:Math.cos(2*th)**2;
+  ctx.beginPath();for(let i=0;i<=240;i++){const th=i/240*2*Math.PI;const r=Rr*(0.04+0.96*f(th));const x=cx+r*Math.cos(th),y=cy-r*Math.sin(th);i?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.closePath();
+  ctx.fillStyle=alpha(css('--ferrite'),0.14);ctx.fill();ctx.strokeStyle=css('--ferrite');ctx.lineWidth=2;ctx.stroke();
+  const soft=eigMode==='single'?[Math.PI/2,3*Math.PI/2]:[Math.PI/4,3*Math.PI/4,5*Math.PI/4,7*Math.PI/4];
+  soft.forEach(th=>{ctx.beginPath();ctx.moveTo(cx,cy);ctx.strokeStyle=css('--tip');ctx.setLineDash([3,4]);ctx.lineTo(cx+Rr*Math.cos(th),cy-Rr*Math.sin(th));ctx.stroke();ctx.setLineDash([]);});
+  txt(ctx,'E_el(θ)',6,h-20,null,'left');
+  txt(ctx,'dashed: soft directions',6,h-6,css('--tip'),'left');
+  $('polarText').textContent=eigMode==='single'
+    ?'One soft direction: zero elastic energy for an interface normal along [010], so the plate lies in (010) and lengthens along [100]. After a transient of about 150 s the tip reaches a constant velocity and a constant radius (3.8 nm at εT22 = 3 %), and a larger eigenstrain gives a much smaller tip radius (their Fig. 5b). [C2014, Figs. 1, 2, 5; pp. 202–205]'
+    :'Pure shear: two equivalent soft directions, [110] and [1-10]. Below εT ≈ 0.048 the plate keeps a flat tip and lengthens as tⁿ with n < 1; from εT ≈ 0.049 the tip becomes needle-like and the velocity becomes constant. A morphological transition driven by the size of the elastic energy relative to the chemical energy. [C2014, Figs. 6, 7; pp. 205–207]';
+}
+function drawGrowth(){
+  const {ctx,w,h}=fit($('cvGrowth'),0.36,130,180);
+  const L=30,R=w-10,T=10,B=h-22;axes(ctx,L,T,R,B);
+  txt(ctx,'time',(L+R)/2,h-5,null,'center');
+  ctx.save();ctx.translate(12,(T+B)/2);ctx.rotate(-Math.PI/2);txt(ctx,'tip position',0,0,null,'center');ctx.restore();
+  const plot=(fn,col,dash)=>{ctx.strokeStyle=col;ctx.lineWidth=2;ctx.setLineDash(dash||[]);ctx.beginPath();for(let i=0;i<=120;i++){const t=i/120;const X=L+t*(R-L),Y=B-fn(t)*(B-T);i?ctx.lineTo(X,Y):ctx.moveTo(X,Y);}ctx.stroke();ctx.setLineDash([]);};
+  const lin=t=>t<0.15?0.5*t*t/0.15*1.0:(t-0.075)*0.95;
+  if(eigMode==='single'){plot(lin,css('--ferrite'));txt(ctx,'linear after a transient',L+8,T+12,css('--ferrite'));}
+  else{plot(t=>0.75*Math.pow(t,0.55),css('--carbon'),[5,4]);plot(lin,css('--tip'));txt(ctx,'needle tip (εT ≥ 0.049): linear',L+8,T+12,css('--tip'));txt(ctx,'flat tip (εT ≤ 0.048): tⁿ, n < 1',L+8,T+26,css('--carbon'));}
+}
+$('eigSingle').addEventListener('click',()=>{eigMode='single';press(['eigSingle','eigShear'],'eigSingle');drawPolar();drawGrowth();});
+$('eigShear').addEventListener('click',()=>{eigMode='shear';press(['eigSingle','eigShear'],'eigShear');drawPolar();drawGrowth();});
+
+/* ---------- 5. tip relaxation ---------- */
+// read from Cottura 2015 Fig. 2 inset (approx.)
+const ACC={
+  el:{R:7.7,V:0.82,col:'--ok',name:'elastic',zone:0,
+      text:'Elastic only. The von Mises stress in the matrix peaks in a cap just ahead of the tip and spreads in two lobes; the maximum in their 4 min snapshot is about 94 MPa (Fig. 1, right). This is where plasticity will act once it is allowed.'},
+  vp10:{R:9.2,V:0.75,col:'--ple',name:'ξ = 10 nm',zone:0.6,
+      text:'Viscoplastic with a 10 nm intrinsic length. Plastic strain appears mainly ahead of the tip (Fig. 3, top), varies smoothly and is weaker than without the length scale, because confining it hardens it. The tip blunts and slows, between the two other cases.'},
+  vp0:{R:9.9,V:0.655,col:'--tip',name:'ξ = 0',zone:1,
+      text:'Conventional viscoplasticity. The plastic zone ahead of the tip (Fig. 3, bottom) relaxes the coherency stress at the tip interface the most. Largest tip radius, slowest lengthening, still a constant velocity: “plasticity only seems to reduce the growth rate and to coarsen the plate tip without changing the mechanism.” [p. 119]'}
+};
+let acc='el';
+function drawTip(){
+  const d=ACC[acc];
+  $('tipText').textContent=d.text;
+  const {ctx,w,h}=fit($('cvTip'),0.62,200,330);
+  // world window in nm
+  const span=70, sc=w/span, cxT=w*0.58, cy=h/2; // tip at cxT
+  const X=xn=>cxT+xn*sc, Y=yn=>cy-yn*sc;
+  const grown=d.V*raceT*60; // nm advanced since t=0
+  // reference marks fixed in the austenite (NOT atoms), streaming past the tip
+  ctx.strokeStyle=alpha(css('--ink'),0.4);ctx.lineWidth=1;
+  const sp=14, off=grown%sp, cr=2.4;
+  for(let xn=-span-sp;xn<span;xn+=sp)for(let yn=-40;yn<=40;yn+=sp){
+    const xx=xn-off; if(xx<=0&&yn*yn<=2*d.R*(-xx))continue;
+    const px=X(xx),py=Y(yn);ctx.beginPath();ctx.moveTo(px-cr,py);ctx.lineTo(px+cr,py);ctx.moveTo(px,py-cr);ctx.lineTo(px,py+cr);ctx.stroke();}
+  // stress field schematic (low-res raster)
+  const step=4, amp=acc==='el'?1:(acc==='vp10'?0.7:0.5);
+  const base=css('--carbon');
+  for(let py=0;py<h;py+=step)for(let px=0;px<w;px+=step){
+    const xn=(px-cxT)/sc, yn=(cy-py)/sc;
+    const inside=xn<=0&&yn*yn<=2*d.R*(-xn);
+    if(inside)continue;
+    const dx=xn+d.R*0.5, r=Math.hypot(dx,yn), phi=Math.atan2(yn,dx);
+    const ang=0.45+0.55*Math.cos(phi)**2+0.35*Math.exp(-((Math.abs(phi)-1.0)**2)/0.15);
+    const val=amp*ang*Math.exp(-Math.max(0,r-d.R*0.5)/(d.R*1.4));
+    if(val<0.04)continue;
+    ctx.fillStyle=alpha(base,Math.min(0.75,val*0.8));ctx.fillRect(px,py,step,step);
+  }
+  // plastic zone outline
+  if(d.zone>0){
+    ctx.strokeStyle=css('--tip');ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.beginPath();
+    const rz=d.R*(1.1+1.1*d.zone);
+    ctx.ellipse(X(d.R*0.3),cy,rz*sc,rz*sc*0.8,0,-Math.PI*0.62,Math.PI*0.62);ctx.stroke();ctx.setLineDash([]);
+    txt(ctx,'plastic zone',X(d.R*0.3),cy-rz*sc*0.8-6,css('--tip'),'center');
+  }
+  // plate: parabola y^2 = 2R(-x)
+  const drawPlate=(Rp,fill,stroke,dash)=>{ctx.beginPath();const xmin=-span;let first=true;
+    for(let yn=-Math.sqrt(2*Rp*span);yn<=Math.sqrt(2*Rp*span);yn+=0.25){const xn=-(yn*yn)/(2*Rp);if(xn<xmin)continue;first?ctx.moveTo(X(xn),Y(yn)):ctx.lineTo(X(xn),Y(yn));first=false;}
+    if(fill){ctx.lineTo(0,Y(Math.sqrt(2*Rp*span)));ctx.lineTo(0,Y(-Math.sqrt(2*Rp*span)));ctx.closePath();ctx.fillStyle=fill;ctx.fill();}
+    ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.setLineDash(dash||[]);ctx.stroke();ctx.setLineDash([]);};
+  drawPlate(d.R,alpha(css('--ferrite'),0.55),css('--ferrite'));
+  // growth marks on the plate every 10 nm of lengthening
+  ctx.strokeStyle=alpha(css('--ink'),0.35);ctx.lineWidth=1;
+  for(let m=Math.floor(grown/10)*10;m>grown-span-10&&m>=0;m-=10){const xx=m-grown; if(xx>-1)continue;const hh=Math.sqrt(2*d.R*(-xx));
+    ctx.beginPath();ctx.moveTo(X(xx),Y(hh));ctx.lineTo(X(xx),Y(-hh));ctx.stroke();}
+  if(acc!=='el'){
+    const lead=(ACC.el.V-d.V)*raceT*60;
+    ctx.save();ctx.translate(lead*sc,0);drawPlate(ACC.el.R,null,css('--muted'),[3,4]);ctx.restore();
+    const lx=Math.min(w-8,X(lead)+4);
+    txt(ctx,'elastic tip +'+lead.toFixed(0)+' nm'+(X(lead)>w?' →':''),lx,cy+(acc==='vp0'?-36:36),css('--muted'),X(lead)>w-90?'right':'left');
+  }
+  // radius marker
+  ctx.strokeStyle=css('--ink');ctx.lineWidth=1;ctx.beginPath();ctx.arc(X(-d.R),cy,d.R*sc,-0.9,0.9);ctx.stroke();
+  // scale bar 10 nm
+  ctx.strokeStyle=css('--ink');ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(10,h-12);ctx.lineTo(10+10*sc,h-12);ctx.stroke();
+  txt(ctx,'10 nm',10+5*sc,h-17,css('--ink'),'center');
+  txt(ctx,'Rp ≈ '+d.R.toFixed(1)+' nm',w-8,16,css(d.col),'right',12);
+  $('tipClock').textContent='t = '+raceT.toFixed(1)+' min · tip at '+(0.02+grown/1000).toFixed(3)+' µm';
+  txt(ctx,'growth →',w-8,h-8,css('--muted'),'right');
+}
+function drawRV(){
+  const d=ACC[acc];
+  $('rvR').textContent=d.R.toFixed(1);$('rvV').textContent=d.V.toFixed(3);$('rvP').textContent=(d.R*d.V).toFixed(2);
+  const {ctx,w,h}=fit($('cvRV'),0.62,200,300);
+  const L=44,R=w-12,T=14,B=h-30, r0=7.4,r1=10.2,v0=0.62,v1=0.86;
+  axes(ctx,L,T,R,B);
+  const xs=r=>L+(r-r0)/(r1-r0)*(R-L), ys=v=>B-(v-v0)/(v1-v0)*(B-T);
+  [7.5,8,8.5,9,9.5,10].forEach(r=>txt(ctx,r.toFixed(1),xs(r),B+14,null,'center'));
+  [0.65,0.7,0.75,0.8,0.85].forEach(v=>txt(ctx,v.toFixed(2),L-6,ys(v)+4,null,'right'));
+  txt(ctx,'Rp (nm)',(L+R)/2,h-3,null,'center');txt(ctx,'Vp (nm/s)',L+4,T+2);
+  const K=ACC.el.R*ACC.el.V;
+  ctx.strokeStyle=css('--muted');ctx.setLineDash([2,4]);ctx.lineWidth=1.5;ctx.beginPath();
+  for(let i=0;i<=100;i++){const r=r0+(r1-r0)*i/100;const v=K/r;i?ctx.lineTo(xs(r),ys(v)):ctx.moveTo(xs(r),ys(v));}ctx.stroke();ctx.setLineDash([]);
+  txt(ctx,'Rp·Vp = const',xs(8.3)+6,ys(K/8.3)+16,css('--muted'),'left');
+  for(const k of ['el','vp10','vp0']){const p=ACC[k];ctx.fillStyle=css(p.col);ctx.beginPath();ctx.arc(xs(p.R),ys(p.V),k===acc?8:5,0,7);ctx.fill();
+    if(k===acc){ctx.strokeStyle=css('--ink');ctx.lineWidth=1.5;ctx.stroke();}
+    txt(ctx,p.name,xs(p.R)+(k==='vp0'?-10:10),ys(p.V)+(k==='vp0'?-10:4),css(p.col),k==='vp0'?'right':'left');}
+}
+let raceT=7.5, raceRun=false, raceLast=0;
+function drawRace(){
+  $('sT').value=raceT;$('sTO').textContent=raceT.toFixed(1)+' min';
+  const {ctx,w,h}=fit($('cvRace'),0.22,120,170);
+  const L=86,R=w-50, xMax=0.42, lane=(h-26)/3;
+  const xs=x=>L+x/xMax*(R-L);
+  [0,0.1,0.2,0.3,0.4].forEach(x=>{ctx.strokeStyle=css('--rule');ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(xs(x),4);ctx.lineTo(xs(x),h-20);ctx.stroke();txt(ctx,x.toFixed(1),xs(x),h-6,null,'center');});
+  txt(ctx,'µm',R+20,h-6,null,'left');
+  ['el','vp10','vp0'].forEach((k,i)=>{const p=ACC[k];const x=0.02+p.V*1e-3*raceT*60;const y=8+i*lane+lane/2;
+    const th=Math.min(lane*0.32,9);
+    ctx.fillStyle=alpha(css('--ferrite'),k===acc?0.6:0.3);
+    ctx.beginPath();ctx.moveTo(L,y-th);ctx.lineTo(xs(x)-th*1.2,y-th*0.7);ctx.quadraticCurveTo(xs(x),y,xs(x)-th*1.2,y+th*0.7);ctx.lineTo(L,y+th);ctx.closePath();ctx.fill();
+    ctx.fillStyle=css(p.col);ctx.beginPath();ctx.arc(xs(x),y,k===acc?5:4,0,7);ctx.fill();
+    txt(ctx,p.name,L-8,y+4,css(p.col),'right');
+    txt(ctx,x.toFixed(3),Math.min(xs(x)+8,R+2),y+4,css('--muted'),'left');});
+}
+function raceLoop(ts){if(!raceRun)return;const dt=raceLast?Math.min(0.05,(ts-raceLast)/1000):0;raceLast=ts;raceT=Math.min(7.5,raceT+dt*0.75);drawRace();drawTip();if(raceT>=7.5){setPlay(false);return;}requestAnimationFrame(raceLoop);}
+function setPlay(on){raceRun=on;['racePlay','tipPlay'].forEach(id=>{$(id).textContent=on?'Pause':'Play';$(id).setAttribute('aria-pressed',String(on));});}
+function togglePlay(){if(reduce){raceT=7.5;drawRace();drawTip();return;}if(!raceRun&&raceT>=7.5)raceT=0;setPlay(!raceRun);raceLast=0;if(raceRun)requestAnimationFrame(raceLoop);}
+['racePlay','tipPlay'].forEach(id=>$(id).addEventListener('click',togglePlay));
+$('sT').addEventListener('input',()=>{setPlay(false);raceT=+$('sT').value;drawRace();drawTip();});
+const accIds={accEl:'el',accVp10:'vp10',accVp0:'vp0'};
+Object.keys(accIds).forEach(id=>$(id).addEventListener('click',()=>{acc=accIds[id];press(Object.keys(accIds),id);drawTip();drawRV();drawRace();}));
+
+/* ---------- 6. Greenwood-Johnson ---------- */
+function drawGJ(){
+  const s=+$('gjSigma').value, Y=+$('gjY').value, dv=+$('gjDv').value;
+  $('gjSigmaO').textContent=s;$('gjYO').textContent=Y;$('gjDvO').textContent=dv.toFixed(3);
+  const gj=5/6*s/Y*dv, ab=0.25*s/Y*dv;
+  $('gjOut').textContent=(gj*100).toFixed(2)+' %'+(s>Y?' (σ > Y)':'');
+  $('abOut').textContent=(ab*100).toFixed(2)+' %'+(s>Y?' (σ > Y)':'');
+  const {ctx,w,h}=fit($('cvGJ'),0.45,170,250);
+  const L=48,R=w-12,T=12,B=h-30, sMax=400, eMax=Math.max(0.2,5/6*sMax/Y*dv*100*1.05);
+  axes(ctx,L,T,R,B);
+  const xs=v=>L+v/sMax*(R-L), ys=e=>B-e/eMax*(B-T);
+  [0,100,200,300,400].forEach(v=>txt(ctx,String(v),xs(v),B+14,null,'center'));
+  for(let i=0;i<=4;i++){const e=eMax*i/4;txt(ctx,e.toFixed(2),L-6,ys(e)+4,null,'right');}
+  txt(ctx,'applied stress σ (MPa)',(L+R)/2,h-3,null,'center');txt(ctx,'ε_pt (%)',L+4,T+8);
+  ctx.strokeStyle=css('--muted');ctx.setLineDash([2,3]);ctx.beginPath();ctx.moveTo(xs(Y),T);ctx.lineTo(xs(Y),B);ctx.stroke();ctx.setLineDash([]);
+  txt(ctx,'Y',xs(Y)+4,T+20,css('--muted'));
+  const line=(k,col)=>{ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(xs(0),ys(0));ctx.lineTo(xs(Math.min(Y,sMax)),ys(k*Math.min(Y,sMax)/Y*dv*100));ctx.stroke();
+    if(Y<sMax){ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(xs(Y),ys(k*dv*100));ctx.lineTo(xs(sMax),ys(k*sMax/Y*dv*100));ctx.stroke();ctx.setLineDash([]);}};
+  line(5/6,css('--ferrite'));line(0.25,css('--carbon'));
+  txt(ctx,'Greenwood–Johnson',xs(sMax*0.55),ys(5/6*sMax*0.55/Y*dv*100)-8,css('--ferrite'),'right');
+  txt(ctx,'Abrassart, m = 1',xs(sMax*0.8),ys(0.25*sMax*0.8/Y*dv*100)+16,css('--carbon'),'center');
+  ctx.fillStyle=css('--tip');ctx.beginPath();ctx.arc(xs(s),ys(gj*100),5,0,7);ctx.fill();ctx.beginPath();ctx.arc(xs(s),ys(ab*100),4,0,7);ctx.fill();
+}
+['gjSigma','gjY','gjDv'].forEach(id=>$(id).addEventListener('input',drawGJ));
+
+/* ---------- init ---------- */
+function all(){drawBar();drawIPS();drawDisc();drawIv();drawPolar();drawGrowth();drawTip();drawRV();drawRace();drawGJ();}
+let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(all,80);});
+try{window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',all);}catch(e){}
+new MutationObserver(all).observe(root,{attributes:true,attributeFilter:['data-theme']});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(all);
+discT=(Math.max(200,$('cvDisc').clientWidth)*0.5)/60; // start mid-way so the resting frame shows steps
+all();
+})();
+</script>
+
+</body>
+</html>
