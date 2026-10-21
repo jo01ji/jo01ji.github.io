@@ -254,8 +254,8 @@ ol.refs{margin:0;padding-left:22px;display:grid;gap:5px;font-size:14px;color:var
         <button type="button" id="tipPlay" aria-pressed="false">Play</button>
         <span class="note" id="tipClock">t = 7.5 min · tip at 0.389 µm</span>
       </div>
-      <div class="key"><span style="--c:var(--ferrite)">plate (α)</span><span style="--c:var(--carbon)">von Mises stress, schematic</span><span class="dash" style="--c:var(--tip)">plastic zone, schematic</span><span class="dash" style="--c:var(--muted)">elastic tip at the same time</span><span style="--c:var(--ink)">fixed points in γ, and a mark on the plate every 10 nm of growth</span></div>
-      <p class="note">The frame moves with the tip, so the tip stays put and the austenite streams past it at V<sub>p</sub>. Play runs the same clock as the replay below. In the viscoplastic cases the dashed outline is where the elastic tip would be at the same moment; it pulls ahead by (V<sub>el</sub> − V<sub>p</sub>)·t.</p>
+      <div class="key"><span style="--c:var(--ferrite)">plate (α)</span><span style="--c:var(--carbon)">von Mises stress, schematic</span><span class="dash" style="--c:var(--tip)">plastic zone, schematic</span><span class="dash" style="--c:var(--muted)">elastic tip at the same time</span><span style="--c:var(--ink)">reference marks fixed in γ (not atoms), and a line on the plate every 10 nm of growth</span></div>
+      <p class="note">The frame moves with the tip, so the tip stays put and the austenite streams past it at V<sub>p</sub>. The small crosses are reference marks fixed in the parent austenite, spaced about 14 nm apart, not atoms; they are there only to make the flow visible. Play runs the same clock as the replay below. In the viscoplastic cases the dashed outline is where the elastic tip would be at the same moment; it pulls ahead by (V<sub>el</sub> − V<sub>p</sub>)·t.</p>
       <p class="note" id="tipText"></p>
     </div>
     <div class="panel">
@@ -630,12 +630,12 @@ function drawTip(){
   const span=70, sc=w/span, cxT=w*0.58, cy=h/2; // tip at cxT
   const X=xn=>cxT+xn*sc, Y=yn=>cy-yn*sc;
   const grown=d.V*raceT*60; // nm advanced since t=0
-  // fixed points in the austenite, streaming past the tip
-  ctx.fillStyle=alpha(css('--ink'),0.45);
-  const sp=6, off=grown%sp;
+  // reference marks fixed in the austenite (NOT atoms), streaming past the tip
+  ctx.strokeStyle=alpha(css('--ink'),0.4);ctx.lineWidth=1;
+  const sp=14, off=grown%sp, cr=2.4;
   for(let xn=-span-sp;xn<span;xn+=sp)for(let yn=-40;yn<=40;yn+=sp){
     const xx=xn-off; if(xx<=0&&yn*yn<=2*d.R*(-xx))continue;
-    ctx.beginPath();ctx.arc(X(xx),Y(yn),1.5,0,7);ctx.fill();}
+    const px=X(xx),py=Y(yn);ctx.beginPath();ctx.moveTo(px-cr,py);ctx.lineTo(px+cr,py);ctx.moveTo(px,py-cr);ctx.lineTo(px,py+cr);ctx.stroke();}
   // stress field schematic (low-res raster)
   const step=4, amp=acc==='el'?1:(acc==='vp10'?0.7:0.5);
   const base=css('--carbon');
