@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Logbook</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="favicon.svg">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Logbook">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    document.documentElement.setAttribute('data-theme',
+      matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  </script>
+  <style>
+    /* Logbook page only; colours, fonts and spacing come from style.css */
+    .lb { max-width: 680px; margin: 0 auto; padding: var(--space-8) var(--space-4) var(--space-16); }
+    .lb h1 { font-family: var(--font-display); font-size: var(--text-xl); margin: 0 0 var(--space-2); }
+    .lb .sub { color: var(--muted); font-size: var(--text-sm); margin: 0 0 var(--space-6); }
+    .lb label { display: block; font-weight: 600; font-size: var(--text-sm); margin: var(--space-4) 0 var(--space-1); }
+    .lb .hint { display: block; font-weight: 400; color: var(--muted); font-size: var(--text-xs); }
+    .lb input, .lb textarea {
+      width: 100%; box-sizing: border-box; font: inherit; font-size: 16px; /* 16px stops iOS zooming in */
+      color: var(--ink); background: var(--surface); border: 1px solid var(--line);
+      border-radius: var(--radius-sm); padding: var(--space-2) var(--space-3);
+    }
+    .lb textarea { min-height: 5.5rem; resize: vertical; line-height: 1.45; }
+    .lb input:focus, .lb textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+    .lb .row { display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: center; margin-top: var(--space-6); }
+    .lb button { font: inherit; font-size: var(--text-sm); font-weight: 600; cursor: pointer; border-radius: var(--radius-sm);
+      padding: var(--space-2) var(--space-4); border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); }
+    .lb button.ghost { background: transparent; color: var(--accent); }
+    .lb button:disabled { opacity: .5; cursor: default; }
+    .lb .msg { margin-top: var(--space-4); font-size: var(--text-sm); min-height: 1.4em; }
+    .lb .msg.err { color: var(--rust); }
+    .lb .msg.ok { color: var(--accent); }
+    .lb .panel { border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface);
+      padding: var(--space-3) var(--space-4); margin-top: var(--space-6); }
+    .lb .panel h2 { font-size: var(--text-base); margin: 0 0 var(--space-2); }
+    .lb pre { white-space: pre-wrap; word-break: break-word; font-family: var(--font-mono); font-size: var(--text-xs);
+      margin: 0; color: var(--ink); }
+    .lb ul.recent { list-style: none; padding: 0; margin: 0; }
+    .lb ul.recent li { padding: var(--space-1) 0; border-bottom: 1px solid var(--line); }
+    .lb ul.recent li:last-child { border-bottom: 0; }
+    .lb .hidden { display: none; }
+    .lb .top { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2); }
+  </style>
+</head>
+<body>
+<main class="lb" id="main">
+
+  <!-- 1. First time on this device: connect to the private repo -->
+  <section id="setup" class="hidden">
+    <h1>Logbook setup</h1>
+    <p class="sub">One time on each device. The token is stored on this device only, encrypted with your password.</p>
+    <label for="s-token">GitHub token <span class="hint">fine-grained, only the research-logbook repo, Contents: read and write</span></label>
+    <input id="s-token" type="password" autocomplete="off" spellcheck="false">
+    <label for="s-pw">Password <span class="hint">you type this each time you open the logbook</span></label>
+    <input id="s-pw" type="password" autocomplete="new-password">
+    <label for="s-pw2">Password again</label>
+    <input id="s-pw2" type="password" autocomplete="new-password">
+    <div class="row"><button id="s-go">Connect</button></div>
+    <div id="s-msg" class="msg"></div>
+  </section>
+
+  <!-- 2. Locked: ask for the password -->
+  <section id="lock" class="hidden">
+    <h1>Logbook</h1>
+    <p class="sub">Enter your password.</p>
+    <input id="l-pw" type="password" autocomplete="current-password" aria-label="Password">
+    <div class="row"><button id="l-go">Open</button><button id="l-forget" class="ghost">Forget this device</button></div>
+    <div id="l-msg" class="msg"></div>
+  </section>
+
+  <!-- 3. Unlocked: today's entry -->
+  <section id="book" class="hidden">
+    <div class="top"><h1>Logbook</h1><button id="b-lock" class="ghost">Lock</button></div>
+    <p class="sub">Write what applies; empty boxes are left out. Saving twice on one day adds a second block.</p>
+
+    <label for="f-date">Date</label>
+    <input id="f-date" type="date">
+
+    <div id="mac" class="panel hidden"><h2>The Mac saw today</h2><pre id="mac-text"></pre></div>
+
+    <label for="f-lab">Lab work <span class="hint">sample IDs (e.g. 261015_03), furnace / heat treatment, prep, characterisation</span></label>
+    <textarea id="f-lab"></textarea>
+    <label for="f-compute">Compute <span class="hint">code, runs, Thermo-Calc, analysis</span></label>
+    <textarea id="f-compute"></textarea>
+    <label for="f-progress">Results and progress</label>
+    <textarea id="f-progress"></textarea>
+    <label for="f-ideas">New ideas</label>
+    <textarea id="f-ideas"></textarea>
+    <label for="f-next">Problems and next steps</label>
+    <textarea id="f-next"></textarea>
+
+    <div class="row"><button id="f-save">Save entry</button><button id="f-clear" class="ghost">Clear</button></div>
+    <div id="f-msg" class="msg"></div>
+
+    <div class="panel"><h2>Recent days</h2><ul id="recent" class="recent"><li>…</li></ul></div>
+    <div id="view" class="panel hidden"><h2 id="view-title"></h2><pre id="view-text"></pre></div>
+  </section>
+</main>
+
+<script>
+/* Logbook: writes one markdown file per day into a PRIVATE GitHub repo through the GitHub API.
+   This page holds no secrets. The token is kept in this browser's localStorage, encrypted with
+   AES-GCM using a key derived from your password (PBKDF2, 250 000 rounds). */
+const OWNER = 'jo01ji', REPO = 'research-logbook', BRANCH = 'main';
+const API = `https://api.github.com/repos/${OWNER}/${REPO}`;
+const STORE = 'logbook-key-v1', DRAFT = 'logbook-draft-v1';
+const FIELDS = [['lab', 'Lab work'], ['compute', 'Compute'], ['progress', 'Results and progress'],
+                ['ideas', 'New ideas'], ['next', 'Problems and next steps']];
+let TOKEN = null;
+const $ = id => document.getElementById(id);
+const show = id => ['setup', 'lock', 'book'].forEach(s => $(s).classList.toggle('hidden', s !== id));
+const say = (id, text, kind) => { const m = $(id); m.textContent = text; m.className = 'msg ' + (kind || ''); };
+const store = {                       // localStorage can be blocked (private mode): never let that break the page
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
+  del(k) { try { localStorage.removeItem(k); } catch (e) {} },
+};
+
+// ---- encryption of the token ------------------------------------------------------------------
+const b64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
+const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function keyFrom(pw, salt) {
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: 250000, hash: 'SHA-256' },
+    base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+}
+async function lockToken(token, pw) {
+  const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, await keyFrom(pw, salt), new TextEncoder().encode(token));
+  return JSON.stringify({ salt: b64(salt), iv: b64(iv), ct: b64(ct) });
+}
+async function unlockToken(saved, pw) {
+  const s = JSON.parse(saved);
+  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(s.iv) }, await keyFrom(pw, unb64(s.salt)), unb64(s.ct));
+  return new TextDecoder().decode(pt);            // throws if the password is wrong
+}
+
+// ---- GitHub API ---------------------------------------------------------------------------------
+async function gh(path, opts = {}) {
+  const r = await fetch(API + path, { ...opts, headers: { Authorization: `Bearer ${TOKEN}`,
+    Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28', ...(opts.headers || {}) } });
+  if (r.status === 401) throw new Error('GitHub rejected the token (expired or revoked). Forget this device and set up again.');
+  return r;
+}
+const toB64 = s => { const b = new TextEncoder().encode(s); let out = '';
+  for (let i = 0; i < b.length; i += 0x8000) out += String.fromCharCode(...b.subarray(i, i + 0x8000)); return btoa(out); };
+const fromB64 = s => new TextDecoder().decode(unb64(s.replace(/\n/g, '')));
+async function readFile(path) {                   // -> {text, sha} or null if it doesn't exist
+  const r = await gh(`/contents/${path}?ref=${BRANCH}`);
+  if (r.status === 404) return null;
+  if (!r.ok) throw new Error(`GitHub error ${r.status} reading ${path}`);
+  const j = await r.json(); return { text: fromB64(j.content), sha: j.sha };
+}
+
+// ---- the entry ----------------------------------------------------------------------------------
+const todayISO = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
+const pathFor = date => `entries/${date.slice(0, 4)}/${date}.md`;
+function entryBlock() {
+  const now = new Date(), hhmm = now.toTimeString().slice(0, 5);
+  const parts = FIELDS.map(([k, title]) => [title, $('f-' + k).value.trim()]).filter(([, v]) => v);
+  if (!parts.length) return null;
+  return `## ${hhmm} · phone\n\n` + parts.map(([t, v]) => `### ${t}\n${v}\n`).join('\n');
+}
+async function save() {
+  const date = $('f-date').value || todayISO(), block = entryBlock();
+  if (!block) return say('f-msg', 'Nothing to save yet.', 'err');
+  $('f-save').disabled = true; say('f-msg', 'Saving…');
+  try {
+    for (let attempt = 0; attempt < 2; attempt++) {        // retry once if the file changed meanwhile
+      const old = await readFile(pathFor(date));
+      const day = new Date(date + 'T12:00:00').toLocaleDateString('en-AU', { weekday: 'short' });
+      const text = old ? old.text.replace(/\s*$/, '\n\n') + block : `# ${date} (${day})\n\n` + block;
+      const r = await gh(`/contents/${pathFor(date)}`, { method: 'PUT', body: JSON.stringify({
+        message: `logbook ${date} (phone)`, content: toB64(text), branch: BRANCH, ...(old ? { sha: old.sha } : {}) }) });
+      if (r.ok) { say('f-msg', `Saved to ${pathFor(date)} ✓`, 'ok'); clearForm(); loadRecent(); return; }
+      if (r.status !== 409 && r.status !== 422) throw new Error(`GitHub error ${r.status} while saving`);
+    }
+    throw new Error('Could not save after a retry; try again.');
+  } catch (e) { say('f-msg', e.message, 'err'); }
+  finally { $('f-save').disabled = false; }
+}
+function clearForm() { FIELDS.forEach(([k]) => $('f-' + k).value = ''); store.del(DRAFT); }
+function saveDraft() { store.set(DRAFT, JSON.stringify(Object.fromEntries(FIELDS.map(([k]) => [k, $('f-' + k).value])))); }
+function loadDraft() { try { const d = JSON.parse(store.get(DRAFT) || '{}'); FIELDS.forEach(([k]) => { if (d[k]) $('f-' + k).value = d[k]; }); } catch (e) {} }
+
+async function loadMac() {                         // optional summary the Mac pushes each evening: mac/YYYY-MM-DD.md
+  try { const f = await readFile(`mac/${$('f-date').value || todayISO()}.md`);
+    $('mac').classList.toggle('hidden', !f); if (f) $('mac-text').textContent = f.text; } catch (e) { $('mac').classList.add('hidden'); }
+}
+async function loadRecent() {
+  const ul = $('recent'); ul.innerHTML = '<li>…</li>';
+  try {
+    const years = await gh('/contents/entries');
+    if (years.status === 404) { ul.innerHTML = '<li>No entries yet.</li>'; return; }
+    const ys = (await years.json()).filter(x => x.type === 'dir').map(x => x.name).sort().reverse().slice(0, 2);
+    let files = [];
+    for (const y of ys) { const r = await gh(`/contents/entries/${y}`); if (r.ok) files = files.concat(await r.json()); }
+    files = files.filter(f => f.name.endsWith('.md')).sort((a, b) => b.name.localeCompare(a.name)).slice(0, 10);
+    ul.innerHTML = '';
+    if (!files.length) { ul.innerHTML = '<li>No entries yet.</li>'; return; }
+    for (const f of files) {
+      const li = document.createElement('li'), a = document.createElement('a');
+      a.href = '#'; a.textContent = f.name.replace('.md', '');
+      a.onclick = async ev => { ev.preventDefault(); const x = await readFile(f.path);
+        $('view-title').textContent = a.textContent; $('view-text').textContent = x ? x.text : '(empty)';
+        $('view').classList.remove('hidden'); $('view').scrollIntoView({ behavior: 'smooth' }); };
+      li.appendChild(a); ul.appendChild(li);
+    }
+  } catch (e) { ul.innerHTML = `<li>${e.message}</li>`; }
+}
+function openBook() {
+  show('book'); $('f-date').value = todayISO(); loadDraft(); loadMac(); loadRecent();
+}
+
+// ---- wiring -------------------------------------------------------------------------------------
+$('s-go').onclick = async () => {
+  const token = $('s-token').value.trim(), pw = $('s-pw').value;
+  if (!token || pw.length < 6) return say('s-msg', 'Paste the token and choose a password of at least 6 characters.', 'err');
+  if (pw !== $('s-pw2').value) return say('s-msg', 'The two passwords differ.', 'err');
+  say('s-msg', 'Checking the token…'); TOKEN = token;
+  try {
+    const r = await gh('');
+    if (!r.ok) throw new Error(r.status === 404 ? `This token can't see ${OWNER}/${REPO}. Check the repository access.` : `GitHub error ${r.status}`);
+    const j = await r.json();
+    if (!j.private) throw new Error(`${OWNER}/${REPO} is PUBLIC. Make it private first: entries would be visible to everyone.`);
+    store.set(STORE, await lockToken(token, pw)); $('s-token').value = $('s-pw').value = $('s-pw2').value = '';
+    openBook();
+  } catch (e) { TOKEN = null; say('s-msg', e.message, 'err'); }
+};
+$('l-go').onclick = async () => {
+  try { TOKEN = await unlockToken(store.get(STORE), $('l-pw').value); $('l-pw').value = ''; openBook(); }
+  catch (e) { say('l-msg', 'Wrong password.', 'err'); }
+};
+$('l-pw').addEventListener('keydown', e => { if (e.key === 'Enter') $('l-go').click(); });
+$('l-forget').onclick = () => { if (confirm('Remove the saved token from this device? You will need the token again to set up.')) {
+  store.del(STORE); store.del(DRAFT); location.reload(); } };
+$('b-lock').onclick = () => { TOKEN = null; show('lock'); say('l-msg', ''); };
+$('f-save').onclick = save;
+$('f-clear').onclick = () => { if (confirm('Clear the boxes?')) clearForm(); };
+$('f-date').onchange = loadMac;
+FIELDS.forEach(([k]) => $('f-' + k).addEventListener('input', saveDraft));
+show(store.get(STORE) ? 'lock' : 'setup');
+</script>
+</body>
+</html>
