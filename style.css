@@ -7,8 +7,8 @@
 
 :root {
   /* Type */
-  --font-display: 'Zodiak', 'Georgia', serif;
-  --font-body: 'General Sans', 'Helvetica Neue', sans-serif;
+  --font-display: 'Fraunces', 'Georgia', serif;
+  --font-body: 'Plus Jakarta Sans', 'Helvetica Neue', sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
   --text-xs: 0.8125rem;
