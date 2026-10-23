@@ -79,7 +79,14 @@
 
   <!-- 3. Unlocked: today's entry -->
   <section id="book" class="hidden">
-    <div class="top"><h1>Logbook</h1><button id="b-lock" class="ghost">Lock</button></div>
+    <div class="top"><h1>Logbook</h1><span><button id="b-pw" class="ghost">Password</button> <button id="b-lock" class="ghost">Lock</button></span></div>
+    <div id="pw" class="panel hidden"><h2>Change password (this device)</h2>
+      <label for="p-old">Current password</label><input id="p-old" type="password" autocomplete="current-password">
+      <label for="p-new">New password</label><input id="p-new" type="password" autocomplete="new-password">
+      <label for="p-new2">New password again</label><input id="p-new2" type="password" autocomplete="new-password">
+      <div class="row"><button id="p-go">Change</button><button id="p-cancel" class="ghost">Cancel</button></div>
+      <div id="p-msg" class="msg"></div>
+    </div>
     <p class="sub">Write what applies; empty boxes are left out. Saving twice on one day adds a second block.</p>
 
     <label for="f-date">Date</label>
@@ -244,6 +251,19 @@ $('l-pw').addEventListener('keydown', e => { if (e.key === 'Enter') $('l-go').cl
 $('l-forget').onclick = () => { if (confirm('Remove the saved token from this device? You will need the token again to set up.')) {
   store.del(STORE); store.del(DRAFT); location.reload(); } };
 $('b-lock').onclick = () => { TOKEN = null; show('lock'); say('l-msg', ''); };
+// change password: re-encrypt the same token with the new password (the token itself is not needed again)
+const pwBox = on => { $('pw').classList.toggle('hidden', !on); ['p-old', 'p-new', 'p-new2'].forEach(i => $(i).value = ''); say('p-msg', ''); };
+$('b-pw').onclick = () => pwBox($('pw').classList.contains('hidden'));
+$('p-cancel').onclick = () => pwBox(false);
+$('p-go').onclick = async () => {
+  const pw = $('p-new').value;
+  if (pw.length < 6) return say('p-msg', 'Choose a password of at least 6 characters.', 'err');
+  if (pw !== $('p-new2').value) return say('p-msg', 'The two new passwords differ.', 'err');
+  try { await unlockToken(store.get(STORE), $('p-old').value); }
+  catch (e) { return say('p-msg', 'Current password is wrong.', 'err'); }
+  store.set(STORE, await lockToken(TOKEN, pw));
+  pwBox(false); say('f-msg', 'Password changed on this device.', 'ok');
+};
 $('f-save').onclick = save;
 $('f-clear').onclick = () => { if (confirm('Clear the boxes?')) clearForm(); };
 $('f-date').onchange = loadMac;
