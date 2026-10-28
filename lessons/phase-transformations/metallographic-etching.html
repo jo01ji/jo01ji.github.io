@@ -62,6 +62,8 @@ th{font:500 12px var(--mono);letter-spacing:.05em;text-transform:uppercase;color
 td.m,code,.m{font:13px var(--mono);font-variant-numeric:tabular-nums}
 .tag{display:inline-block;font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--rule);border-radius:3px;padding:1px 6px;color:var(--muted);vertical-align:middle}
 .tag.own{border-color:var(--tip);color:var(--tip)}
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:18px}
+.pair>div{display:grid;gap:8px;align-content:start;min-width:0}
 ul.tight,ol.tight{margin:0;padding-left:20px;display:grid;gap:4px;max-width:72ch}
 ol.refs{margin:0;padding-left:22px;display:grid;gap:5px;font-size:14px;color:var(--muted);max-width:92ch}
 .reagent-card{display:grid;gap:8px}
