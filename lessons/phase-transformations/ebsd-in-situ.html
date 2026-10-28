@@ -1,0 +1,704 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>EBSD at Temperature</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+body{margin:0}
+/* Layout: lab-notebook on etched-steel grey, honey/gold/amber/rust palette shared with the other lessons;
+   EBSD lesson: each section pairs one physical step (pattern, band, map, hot stage) with a working model */
+:root{
+  --bg:#eef1f3; --panel:#f8fafb; --ink:#17212b; --muted:#56636f; --rule:#cfd6dc;
+  --ferrite:#a8650a; --carbide:#e07b12; --tip:#b4480e; --austenite:#d9a62a; --gamma:#f5e6bd; --mart:#5b6670; --ok:#3f7d4e;
+  --display:"Fraunces",Georgia,serif; --body:"Plus Jakarta Sans","Segoe UI",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12171c; --panel:#1a2128; --ink:#e3e8ec; --muted:#9aa6b1; --rule:#2d3740;
+  --ferrite:#f2b84b; --carbide:#f39a3c; --tip:#ff7a3d; --austenite:#e8c252; --gamma:#3a3221; --mart:#aab4bd; --ok:#74c08a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12171c; --panel:#1a2128; --ink:#e3e8ec; --muted:#9aa6b1; --rule:#2d3740;
+  --ferrite:#f2b84b; --carbide:#f39a3c; --tip:#ff7a3d; --austenite:#e8c252; --gamma:#3a3221; --mart:#aab4bd; --ok:#74c08a; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--body)}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px}
+h1,h2,h3{font-family:var(--display);font-weight:600;text-wrap:balance;margin:0}
+h1{font-size:clamp(30px,4.6vw,46px);line-height:1.08}
+h2{font-size:clamp(22px,3vw,28px);margin-top:8px}
+h3{font-size:18px}
+p{margin:0;max-width:68ch}
+.lede{color:var(--muted);font-size:17px;margin-top:10px}
+.eyebrow{font:500 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+section{display:grid;gap:14px;padding-block:34px;border-top:1px solid var(--rule)}
+header{display:grid;gap:6px;padding-bottom:26px}
+.links{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:10px;font-size:15px}
+nav.toc{display:flex;flex-wrap:wrap;gap:6px 8px;margin-top:14px}
+nav.toc a{font:500 12px var(--mono);text-decoration:none;border:1px solid var(--rule);border-radius:3px;padding:3px 8px;color:var(--muted)}
+nav.toc a:hover{border-color:var(--ferrite);color:var(--ink)}
+a{color:var(--ferrite)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:820px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:14px;display:grid;gap:10px;min-width:0}
+canvas{display:block;width:100%;max-width:100%;height:auto;border-radius:4px}
+svg.fig{display:block;width:100%;max-width:100%;height:auto}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}
+.rule{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:12px 14px;display:grid;gap:6px;align-content:start;min-width:0}
+.rule b{font-family:var(--display);font-size:17px}
+.rule .k{font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+button,select{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--rule);border-radius:4px;padding:6px 11px;cursor:pointer}
+button:hover{border-color:var(--ferrite)}
+button[aria-pressed="true"]{border-color:var(--c,var(--ferrite));background:var(--panel);font-weight:600;box-shadow:inset 0 -3px 0 var(--c,var(--ferrite))}
+:focus-visible{outline:2px solid var(--ferrite);outline-offset:2px}
+.note{font-size:14px;color:var(--muted)}
+.callout{border-left:3px solid var(--tip);padding:4px 0 4px 12px;font-size:15px;max-width:none}
+.callout.c{border-left-color:var(--carbide)}
+.callout.a{border-left-color:var(--austenite)}
+blockquote{margin:0;padding:6px 0 6px 14px;border-left:2px solid var(--rule);font-family:var(--display);font-size:17px;max-width:70ch}
+blockquote cite{display:block;font:500 12px var(--mono);font-style:normal;color:var(--muted);margin-top:4px}
+.defs{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.defs div{display:grid;gap:4px;align-content:start;min-width:0}
+.defs b{font-family:var(--display);font-size:17px}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;font-size:14px;width:100%}
+th,td{padding:6px 10px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font:500 12px var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+td.m,code,.m{font:13px var(--mono);font-variant-numeric:tabular-nums}
+.tag{display:inline-block;font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--rule);border-radius:3px;padding:1px 6px;color:var(--muted);vertical-align:middle}
+.tag.own{border-color:var(--tip);color:var(--tip)}
+ul.tight,ol.tight{margin:0;padding-left:20px;display:grid;gap:4px;max-width:72ch}
+ol.refs{margin:0;padding-left:22px;display:grid;gap:5px;font-size:14px;color:var(--muted);max-width:92ch}
+.reagent-card{display:grid;gap:8px}
+.reagent-card h3{color:var(--ferrite)}
+.comp{font:13px var(--mono);background:var(--bg);border:1px solid var(--rule);border-radius:4px;padding:8px 10px;white-space:pre-wrap}
+.pillrow{display:flex;flex-wrap:wrap;gap:6px}
+.pill{font:500 12px var(--mono);border-radius:999px;padding:3px 10px;border:1px solid transparent}
+.pill.strong{background:var(--tip);color:#fff}
+.pill.mod{background:var(--carbide);color:#1a1205}
+.pill.light{background:var(--gamma);color:var(--ink);border-color:var(--rule)}
+.pill.none{background:transparent;color:var(--ok);border-color:var(--ok)}
+/* matrix */
+.matrixwrap{overflow-x:auto}
+table.matrix{border-collapse:collapse;font-size:13px;width:100%;min-width:760px}
+table.matrix th,table.matrix td{border:1px solid var(--rule);padding:6px 8px;text-align:center}
+table.matrix th{font:500 11px var(--mono);text-transform:uppercase;letter-spacing:.04em;color:var(--muted);background:var(--panel)}
+table.matrix td.name{text-align:left;font-size:13px;color:var(--ink);background:var(--panel);min-width:170px}
+table.matrix td.s0{background:transparent;color:var(--muted)}
+table.matrix td.s1{background:color-mix(in srgb, var(--gamma) 70%, transparent);color:var(--ink)}
+table.matrix td.s2{background:color-mix(in srgb, var(--carbide) 55%, var(--panel));color:var(--ink);font-weight:600}
+table.matrix td.s3{background:var(--tip);color:#fff;font-weight:600}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--muted);align-items:center}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:16px;height:16px;border-radius:3px;border:1px solid var(--rule);display:inline-block}
+.warn{border-left:3px solid var(--tip);background:color-mix(in srgb, var(--tip) 10%, var(--panel));padding:10px 14px;border-radius:0 6px 6px 0;font-size:14px}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:18px}
+.pair>div{display:grid;gap:8px;align-content:start;min-width:0}
+.ctrl{display:grid;grid-template-columns:minmax(0,9em) minmax(0,1fr) minmax(0,5.5em);gap:6px 10px;align-items:center;font-size:14px}
+.ctrl label{color:var(--muted)}
+.ctrl output{font:13px var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+input[type=range]{width:100%;accent-color:var(--ferrite)}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.readout div{border:1px solid var(--rule);border-radius:4px;padding:8px 10px;display:grid;gap:2px;background:var(--bg)}
+.readout .k{font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.readout .v{font:500 17px var(--mono);font-variant-numeric:tabular-nums}
+.tag.src{border-color:var(--ok);color:var(--ok)}
+.swatch{display:inline-block;width:14px;height:14px;border-radius:3px;border:1px solid var(--rule);vertical-align:-2px}
+canvas.px{image-rendering:auto}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+<header>
+  <span class="eyebrow">Characterisation · electron diffraction in the SEM</span>
+  <h1>EBSD at temperature: from Kikuchi bands to watching ferrite form</h1>
+  <p class="lede">Electron backscatter diffraction turns each point of a polished surface into a crystal orientation. This lesson builds that up from the pattern itself: where the bands come from, how software finds and indexes them, and what the usual maps mean. Most of the page then goes to doing EBSD on a hot specimen in the SEM, where the austenite is still there to be measured, and to what that can and cannot tell you about how Widmanstätten ferrite starts.</p>
+  <div class="links">
+    <a href="ks-variant-atlas.html">The 24 Kurdjumov–Sachs variants</a>
+    <a href="pole-figures.html">Reading pole figures</a>
+    <a href="sympathetic-nucleation.html">Sympathetic nucleation</a>
+    <a href="widmanstatten-transition.html">Planar to Widmanstätten ferrite</a>
+    <a href="metallographic-etching.html">Metallographic etching</a>
+  </div>
+  <nav class="toc" aria-label="Sections">
+    <a href="#history">History</a><a href="#pattern">The pattern</a><a href="#hough">Finding bands</a><a href="#maps">Maps</a><a href="#parent">Parent and child</a><a href="#stage">The hot stage</a><a href="#trouble">What goes wrong hot</a><a href="#speed">Is it fast enough?</a><a href="#reveals">What it reveals</a><a href="#thesis">Your thesis</a><a href="#open">Open questions</a><a href="#sources">Sources</a>
+  </nav>
+  <p class="note"><span class="tag src">Sourced</span> marks a statement with a quote and printed page from a paper in your library. <span class="tag own">Beyond the papers</span> marks my own knowledge or standard physics, not yet checked against a source you hold. <span class="tag">Wishlist</span> marks a paper I needed but you do not have yet; those are now rows W627–W645 in <code>03-literature/wishlist/wishlist.csv</code>.</p>
+</header>
+
+<!-- ============ HISTORY ============ -->
+<section id="history">
+  <span class="eyebrow">1 · A short history</span>
+  <h2>The pattern is a century old; the map is barely thirty</h2>
+  <p>Kikuchi lines were seen in the 1920s, and backscattered versions of them in the 1950s. For decades they stayed a curiosity, because a person had to index each pattern by hand. What turned them into a microscopy was not new physics but cameras and computers fast enough to index thousands of patterns without anyone looking at them.</p>
+
+  <div class="grid2">
+    <div class="panel">
+      <svg class="fig" viewBox="0 0 480 412" role="img" aria-label="Timeline of EBSD milestones from Nishikawa and Kikuchi in 1928 to in-situ heating stages">
+        <line x1="60" y1="20" x2="60" y2="396" style="stroke:var(--rule)" stroke-width="2"></line>
+        <g style="font:11px var(--mono);fill:var(--ink)">
+          <circle cx="60" cy="34" r="4" style="fill:var(--muted)"></circle>
+          <text x="76" y="31" style="fill:var(--muted);font:10px var(--mono)">1928</text>
+          <text x="76" y="44">Nishikawa &amp; Kikuchi: electrons through mica</text>
+          <circle cx="60" cy="76" r="4" style="fill:var(--austenite)"></circle>
+          <text x="76" y="73" style="fill:var(--muted);font:10px var(--mono)">1954</text>
+          <text x="76" y="86">Alam, Blackman, Pashley: high-angle Kikuchi</text>
+          <circle cx="60" cy="118" r="4" style="fill:var(--carbide)"></circle>
+          <text x="76" y="115" style="fill:var(--muted);font:10px var(--mono)">1967</text>
+          <text x="76" y="128">Channelling patterns seen in the SEM</text>
+          <circle cx="60" cy="160" r="4" style="fill:var(--mart)"></circle>
+          <text x="76" y="157" style="fill:var(--muted);font:10px var(--mono)">1972</text>
+          <text x="76" y="170">Haessner group: the idea of orientation scanning</text>
+          <circle cx="60" cy="202" r="5" style="fill:var(--tip)"></circle>
+          <text x="76" y="199" style="fill:var(--muted);font:10px var(--mono)">1973</text>
+          <text x="76" y="212" style="fill:var(--ferrite);font:600 11px var(--body)">Venables &amp; Harland: backscatter patterns in the SEM</text>
+          <circle cx="60" cy="244" r="4" style="fill:var(--carbide)"></circle>
+          <text x="76" y="241" style="fill:var(--muted);font:10px var(--mono)">1986</text>
+          <text x="76" y="254">Dingley &amp; Baba-Kishi: phosphor screen + TV camera</text>
+          <circle cx="60" cy="286" r="4" style="fill:var(--ferrite)"></circle>
+          <text x="76" y="283" style="fill:var(--muted);font:10px var(--mono)">1990–93</text>
+          <text x="76" y="296">Automated indexing (Burns, Hough): orientation imaging</text>
+          <circle cx="60" cy="328" r="4" style="fill:var(--austenite)"></circle>
+          <text x="76" y="325" style="fill:var(--muted);font:10px var(--mono)">2002</text>
+          <text x="76" y="338">Up to 60 patterns per second</text>
+          <circle cx="60" cy="370" r="4" style="fill:var(--tip)"></circle>
+          <text x="76" y="367" style="fill:var(--muted);font:10px var(--mono)">2000s →</text>
+          <text x="76" y="380">Heating stages: maps of a transforming specimen</text>
+        </g>
+      </svg>
+      <p class="note">Dates from Adams, Wright &amp; Kunze (1993), p. 819–821; ASM Handbook Vol. 9 (2004), Field, &ldquo;Textured Structures,&rdquo; p. 215–226, and Exner &amp; Weinbruch, &ldquo;Scanning Electron Microscopy,&rdquo; p. 355–367. The 1928 entry and the in-situ row are <span class="tag">Wishlist</span>: the papers are not in your library yet.</p>
+    </div>
+    <div class="panel" style="align-content:start">
+      <h3>Before the SEM</h3>
+      <p class="note">Kikuchi lines first appeared in transmission, when Seishi Kikuchi and Shoji Nishikawa sent cathode rays through thin mica in 1928 and saw pairs of sharp lines on top of the diffraction spots <span class="tag">Wishlist</span>. The backscattered form came next. Adams and co-workers credit &ldquo;an early article of Blackham et al., who refer to the patterns as &lsquo;high-angle Kikuchi patterns&rsquo;&rdquo; (p. 819). The name records the geometry: the effect is strongest &ldquo;when the outward sample normal is at large angles from the incident beam direction (typically 110 deg)&rdquo; (p. 819). That 110° is the 70° specimen tilt every EBSD user knows, seen from the other side.</p>
+      <p class="note">The citation as printed in Adams 1993 reads &ldquo;M.N. Blackham, M. Alam, and D.W. Pashley: Proc. R. Soc. London, 1953, vol. A221, pp. 224–42&rdquo; (p. 830). Standard citations give Alam, Blackman and Pashley, 1954, for the same volume and pages <span class="tag own">Beyond the papers</span>. The paper is on the wishlist so the spelling and year can be settled from the paper itself.</p>
+      <h3>Channelling first</h3>
+      <p class="note">Inside the SEM, crystallography arrived through a different door. The ASM SEM chapter dates to 1967 &ldquo;an observation of a pattern of lines superimposed on the topographic BE image,&rdquo; the electron channelling pattern, whose dark lines are &ldquo;similar to Kikuchi lines in the transmission electron microscope&rdquo; (Exner &amp; Weinbruch, ASM Vol. 9, p. 355–367).</p>
+    </div>
+  </div>
+
+  <blockquote>&ldquo;When implemented on any garden-variety personal computer, a skilled operator can index about 100 patterns per hour. The process is very fatiguing, however, and therefore rather prone to indexing errors when large data sets are needed.&rdquo;<cite>Adams, Wright &amp; Kunze, Metall. Trans. A 24A (1993), p. 820</cite></blockquote>
+
+  <div class="pair">
+    <div>
+      <h3>Venables and Harland, 1973</h3>
+      <p class="note">&ldquo;Using an electron-sensitive photographic plate positioned inside the diffraction chamber, Venables and Harland reported obtaining high-quality BKD patterns in 1973&rdquo; (Adams et al., p. 820). They also gave the technique its working name: &ldquo;Venables and Harland were the first to introduce the technical term electron back-scattered pattern (EBSP)&rdquo; (Zhu 2024 thesis, p. 18). The pattern was now in the SEM, on a specimen of ordinary size, but each one was still a photograph to be developed and measured.</p>
+    </div>
+    <div>
+      <h3>From a camera to a microscope</h3>
+      <p class="note">&ldquo;In 1986, more than a decade later, Dingley and Baba-Kishi described a system for interrogating BKD patterns, formed on a phosphor screen located inside the microscope chamber, with a high-gain television camera located outside the chamber&rdquo; (p. 820). The operator still clicked on zone axes. &ldquo;Since 1990, progress has been made toward the goal of completely automating the indexing procedure&rdquo; (p. 820), first by template matching, then by edge (Burns) and Hough-transform band finding. By 1993 one cubic pattern took &ldquo;typically, 2 seconds of computer time&rdquo; (p. 820). The idea of scanning orientation point by point had been &ldquo;suggested at least two decades ago by Haessner and co-workers&rdquo; (p. 821) and was only now practical.</p>
+    </div>
+  </div>
+  <p class="callout">Speed is the thread that matters for in-situ work. At 2 s per pattern (1993) a 100 × 100 map takes over five hours; at 60 per second (ASM Vol. 9, 2004, p. 215–226, &ldquo;as of the end of 2002&rdquo;) it takes under three minutes. Only once maps took minutes did it make sense to put a heater under the specimen and map it again and again while it transforms. That later history, of heating stages and in-situ maps, is the part your library does not cover yet; the papers are on the wishlist.</p>
+</section>
+
+<!-- ============ PATTERN ============ -->
+<section id="pattern">
+  <span class="eyebrow">2 · Where the bands come from</span>
+  <h2>Every lattice plane casts a band; the band&rsquo;s width is twice its Bragg angle</h2>
+  <p>The beam enters the tilted specimen and electrons scatter in all directions inside a small volume, &ldquo;of ~0.2 μm in diameter,&rdquo; with energy &ldquo;reduced only slightly from their initial value&rdquo; (Adams et al., p. 819). Some of those electrons meet a set of lattice planes at the Bragg angle and are diffracted. For each plane they fill two cones, &ldquo;the Kossel cone has a half apex angle of 90°−θ<sub>B</sub>&rdquo; (Zhu 2024, p. 18). Because θ<sub>B</sub> is about a degree, the cones are nearly flat and cut the phosphor screen in two almost straight lines. The strip between them is a Kikuchi band, its centre line is the trace of the plane, and where bands cross is a zone axis.</p>
+
+  <div class="grid2">
+    <div class="panel">
+      <canvas id="cvPattern" class="px" width="320" height="240" aria-label="Simulated Kikuchi pattern"></canvas>
+      <div class="row">
+        <button id="phA" aria-pressed="true">Ferrite (bcc)</button>
+        <button id="phG" aria-pressed="false" style="--c:var(--austenite)">Austenite (fcc)</button>
+        <button id="lbl" aria-pressed="false">Label bands</button>
+      </div>
+      <p class="note">Simulated pattern: band positions and widths are computed from the lattice; band brightness is a rough per-family weight and the background is a smooth falloff, so read geometry from it, not intensities. <span class="tag own">Beyond the papers</span></p>
+    </div>
+    <div class="panel">
+      <div class="ctrl">
+        <label for="e1">φ<sub>1</sub></label><input type="range" id="e1" min="0" max="360" value="20"><output id="e1o"></output>
+        <label for="e2">Φ</label><input type="range" id="e2" min="0" max="180" value="35"><output id="e2o"></output>
+        <label for="e3">φ<sub>2</sub></label><input type="range" id="e3" min="0" max="360" value="40"><output id="e3o"></output>
+        <label for="kv">Beam voltage</label><input type="range" id="kv" min="5" max="30" value="20"><output id="kvo"></output>
+        <label for="tC">Temperature</label><input type="range" id="tC" min="500" max="1000" value="640"><output id="tCo"></output>
+        <label for="qq">Pattern quality</label><input type="range" id="qq" min="0" max="100" value="85"><output id="qqo"></output>
+      </div>
+      <div class="readout">
+        <div><span class="k">Wavelength λ</span><span class="v" id="rLam"></span></div>
+        <div><span class="k">Lattice parameter</span><span class="v" id="rA"></span></div>
+        <div><span class="k">θ<sub>B</sub> lowest band</span><span class="v" id="rTh"></span></div>
+        <div><span class="k">Direction at pattern centre</span><span class="v" id="rDir"></span></div>
+      </div>
+      <p class="note" id="aNote"></p>
+    </div>
+  </div>
+  <div class="defs">
+    <div><b>Wavelength</b><p class="note">λ = h / √(2m<sub>0</sub>eV(1 + eV/2m<sub>0</sub>c²)), the relativistic electron wavelength. At 20 kV it is about 0.086 Å. Raising the voltage shortens λ and narrows every band. <span class="tag own">Beyond the papers</span> (standard physics)</p></div>
+    <div><b>Bragg angle</b><p class="note">λ = 2d sin θ<sub>B</sub>. With d of a few ångströms this gives θ<sub>B</sub> of the order of a degree; Zhu (2024, p. 18) gives &ldquo;typically 0.5°&rdquo;. The {110} band of ferrite comes out near 1.2° at 20 kV in this model, because {110} is the widest spacing in bcc.</p></div>
+    <div><b>Lattice parameters at temperature</b><p class="note">From Kop et al. (2001), Table I, p. 520: a<sub>α</sub> = 2.8863 Å (1 + 17.5×10⁻⁶ K⁻¹ [T − 800 K]), valid 800–1200 K; a<sub>γ</sub> = (3.6306 + 0.78ξ) Å (1 + (24.9 − 50ξ)×10⁻⁶ K⁻¹ [T − 1000 K]), valid 1000–1250 K and 0.0005 &lt; ξ &lt; 0.0365. The austenite here uses ξ = 0.0197, my conversion of sample-01&rsquo;s 0.431 wt% C ignoring Mn and Si.</p></div>
+    <div><b>Pattern quality</b><p class="note">The slider adds noise and lowers band contrast, the way strain, a poor surface or a hot specimen do. It is a picture of degradation, not a model of any one cause.</p></div>
+  </div>
+  <p class="callout a">Why the thermal expansion matters here: at 640 °C the ferrite lattice is about 0.2% larger than at 527 °C (800 K), so θ<sub>B</sub> shrinks by the same fraction. That shift is far too small to change indexing, which works on angles between bands. It does mean a hot pattern is never quite the room-temperature pattern, and any method that matches simulated patterns (dictionary or spherical indexing, Zhu 2024, p. 20) needs the hot lattice parameter. <span class="tag own">Inference</span></p>
+</section>
+
+<!-- ============ HOUGH ============ -->
+<section id="hough">
+  <span class="eyebrow">3 · From pattern to orientation</span>
+  <h2>A band is a line, a line is a point in Hough space, and three points fix a crystal</h2>
+  <p>Software does not look for bands directly. It runs a Hough transform, which &ldquo;converts datapoints in the image space (x, y) into Hough space (ρ, θ), following the relationship ρ = x cos θ + y sin θ. Such transformation converts straight lines such as Kikuchi bands into local maximum points in Hough space&rdquo; (Zhu 2024, p. 19). Then, &ldquo;with more than six Kikuchi bands detected, the angles between bands are compared with a precomputed look-up table based on the prior provided crystal structure&rdquo; (p. 20). The right-hand panel is the Hough transform of the pattern above, computed live; move the Euler sliders and the peaks move with the bands.</p>
+  <div class="grid2">
+    <div class="panel">
+      <canvas id="cvHough" class="px" width="180" height="90" aria-label="Hough transform of the simulated pattern"></canvas>
+      <p class="note">Horizontal axis θ from 0° to 180°, vertical axis ρ. Circles mark the six strongest local maxima. As the pattern-quality slider drops, the peaks sink into the noise: that is the low confidence index of a bad pattern.</p>
+    </div>
+    <div class="panel">
+      <h3>The look-up table</h3>
+      <p class="note">Interplanar angles between band families, computed from the cubic lattice. Ferrite and austenite share the angles; they differ in which families appear.</p>
+      <div class="tablewrap"><table id="angTab"><thead><tr><th>Pair</th><th>Angles between bands</th></tr></thead><tbody></tbody></table></div>
+      <p class="note">Adams et al. report that with low-quality patterns removed &ldquo;the reliability of correct indexing typically exceeds 99 pct,&rdquo; and that &ldquo;the typical mean disorientation between the automated results and the manual results is less than 1 deg&rdquo; (p. 821). Newer methods skip band finding and match whole simulated patterns; dictionary indexing improves the indexing rate on noisy patterns but is &ldquo;extremely demanding in terms of the computational costs&rdquo; (Zhu 2024, p. 20).</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MAPS ============ -->
+<section id="maps">
+  <span class="eyebrow">4 · Maps</span>
+  <h2>One orientation per pixel, and everything else is a choice of colour</h2>
+  <p>&ldquo;At an elementary level, orientation imaging microscopy is nothing more than assigning color or gray scale to portions of the section plane based upon local lattice orientation&rdquo; (Adams et al., p. 822). The same scan can be drawn many ways. The synthetic map below has about thirty ferrite grains, one split by a low-angle sub-boundary and one bent by a smooth orientation gradient, as a deformed grain would be.</p>
+  <div class="grid2">
+    <div class="panel">
+      <canvas id="cvMap" class="px" width="300" height="144" aria-label="Synthetic EBSD map"></canvas>
+      <div class="row" id="mapBtns">
+        <button data-m="ipf" aria-pressed="true">IPF colour</button>
+        <button data-m="iq" aria-pressed="false">Pattern quality</button>
+        <button data-m="gb" aria-pressed="false">Boundaries</button>
+        <button data-m="kam" aria-pressed="false">KAM</button>
+      </div>
+      <div class="ctrl">
+        <label for="lagb">Lowest boundary</label><input type="range" id="lagb" min="0.5" max="5" step="0.5" value="1"><output id="lagbo"></output>
+        <label for="hagb">High-angle above</label><input type="range" id="hagb" min="5" max="25" value="15"><output id="hagbo"></output>
+      </div>
+      <p class="note" id="mapCap"></p>
+    </div>
+    <div class="panel">
+      <canvas id="cvTri" width="220" height="190" style="max-width:260px" aria-label="IPF colour key for cubic crystals"></canvas>
+      <p class="note">IPF colour key for cubic symmetry: the colour says which crystal direction lies along the chosen sample axis. Red is ⟨001⟩, green ⟨101⟩, blue ⟨111⟩. The dot is the direction at the centre of the pattern in section 2.</p>
+      <div class="defs">
+        <div><b>Pattern quality (IQ, band contrast)</b><p class="note">How sharp the bands are. It drops at boundaries, where two patterns overlap, and in strained crystal. Gouné et al. use it to tell ferrite from martensite, which a phase map cannot: &ldquo;EBSD is not precise enough to discriminate between body-centred cubic ferrite and body-centred tetragonal martensite … However, additional information derived from Kikuchi pattern processing, namely the Index Quality (IQ) can be helpful&rdquo; (Gouné 2015, p. 30).</p></div>
+        <div><b>Boundaries</b><p class="note">Drawn wherever neighbour pixels differ by more than a threshold. Adams et al.: &ldquo;all boundaries exhibiting absolute disorientations exceeding about 1 deg can be imaged,&rdquo; and the choice of threshold &ldquo;will substantially influence the apparent grain size&rdquo; (p. 830). Phelan et al. drew their Widmanstätten maps with &ldquo;Boundaries &gt;1° … included&rdquo; (p. 130). The 15° high-angle cut-off is a convention <span class="tag own">Beyond the papers</span>.</p></div>
+        <div><b>KAM</b><p class="note">Kernel average misorientation: the mean misorientation of a pixel to its neighbours, excluding real boundaries. It lights up the bent grain and reads near zero in the others. Its value depends on step size, so compare KAM maps only at the same step. <span class="tag own">Beyond the papers</span></p></div>
+      </div>
+    </div>
+  </div>
+  <p class="note">Resolution and statistics, from the ASM chapter on textures: &ldquo;Using a field emission source electron beam, the spatial resolution of EBSD in the transverse direction is of the order of 10 to 20 nm,&rdquo; and for weak textures the number of grains needed &ldquo;is of the order of 10³ to 10⁴&rdquo; (Field, ASM Vol. 9, p. 215–226). Gouné et al. give &ldquo;a resolution better than 50 nm for the more recent instruments&rdquo; (p. 30).</p>
+</section>
+
+<!-- ============ PARENT ============ -->
+<section id="parent">
+  <span class="eyebrow">5 · Parent and child</span>
+  <h2>At room temperature the austenite is gone, so it has to be reconstructed</h2>
+  <p>In a fully transformed steel you only measure the ferrite, bainite or martensite. The parent austenite orientation must be worked out from the children, using the orientation relationship: &ldquo;via clever use of variant-selection theories, it is now possible to reconstruct the orientations (including substructure) of the parent austenite, even when no austenite is present in the final structure&rdquo; (Gouné 2015, p. 30). Cayron et al. proposed one such method &ldquo;for any phase transformation,&rdquo; built on &ldquo;the theoretical groupoid structure formed by the variants and their operators&rdquo; (Cayron 2006, p. 386); Miyamoto et al. (2010) mapped reconstructed austenite in ausformed martensite; Nyyssönen et al. (2026) push the reconstruction on to the 3D shape of sub-units. With one parent and the Kurdjumov–Sachs relationship, &ldquo;there are 24 possible ferrite orientations that can form&rdquo; (Phelan 2005, p. 128); the <a href="ks-variant-atlas.html">KS atlas</a> draws all of them.</p>
+  <p class="callout c">This is the first thing in-situ heating EBSD changes. On a hot stage, the austenite is still present and can be indexed directly as fcc next to the ferrite growing in it. The orientation relationship is then measured between two indexed phases on the same map, with no reconstruction step and no assumption about which OR holds. <span class="tag own">Inference</span> from the method; examples in steel are on the wishlist (Lischewski &amp; Gottstein 2011; the TU Delft medium-Mn study).</p>
+</section>
+
+<!-- ============ STAGE ============ -->
+<section id="stage">
+  <span class="eyebrow">6 · The hot stage</span>
+  <h2>A heater under a tilted specimen, inside a microscope that was built to stay cold</h2>
+  <p>In-situ heating EBSD keeps the normal geometry, a specimen tilted to about 70° in front of a phosphor screen, and adds a small furnace under the specimen. The specimen is thin so it heats and cools quickly, and it is clamped so its surface stays at the working distance as it expands. Everything else is about keeping the heat and its side effects away from the column, the detector and the surface you want to see.</p>
+  <div class="grid2">
+    <div class="panel">
+      <svg class="fig" viewBox="0 0 480 300" role="img" aria-label="Schematic of an in-situ heating EBSD set-up">
+        <g style="stroke:var(--muted);fill:none" stroke-width="1.5">
+          <path d="M150 10 h60 v60 l-14 22 h-32 l-14 -22 z" style="fill:var(--panel)"></path>
+        </g>
+        <line x1="180" y1="92" x2="200" y2="176" style="stroke:var(--tip)" stroke-width="2" stroke-dasharray="4 3"></line>
+        <g transform="translate(200,182) rotate(-20)">
+          <rect x="-70" y="10" width="140" height="22" rx="3" style="fill:var(--carbide);opacity:.35;stroke:var(--carbide)"></rect>
+          <rect x="-60" y="-4" width="120" height="12" style="fill:var(--gamma);stroke:var(--ferrite)" stroke-width="1.5"></rect>
+          <rect x="-78" y="-14" width="156" height="54" rx="4" style="fill:none;stroke:var(--mart)" stroke-dasharray="5 4"></rect>
+          <line x1="40" y1="8" x2="70" y2="58" style="stroke:var(--ok)" stroke-width="2"></line>
+        </g>
+        <rect x="360" y="110" width="16" height="120" rx="2" style="fill:var(--austenite);opacity:.55;stroke:var(--ferrite)"></rect>
+        <rect x="376" y="140" width="60" height="60" rx="3" style="fill:var(--panel);stroke:var(--muted)"></rect>
+        <g style="stroke:var(--austenite)" stroke-width="1" opacity=".8">
+          <line x1="204" y1="174" x2="360" y2="120"></line><line x1="204" y1="174" x2="360" y2="170"></line><line x1="204" y1="174" x2="360" y2="222"></line>
+        </g>
+        <g style="font:11px var(--body);fill:var(--ink)">
+          <text x="222" y="40">SEM column, beam down</text>
+          <text x="16" y="150">specimen (~70° tilt)</text>
+          <text x="16" y="164" style="fill:var(--muted)">thin, polished, clamped</text>
+          <text x="40" y="262">heater under the specimen</text>
+          <text x="40" y="276" style="fill:var(--muted)">radiation shield (dashed)</text>
+          <text x="270" y="262" style="fill:var(--ok)">thermocouple on or near specimen</text>
+          <text x="384" y="100">phosphor</text>
+          <text x="384" y="114">screen</text>
+          <text x="384" y="218">camera</text>
+          <text x="260" y="134" style="fill:var(--muted)">backscattered</text>
+          <text x="260" y="148" style="fill:var(--muted)">electrons</text>
+        </g>
+      </svg>
+      <p class="note">Schematic only; layouts differ between commercial stages. The tilt geometry is from Adams et al. (p. 819) and ASM Vol. 9, Field, Fig. 12 (p. 215–226). The heater, shield and thermocouple are generic <span class="tag own">Beyond the papers</span>.</p>
+    </div>
+    <div class="panel" style="align-content:start">
+      <h3>What the stage has to do</h3>
+      <ul class="tight note">
+        <li>Reach austenitising temperature and then hold or cycle through the ferrite window, for sample-01 950 °C and then 640 °C, with a known specimen temperature.</li>
+        <li>Keep the specimen surface flat, at the working distance and at the right tilt while it expands.</li>
+        <li>Stay mechanically still, so the map at minute 10 lines up with the map at minute 0.</li>
+        <li>Keep the chamber vacuum good enough that the surface does not oxidise during the run.</li>
+        <li>Keep heat and light off the phosphor screen and camera.</li>
+      </ul>
+      <p class="note">The SEM route was hard for steels at first. Sugiyama et al. (2005) wrote that with an SEM heating stage &ldquo;the size of a sample is often too large to heat to a high temperature more than 1,073K, and also it is difficult to eliminate various&rdquo; effects, and they built a FIB heating stage taking a 1 mm × 3 mm × 0.1 mm specimen &ldquo;up to 1,400°C&rdquo; (Sugiyama 2005, p. 1–2; printed page offset not yet checked).</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TROUBLE ============ -->
+<section id="trouble">
+  <span class="eyebrow">7 · What goes wrong hot</span>
+  <h2>Everything you see is a free surface, and the surface keeps changing</h2>
+  <p>The specific in-situ EBSD papers that measure these effects are not in your library yet, so most of this section is my own account and is tagged that way. The sourced parts come from the confocal literature, which shares the free-surface problem.</p>
+  <div class="rules">
+    <div class="rule"><span class="k">Surface ≠ bulk</span><b>The surface transforms under different conditions</b><p class="note">Phelan et al. warn for confocal work that &ldquo;the growth direction is as measured at the free surface and may differ from the actual growth direction in the bulk&rdquo; (p. 129). A free surface has no constraint on one side, which changes the strain energy of plates, and it is a site for nucleation. EBSD sees the top ~0.2 μm of that same surface. <span class="tag src">Sourced</span> + <span class="tag own">Inference</span></p></div>
+    <div class="rule"><span class="k">Oxidation</span><b>A film of oxide stops the pattern</b><p class="note">For HT-CLSM, &ldquo;it is important to prevent oxidation of the sample surface, since this would obscure the observations of the phenomenon of interest&rdquo; (Mu 2018, p. 2285). For EBSD the case is stronger: patterns come from tens of nanometres, so a thin oxide gives an oxide pattern or none. <span class="tag src">Sourced</span> + <span class="tag own">Inference</span></p></div>
+    <div class="rule"><span class="k">Thermal etching</span><b>Grain boundaries groove at temperature</b><p class="note">Surface diffusion at high temperature cuts grooves along grain and phase boundaries, so the prior-austenite boundaries become visible as topography and the polish slowly degrades. Grooves can also pin a moving boundary at the surface. Theory: Mullins 1957 <span class="tag">Wishlist</span>. <span class="tag own">Beyond the papers</span></p></div>
+    <div class="rule"><span class="k">Pattern degradation</span><b>Hot patterns are dimmer and softer</b><p class="note">Thermal vibration of the atoms adds diffuse scattering and lowers band contrast as temperature rises, and a glowing specimen and heater add light to the screen. Expect lower IQ, more unindexed points and slower acquisition for the same quality. <span class="tag own">Beyond the papers</span></p></div>
+    <div class="rule"><span class="k">Drift</span><b>Maps move between frames</b><p class="note">The stage, holder and specimen expand as they heat, so the area under the beam moves, fastest just after a temperature change. Successive maps need fiducial marks or image registration before you compare pixel by pixel. <span class="tag own">Beyond the papers</span></p></div>
+    <div class="rule"><span class="k">Chemistry of the surface</span><b>Carbon and manganese can leave</b><p class="note">In vacuum at 950 °C a thin specimen can lose carbon at the surface, and manganese has a high vapour pressure, so a near-surface layer of a Mn steel may not have the bulk composition. For sample-01 (1.92 wt% Mn, 0.431 wt% C) this would shift the local Ae3 and Ws of exactly the layer EBSD reads. <span class="tag own">Beyond the papers</span>; measure it (EDS or EPMA on a run specimen) rather than assume it.</p></div>
+    <div class="rule"><span class="k">Temperature</span><b>The thermocouple is not the surface</b><p class="note">A thermocouple on the holder reads the holder. Calibrate the stage with a reference whose transformation temperature you know from dilatometry, the way Sugiyama et al. matched heater current to As and Af from &ldquo;a thermal expansion measurement&rdquo; (Sugiyama 2005). <span class="tag src">Sourced</span> + <span class="tag own">Inference</span></p></div>
+    <div class="rule"><span class="k">The advantage</span><b>EBSD sees what confocal cannot</b><p class="note">&ldquo;Reconstructive phase transformations such as pearlite and allotriomorphic ferrite formation are much more difficult to investigate than displacive transformations. The reason is that displacive transformations in steels result in clear surface relief, whereas this is not the case for reconstructive transformations&rdquo; (Mu 2018, p. 2294). EBSD needs no relief, so it can follow allotriomorphs that confocal misses. <span class="tag src">Sourced</span></p></div>
+  </div>
+</section>
+
+<!-- ============ SPEED ============ -->
+<section id="speed">
+  <span class="eyebrow">8 · Is it fast enough?</span>
+  <h2>A map is a long exposure; the plate keeps growing while you take it</h2>
+  <p>An EBSD map is collected one pixel at a time, so a moving interface is smeared across the frame. The question for any in-situ run is how far the interface moves during one map compared with the step size. The two marker speeds are Phelan et al.&rsquo;s Widmanstätten plate in an Fe–0.18C alloy, which grew first &ldquo;at a speed of 1 μm/s&rdquo; and then &ldquo;at a speed of 4.5 μm/s&rdquo; (p. 129). Set the pattern rate to your own detector&rsquo;s rate at temperature; the default is the 2002 figure from ASM because it is the only one in your library.</p>
+  <div class="grid2">
+    <div class="panel">
+      <div class="ctrl">
+        <label for="sw">Map width</label><input type="range" id="sw" min="10" max="200" value="50"><output id="swo"></output>
+        <label for="sh">Map height</label><input type="range" id="sh" min="10" max="200" value="40"><output id="sho"></output>
+        <label for="ss">Step size</label><input type="range" id="ss" min="0.05" max="2" step="0.05" value="0.5"><output id="sso"></output>
+        <label for="sr">Pattern rate</label><input type="range" id="sr" min="1" max="4" step="0.01" value="1.778"><output id="sro"></output>
+        <label for="sv">Interface speed</label><input type="range" id="sv" min="-3" max="1" step="0.01" value="0"><output id="svo"></output>
+        <label for="sd">Drift rate</label><input type="range" id="sd" min="0" max="50" value="2"><output id="sdo"></output>
+      </div>
+      <div class="row">
+        <button id="v1">Phelan, 1 μm/s</button><button id="v45">Phelan, 4.5 μm/s</button><button id="vslow" title="An illustrative slow allotriomorph thickening rate">0.01 μm/s (illustrative)</button>
+      </div>
+      <p class="note">Drift default is a placeholder, not a measurement: set it from your own fiducial tracking.</p>
+    </div>
+    <div class="panel">
+      <div class="readout">
+        <div><span class="k">Pixels per map</span><span class="v" id="oN"></span></div>
+        <div><span class="k">Time per map</span><span class="v" id="oT"></span></div>
+        <div><span class="k">Interface moves</span><span class="v" id="oX"></span></div>
+        <div><span class="k">…in steps</span><span class="v" id="oS"></span></div>
+        <div><span class="k">Drift per map</span><span class="v" id="oD"></span></div>
+      </div>
+      <canvas id="cvSpeed" aria-label="Interface travel per map against map time"></canvas>
+      <p class="note" id="oVerdict"></p>
+    </div>
+  </div>
+  <p class="note">Rule used for the verdict: if the interface moves less than one step per map, each map is a fair snapshot; up to ten steps it is a smeared snapshot that can still be compared with the next; beyond that, map a smaller area, coarsen the step, or slow the transformation (hold higher, cool slower). The thresholds are my choice. <span class="tag own">Beyond the papers</span></p>
+</section>
+
+<!-- ============ REVEALS ============ -->
+<section id="reveals">
+  <span class="eyebrow">9 · What it reveals</span>
+  <h2>Four questions only a hot map can answer directly</h2>
+  <div class="rules">
+    <div class="rule"><span class="k">Nucleation</span><b>Where does each ferrite grain start?</b><p class="note">Which austenite boundary, which boundary type, on an existing ferrite grain or not, and in what order. A room-temperature map shows the end state; a sequence of hot maps shows the order. <span class="tag">Wishlist</span>: Lischewski &amp; Gottstein 2011; Fukino &amp; Tsurekawa 2008.</p></div>
+    <div class="rule"><span class="k">Orientation relationship</span><b>Measured, not assumed</b><p class="note">With fcc austenite indexed beside the bcc ferrite, the OR at each interface is a direct measurement: how close to KS, NW or between them, and whether it is the same for the allotriomorph and the plate that grows from it. See the twist slider in the <a href="ks-variant-atlas.html">KS atlas</a>.</p></div>
+    <div class="rule"><span class="k">Variant selection</span><b>Which of the 24 appear, and why those</b><p class="note">Phelan et al. note that from one parent there are 24 KS orientations but &ldquo;the transformed phase rarely&rdquo; shows all of them (p. 128). In situ you know the parent exactly and can see which variants form first, next to which neighbours.</p></div>
+    <div class="rule"><span class="k">Growth</span><b>Interface position against time</b><p class="note">Successive maps give the interface position, so lengthening and thickening rates for the same particle and, from the same data, whether its orientation stays constant while it grows. That last point is the one your thesis needs.</p></div>
+  </div>
+</section>
+
+<!-- ============ THESIS ============ -->
+<section id="thesis">
+  <span class="eyebrow">10 · Your thesis</span>
+  <h2>Does the plate keep its orientation, or does a new crystal start?</h2>
+  <p>The two pictures of how a Widmanstätten sideplate forms from an allotriomorph predict different orientation records. If the allotriomorph boundary becomes unstable and pushes out a plate, the plate is the same crystal and its orientation is continuous with the allotriomorph. If a new ferrite crystal nucleates sympathetically, there is a small but sharp step in orientation at its base. Phelan et al. found the steps: &ldquo;the misorientation between the centre of the allotriomorph and the plate tip is approximately 4°&rdquo; (p. 130), sometimes in two steps of &ldquo;4–5° each&rdquo; for &ldquo;around 9°&rdquo; in total, and in general &ldquo;between 4° and 12°&rdquo; (p. 131). Cheng et al. saw &ldquo;a clear abrupt orientation change&rdquo; along secondary plates, but &ldquo;no abrupt orientation change in the cumulative orientation along this primary plate from the base to its top tip&rdquo; (Cheng 2014, p. 91).</p>
+  <p>Both studies measured after quenching. A hot sequence adds the time order: whether the step is present from the first frame in which the plate exists, or appears later. The model below asks a narrower question first: with a given angular noise, can you see a 4° step at all?</p>
+  <div class="grid2">
+    <div class="panel">
+      <canvas id="cvProf" aria-label="Cumulative misorientation along a plate"></canvas>
+      <div class="row" id="scenBtns">
+        <button data-s="cont" aria-pressed="false">Continuous growth</button>
+        <button data-s="one" aria-pressed="true">One sympathetic step (4°)</button>
+        <button data-s="two" aria-pressed="false">Two steps (Phelan Fig. 7)</button>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="ctrl">
+        <label for="pn">Angular noise σ</label><input type="range" id="pn" min="0.05" max="2" step="0.05" value="0.5"><output id="pno"></output>
+        <label for="pg">Bend in plate</label><input type="range" id="pg" min="0" max="1" step="0.05" value="0.2"><output id="pgo"></output>
+        <label for="pst">Step size</label><input type="range" id="pst" min="0.1" max="1" step="0.05" value="0.25"><output id="psto"></output>
+      </div>
+      <p class="note" id="profVerdict"></p>
+      <p class="note">The profile is a model, not data: a 20 μm line from the allotriomorph centre to the plate tip, steps placed as in the chosen scenario, a uniform bend in °/μm, and Gaussian angular noise. Adams et al. put automated indexing within about 1° of careful manual indexing (p. 821); a hot pattern will be noisier than that. A step is flagged when a jump between neighbouring points exceeds 3σ√2. <span class="tag own">Beyond the papers</span></p>
+    </div>
+  </div>
+  <p class="callout">For sample-01 at the proposed 640 °C hold the reading goes one way only. A new orientation appearing at the base of a plate is evidence of a separate ferrite event. A continuous orientation is consistent with protrusion growth but does not prove it, because a sympathetic nucleus with a misorientation below your noise floor looks continuous too. That is why the noise slider matters: it sets the smallest step you can claim to have ruled out. <span class="tag own">Inference</span></p>
+</section>
+
+<!-- ============ OPEN ============ -->
+<section id="open">
+  <span class="eyebrow">11 · Open questions</span>
+  <h2>What this page does not yet know</h2>
+  <ol class="tight">
+    <li>The angular precision of indexing on a hot steel specimen at 640 °C and 950 °C. Everything in section 10 depends on it, and none of your papers reports it. Best measured on your own stage, from repeated maps of a grain that is not transforming.</li>
+    <li>How much carbon and manganese the surface layer loses during the 950 °C austenitising step in the chamber vacuum, and whether that moves the surface Ws away from the 609–670 °C range estimated for the bulk.</li>
+    <li>Whether surface nucleation of ferrite at the free surface outruns grain-boundary nucleation in sample-01, which would make the surface record unrepresentative. Compare with interrupted, sectioned specimens.</li>
+    <li>The 1953 vs 1954 date and author spelling of the Alam, Blackman and Pashley paper, to settle from the paper.</li>
+    <li>The in-situ EBSD history after 2002: first heating stages for EBSD, first steel γ→α maps. Needs the wishlist papers (Seward 2004, Lischewski 2008 and 2011, Fukino 2008, the TU Delft medium-Mn study, the Lorraine thesis).</li>
+    <li>The page uses Kop et al.&rsquo;s lattice parameters, which are valid for ferrite from 800 K and austenite from 1000 K. Below those, the values shown are extrapolations; the readout says so.</li>
+  </ol>
+</section>
+
+<!-- ============ SOURCES ============ -->
+<section id="sources">
+  <span class="eyebrow">Sources</span>
+  <h2>References</h2>
+  <ol class="refs">
+    <li>B.L. Adams, S.I. Wright, K. Kunze, &ldquo;Orientation imaging: the emergence of a new microscopy,&rdquo; <i>Metall. Trans. A</i> 24A (1993) 819–831. Pages cited: 819, 820, 821, 822, 830.</li>
+    <li>D.P. Field, &ldquo;Textured Structures,&rdquo; <i>Metallography and Microstructures</i>, Vol. 9, <i>ASM Handbook</i>, ASM International, 2004, p. 215–226.</li>
+    <li>H.E. Exner and S. Weinbruch, &ldquo;Scanning Electron Microscopy,&rdquo; <i>Metallography and Microstructures</i>, Vol. 9, <i>ASM Handbook</i>, ASM International, 2004, p. 355–367.</li>
+    <li>Zhu, <i>Advanced crystallography measurement by directional reflectance microscopy</i>, PhD thesis, 2024. §2.2.2, p. 18–20.</li>
+    <li>M. Gouné et al., &ldquo;Overview of the current issues in austenite to ferrite transformation and the role of migrating interfaces therein for low alloyed steels,&rdquo; <i>Mater. Sci. Eng. R</i> 92 (2015) 1–38. §4.1.2, p. 30.</li>
+    <li>D. Phelan, N. Stanford, R. Dippenaar, &ldquo;In situ observations of Widmanstätten ferrite formation in a low-carbon steel,&rdquo; <i>Mater. Sci. Eng. A</i> 407 (2005) 127–134. Pages cited: 128, 129, 130, 131.</li>
+    <li>L. Cheng, K.M. Wu, X.L. Wan, R. Wei, &ldquo;In-situ observation on the growth of Widmanstätten sideplates in an Fe–C–Mn steel,&rdquo; <i>Mater. Charact.</i> 87 (2014) 86–94. Page cited: 91.</li>
+    <li>W. Mu, P. Hedström, H. Shibata, P.G. Jönsson, K. Nakajima, &ldquo;High-temperature confocal laser scanning microscopy studies of ferrite formation in inclusion-engineered steels: a review,&rdquo; <i>JOM</i> 70 (2018). Pages cited: 2285, 2294.</li>
+    <li>T.A. Kop, J. Sietsma, S. van der Zwaag, &ldquo;Dilatometric analysis of phase transformations in hypo-eutectoid steels,&rdquo; <i>J. Mater. Sci.</i> 36 (2001). Table I, p. 520.</li>
+    <li>C. Cayron, B. Artaud, L. Briottet, &ldquo;Reconstruction of parent grains from EBSD data,&rdquo; <i>Mater. Charact.</i> 57 (2006) 386–401. Page cited: 386.</li>
+    <li>G. Miyamoto, N. Iwata, N. Takayama, T. Furuhara, &ldquo;Mapping the parent austenite orientation reconstructed from the orientation of martensite by EBSD and its application to ausformed martensite,&rdquo; <i>Acta Mater.</i> 58 (2010) 6393–6403.</li>
+    <li>T. Nyyssönen et al., &ldquo;Three-dimensional shape metrics for martensite and bainite from two-dimensional orientation maps,&rdquo; <i>Acta Mater.</i> 313 (2026) 122306.</li>
+    <li>Sugiyama et al., &ldquo;Development of in situ microstructure observation technique in steel,&rdquo; 2005 (file sugiyama_2005_…; venue and printed pages to confirm).</li>
+  </ol>
+  <p class="note">All of these are in your phd_2/03-literature library. Page numbers are the printed page numbers of each paper. For the ASM Handbook chapters the PDF carries no page numbers, so only the chapter&rsquo;s page range is given, as on the etching page.</p>
+  <h3>On the wishlist for this page</h3>
+  <p class="note">Nishikawa &amp; Kikuchi 1928 (Nature 121, 1019); Kikuchi 1928 (Proc. Imp. Acad. 4); Alam, Blackman &amp; Pashley 1954; Venables &amp; Harland 1973; Dingley &amp; Baba-Kishi 1986; Wright &amp; Adams 1992; Krieger Lassen et al. 1992; Schwartz et al., <i>Electron Backscatter Diffraction in Materials Science</i>; Humphreys 2001; Coates 1967; Seward et al. 2004; Lischewski et al. 2008; Lischewski &amp; Gottstein 2011; Fukino &amp; Tsurekawa 2008; the TU Delft/RUG high-temperature EBSD study of a medium-Mn steel; the Lorraine high-temperature EBSD work; Bestmann et al. 2005; Mullins 1957; Nyyssönen et al. 2023.</p>
+</section>
+</div>
+
+<script>
+(function(){
+"use strict";
+var css=function(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();};
+function $(id){return document.getElementById(id);}
+function rad(d){return d*Math.PI/180;}
+function deg(r){return r*180/Math.PI;}
+
+/* ---------- rotations ---------- */
+function mul(A,B){var C=[[0,0,0],[0,0,0],[0,0,0]];for(var i=0;i<3;i++)for(var j=0;j<3;j++)for(var k=0;k<3;k++)C[i][j]+=A[i][k]*B[k][j];return C;}
+function tr(A){return [[A[0][0],A[1][0],A[2][0]],[A[0][1],A[1][1],A[2][1]],[A[0][2],A[1][2],A[2][2]]];}
+function mv(A,v){return [A[0][0]*v[0]+A[0][1]*v[1]+A[0][2]*v[2],A[1][0]*v[0]+A[1][1]*v[1]+A[1][2]*v[2],A[2][0]*v[0]+A[2][1]*v[1]+A[2][2]*v[2]];}
+function Rz(a){var c=Math.cos(a),s=Math.sin(a);return [[c,-s,0],[s,c,0],[0,0,1]];}
+function Rx(a){var c=Math.cos(a),s=Math.sin(a);return [[1,0,0],[0,c,-s],[0,s,c]];}
+function euler(p1,P,p2){return mul(mul(Rz(rad(p1)),Rx(rad(P))),Rz(rad(p2)));}
+function axisAngle(ax,a){var n=Math.hypot(ax[0],ax[1],ax[2]),x=ax[0]/n,y=ax[1]/n,z=ax[2]/n,c=Math.cos(a),s=Math.sin(a),t=1-c;
+  return [[t*x*x+c,t*x*y-s*z,t*x*z+s*y],[t*x*y+s*z,t*y*y+c,t*y*z-s*x],[t*x*z-s*y,t*y*z+s*x,t*z*z+c]];}
+var SYM=[];(function(){var perms=[[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]];
+  perms.forEach(function(p){for(var sx=-1;sx<=1;sx+=2)for(var sy=-1;sy<=1;sy+=2)for(var sz=-1;sz<=1;sz+=2){
+    var M=[[0,0,0],[0,0,0],[0,0,0]],sg=[sx,sy,sz];for(var i=0;i<3;i++)M[i][p[i]]=sg[i];
+    var d=M[0][0]*(M[1][1]*M[2][2]-M[1][2]*M[2][1])-M[0][1]*(M[1][0]*M[2][2]-M[1][2]*M[2][0])+M[0][2]*(M[1][0]*M[2][1]-M[1][1]*M[2][0]);
+    if(d>0)SYM.push(M);}});})();
+function misor(A,B){var D=mul(tr(A),B),best=0;for(var i=0;i<24;i++){var S=SYM[i];var t=0;for(var a=0;a<3;a++)for(var b=0;b<3;b++)t+=D[a][b]*S[b][a];if(t>best)best=t;}
+  return deg(Math.acos(Math.max(-1,Math.min(1,(best-1)/2))));}
+function randRot(rng){var u1=rng(),u2=rng(),u3=rng();var a=Math.sqrt(1-u1),b=Math.sqrt(u1);
+  var q=[a*Math.sin(2*Math.PI*u2),a*Math.cos(2*Math.PI*u2),b*Math.sin(2*Math.PI*u3),b*Math.cos(2*Math.PI*u3)];
+  var w=q[3],x=q[0],y=q[1],z=q[2];return [[1-2*(y*y+z*z),2*(x*y-z*w),2*(x*z+y*w)],[2*(x*y+z*w),1-2*(x*x+z*z),2*(y*z-x*w)],[2*(x*z-y*w),2*(y*z+x*w),1-2*(x*x+y*y)]];}
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+
+/* ---------- IPF colour (cubic) ---------- */
+function ipfReduce(v){var a=[Math.abs(v[0]),Math.abs(v[1]),Math.abs(v[2])].sort(function(p,q){return p-q;});var n=Math.hypot(a[0],a[1],a[2]);return [a[0]/n,a[1]/n,a[2]/n];} // x<=y<=z
+function ipfColor(v){var u=ipfReduce(v);var r=u[2]-u[1],g=u[1]-u[0],b=u[0]*Math.sqrt(3)*0.5;var m=Math.max(r,g,b)||1;
+  return [Math.round(255*Math.pow(r/m,0.6)),Math.round(255*Math.pow(g/m,0.6)),Math.round(255*Math.pow(b/m,0.6))];}
+
+/* ---------- crystallography ---------- */
+function family(hkl){var out=[],seen={};var p=[[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]];
+  p.forEach(function(pp){for(var sx=-1;sx<=1;sx+=2)for(var sy=-1;sy<=1;sy+=2)for(var sz=-1;sz<=1;sz+=2){
+    var v=[hkl[pp[0]]*sx,hkl[pp[1]]*sy,hkl[pp[2]]*sz];
+    // a plane and its negative give the same band
+    var c=v.slice();for(var i=0;i<3;i++){if(c[i]!==0){if(c[i]<0)c=c.map(function(e){return -e;});break;}}
+    var k=c.join(",");if(!seen[k]){seen[k]=1;out.push(c);}}});return out;}
+var FAM={bcc:[{h:[1,1,0],w:1},{h:[2,0,0],w:.6},{h:[2,1,1],w:.55},{h:[3,1,0],w:.3},{h:[2,2,2],w:.3},{h:[3,2,1],w:.22}],
+         fcc:[{h:[1,1,1],w:1},{h:[2,0,0],w:.7},{h:[2,2,0],w:.5},{h:[3,1,1],w:.38},{h:[3,3,1],w:.2},{h:[4,2,0],w:.2}]};
+function lamA(kV){var h=6.62607015e-34,m=9.1093837e-31,e=1.602176634e-19,c=2.99792458e8,V=kV*1e3;return h/Math.sqrt(2*m*e*V*(1+e*V/(2*m*c*c)))*1e10;}
+var XI=0.0197;
+function latt(phase,TC){var T=TC+273.15;if(phase==="bcc")return {a:2.8863*(1+17.5e-6*(T-800)),ok:T>=800&&T<=1200,rng:"800–1200 K"};
+  return {a:(3.6306+0.78*XI)*(1+(24.9-50*XI)*1e-6*(T-1000)),ok:T>=1000&&T<=1250,rng:"1000–1250 K"};}
+
+/* ---------- pattern ---------- */
+var st={phase:"bcc",labels:false};
+var PW=320,PH=240,HX=0.8,HY=0.6;
+var gray=new Float32Array(PW*PH);
+function bandsNow(){var R=euler(+$("e1").value,+$("e2").value,+$("e3").value);var L=latt(st.phase,+$("tC").value),lam=lamA(+$("kv").value);
+  var list=[];FAM[st.phase].forEach(function(f){var hk=f.h,d=L.a/Math.hypot(hk[0],hk[1],hk[2]);var s=lam/(2*d);
+    family(hk).forEach(function(n){var m=Math.hypot(n[0],n[1],n[2]);var nd=mv(R,[n[0]/m,n[1]/m,n[2]/m]);list.push({n:nd,s:s,w:f.w,hkl:n});});});
+  return {R:R,L:L,lam:lam,list:list};}
+function renderPattern(){
+  var B=bandsNow(),q=+$("qq").value/100;var rng=mulberry(7);
+  var cv=$("cvPattern"),ctx=cv.getContext("2d");var img=ctx.createImageData(PW,PH);
+  var contrast=0.25+0.75*q,noise=0.04+0.5*(1-q),widen=1+1.2*(1-q);
+  for(var j=0;j<PH;j++){var y=(j/(PH-1)*2-1)*HY;for(var i=0;i<PW;i++){var x=(i/(PW-1)*2-1)*HX;
+      var n=Math.sqrt(x*x+y*y+1),rx=x/n,ry=y/n,rz=1/n;var I=0;
+      for(var k=0;k<B.list.length;k++){var b=B.list[k];var d=Math.abs(b.n[0]*rx+b.n[1]*ry+b.n[2]*rz);var s=b.s*widen;
+        if(d<s){var u=d/s;I+=b.w*(1-u*u*0.6);}else if(d<s*1.25){I-=b.w*0.35;}}
+      var bg=Math.exp(-(x*x+y*y)*1.1);var v=bg*(0.55+contrast*0.22*I)+noise*(rng()-0.5);
+      gray[j*PW+i]=v;}}
+  for(var p=0;p<PW*PH;p++){var g=Math.max(0,Math.min(1,gray[p]));var r,gg,bb;
+    r=40+215*g;gg=34+190*g;bb=24+140*Math.pow(g,1.3);img.data[p*4]=r;img.data[p*4+1]=gg;img.data[p*4+2]=bb;img.data[p*4+3]=255;}
+  ctx.putImageData(img,0,0);
+  if(st.labels){ctx.font="10px JetBrains Mono, monospace";var done={};
+    B.list.forEach(function(b){if(b.w<0.5)return;var nx=b.n[0],ny=b.n[1],nz=b.n[2];
+      // centre line: nx x + ny y + nz = 0 in screen coords
+      var pts=[];[[-HX,null],[HX,null],[null,-HY],[null,HY]].forEach(function(e){var X,Y;if(e[0]!==null){X=e[0];if(Math.abs(ny)<1e-9)return;Y=-(nx*X+nz)/ny;}else{Y=e[1];if(Math.abs(nx)<1e-9)return;X=-(ny*Y+nz)/nx;}
+        if(X>=-HX-1e-9&&X<=HX+1e-9&&Y>=-HY-1e-9&&Y<=HY+1e-9)pts.push([(X/HX+1)/2*(PW-1),(Y/HY+1)/2*(PH-1)]);});
+      if(pts.length<2)return;ctx.strokeStyle="rgba(255,122,61,.85)";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);ctx.lineTo(pts[1][0],pts[1][1]);ctx.stroke();
+      var mx=(pts[0][0]+pts[1][0])/2,my=(pts[0][1]+pts[1][1])/2;var key=Math.round(mx/20)+","+Math.round(my/14);if(done[key])return;done[key]=1;
+      var t="("+b.hkl.map(function(e){return e<0?(-e)+"\u0305":e;}).join("")+")";ctx.fillStyle="#fff7e6";ctx.fillText(t,mx+3,my-3);});}
+  // readouts
+  $("rLam").textContent=B.lam.toFixed(4)+" Å";
+  $("rA").textContent=B.L.a.toFixed(4)+" Å"+(B.L.ok?"":" *");
+  var f0=FAM[st.phase][0].h,d0=B.L.a/Math.hypot(f0[0],f0[1],f0[2]);$("rTh").textContent="{"+f0.join("")+"} "+deg(Math.asin(B.lam/(2*d0))).toFixed(2)+"°";
+  var c=mv(tr(B.R),[0,0,1]);var u=ipfReduce(c);$("rDir").textContent="["+u.map(function(e){return e.toFixed(2);}).join(" ")+"]";
+  $("aNote").innerHTML=(st.phase==="bcc"?"Ferrite":"Austenite")+" lattice parameter from Kop et al. (2001), Table I, p. 520, valid "+B.L.rng+". "+(B.L.ok?"This temperature is inside that range.":"<b>* This temperature is outside that range, so the value is an extrapolation.</b>")+(st.phase==="fcc"?" Austenite carbon fraction ξ = 0.0197 (sample-01, 0.431 wt% C).":"");
+  drawTri(c);hough();}
+
+/* ---------- Hough ---------- */
+var HTH=180,HR=90;
+function hough(){var w=160,h=120;var cv=$("cvHough"),ctx=cv.getContext("2d");
+  var small=new Float32Array(w*h),mean=0;for(var j=0;j<h;j++)for(var i=0;i<w;i++){var v=(gray[(2*j)*PW+2*i]+gray[(2*j)*PW+2*i+1]+gray[(2*j+1)*PW+2*i]+gray[(2*j+1)*PW+2*i+1])/4;small[j*w+i]=v;mean+=v;}
+  mean/=w*h;
+  // flatten background with a coarse blur
+  var bgk=new Float32Array(w*h);var R=8;for(var j2=0;j2<h;j2++)for(var i2=0;i2<w;i2++){var s=0,c=0;for(var dj=-R;dj<=R;dj+=4)for(var di=-R;di<=R;di+=4){var y=j2+dj,x=i2+di;if(x>=0&&x<w&&y>=0&&y<h){s+=small[y*w+x];c++;}}bgk[j2*w+i2]=s/c;}
+  var acc=new Float32Array(HTH*HR),rmax=Math.hypot(w/2,h/2);var cs=[],sn=[];for(var t=0;t<HTH;t++){cs.push(Math.cos(t*Math.PI/HTH));sn.push(Math.sin(t*Math.PI/HTH));}
+  for(var jj=0;jj<h;jj++)for(var ii=0;ii<w;ii++){var val=small[jj*w+ii]-bgk[jj*w+ii];if(val<=0)continue;var x0=ii-w/2,y0=jj-h/2;
+    for(var tt=0;tt<HTH;tt++){var r=x0*cs[tt]+y0*sn[tt];var ri=Math.round((r/rmax+1)/2*(HR-1));acc[ri*HTH+tt]+=val;}}
+  // normalise by line length so edge lines are not penalised
+  var mx=0;for(var k=0;k<acc.length;k++)if(acc[k]>mx)mx=acc[k];
+  var img=ctx.createImageData(HTH,HR);for(var p=0;p<acc.length;p++){var g=Math.pow(acc[p]/mx,1.6);img.data[p*4]=18+237*g;img.data[p*4+1]=22+170*g;img.data[p*4+2]=28+40*g;img.data[p*4+3]=255;}
+  ctx.putImageData(img,0,0);
+  var peaks=[];for(var r1=2;r1<HR-2;r1++)for(var t1=0;t1<HTH;t1++){var v1=acc[r1*HTH+t1],isMax=true;
+    for(var a=-3;a<=3&&isMax;a++)for(var b=-3;b<=3;b++){if(!a&&!b)continue;var rr=r1+a,t2=(t1+b+HTH)%HTH;if(rr<0||rr>=HR)continue;if(acc[rr*HTH+t2]>v1){isMax=false;break;}}
+    if(isMax)peaks.push([v1,t1,r1]);}
+  peaks.sort(function(p,q){return q[0]-p[0];});ctx.strokeStyle="#7fd1ff";ctx.lineWidth=1;
+  peaks.slice(0,6).forEach(function(pk){ctx.beginPath();ctx.arc(pk[1],pk[2],5,0,7);ctx.stroke();});}
+
+/* ---------- angle table ---------- */
+(function(){var tb=document.querySelector("#angTab tbody");var fams=[[1,1,0],[2,0,0],[2,1,1],[1,1,1]];
+  function angs(a,b){var A=family(a),B2=family(b),s={};A.forEach(function(u){B2.forEach(function(v){var c=Math.abs(u[0]*v[0]+u[1]*v[1]+u[2]*v[2])/(Math.hypot(u[0],u[1],u[2])*Math.hypot(v[0],v[1],v[2]));var ang=deg(Math.acos(Math.min(1,c)));if(ang>0.01)s[ang.toFixed(1)]=1;});});
+    return Object.keys(s).map(Number).sort(function(p,q){return p-q;});}
+  var html="";for(var i=0;i<fams.length;i++)for(var j=i;j<fams.length;j++){html+="<tr><td class=\"m\">{"+fams[i].join("")+"} / {"+fams[j].join("")+"}</td><td class=\"m\">"+angs(fams[i],fams[j]).map(function(x){return x+"°";}).join(", ")+"</td></tr>";}
+  tb.innerHTML=html;})();
+
+/* ---------- IPF triangle ---------- */
+function drawTri(dir){var cv=$("cvTri"),dpr=window.devicePixelRatio||1,w=cv.clientWidth||220,h=w*190/220;cv.width=w*dpr;cv.height=h*dpr;cv.style.height=h+"px";var ctx=cv.getContext("2d");ctx.setTransform(dpr,0,0,dpr,0,0);
+  // stereographic projection of the 001-101-111 triangle
+  function proj(v){var n=Math.hypot(v[0],v[1],v[2]);var x=v[0]/n,y=v[1]/n,z=v[2]/n;return [x/(1+z),y/(1+z)];}
+  var sc=w*1.9,ox=w*0.12,oy=h*0.88;function P(v){var p=proj([v[1],v[0],v[2]]);return [ox+p[0]*sc,oy-p[1]*sc];}
+  var res=4;for(var py=0;py<h;py+=res)for(var px=0;px<w;px+=res){var X=(px-ox)/sc,Y=(oy-py)/sc;var d=1+X*X+Y*Y;var v=[2*Y/d,2*X/d,(1-X*X-Y*Y)/d];
+    if(!(v[0]>=-1e-6&&v[0]<=v[1]+1e-6&&v[1]<=v[2]+1e-6))continue;var c=ipfColor(v);ctx.fillStyle="rgb("+c+")";ctx.fillRect(px,py,res,res);}
+  ctx.strokeStyle=css("--ink");ctx.lineWidth=1;ctx.beginPath();var a=P([0,0,1]);ctx.moveTo(a[0],a[1]);for(var t=0;t<=20;t++){var b=P([0,Math.sin(t/20*Math.PI/4),Math.cos(t/20*Math.PI/4)]);ctx.lineTo(b[0],b[1]);}
+  for(var t2=0;t2<=20;t2++){var f=t2/20;var b2=P([f,1,1]);ctx.lineTo(b2[0],b2[1]);}ctx.closePath();ctx.stroke();
+  ctx.fillStyle=css("--ink");ctx.font="11px JetBrains Mono, monospace";var c1=P([0,0,1]),c2=P([0,1,1]),c3=P([1,1,1]);ctx.fillText("001",c1[0]-8,c1[1]+14);ctx.fillText("101",c2[0]-4,c2[1]+14);ctx.fillText("111",c3[0]-6,c3[1]-6);
+  if(dir){var u=ipfReduce(dir);var q=P([u[0],u[1],u[2]]);ctx.beginPath();ctx.arc(q[0],q[1],4.5,0,7);ctx.fillStyle="#fff";ctx.fill();ctx.strokeStyle="#000";ctx.stroke();}}
+
+/* ---------- synthetic map ---------- */
+var MW=300,MH=144,mapMode="ipf",mapData=null;
+function buildMap(){var rng=mulberry(42);var seeds=[];for(var i=0;i<30;i++)seeds.push({x:rng()*MW,y:rng()*MH,R:randRot(rng)});
+  var sub=seeds[5],bent=seeds[12];var subR=mul(sub.R,axisAngle([1,2,3],rad(5)));
+  var ori=new Array(MW*MH),gid=new Int16Array(MW*MH),iq=new Float32Array(MW*MH);
+  for(var y=0;y<MH;y++)for(var x=0;x<MW;x++){var best=1e9,bi=0;for(var k=0;k<seeds.length;k++){var dx=seeds[k].x-x,dy=(seeds[k].y-y)*1.0;var d=dx*dx+dy*dy;if(d<best){best=d;bi=k;}}
+    var R=seeds[bi].R;if(bi===5&&x>sub.x)R=subR;if(bi===12)R=mul(bent.R,axisAngle([0,0,1],rad((x-bent.x)*0.35)));
+    ori[y*MW+x]=R;gid[y*MW+x]=bi;iq[y*MW+x]=0.85+0.1*rng()-(bi===12?0.18:0);}
+  var mR=new Float32Array(MW*MH),mD=new Float32Array(MW*MH);
+  for(var y2=0;y2<MH;y2++)for(var x2=0;x2<MW;x2++){var p=y2*MW+x2;mR[p]=x2<MW-1?misor(ori[p],ori[p+1]):0;mD[p]=y2<MH-1?misor(ori[p],ori[p+MW]):0;}
+  for(var p2=0;p2<MW*MH;p2++){var m=Math.max(mR[p2],mD[p2]);if(m>1)iq[p2]*=0.55;}
+  mapData={ori:ori,iq:iq,mR:mR,mD:mD};}
+function drawMap(){if(!mapData)buildMap();var cv=$("cvMap"),ctx=cv.getContext("2d"),img=ctx.createImageData(MW,MH),D=mapData;
+  var lo=+$("lagb").value,hi=+$("hagb").value;$("lagbo").textContent=lo+"°";$("hagbo").textContent=hi+"°";
+  var bgc=hexRGB(css("--panel")),ink=hexRGB(css("--ink")),amb=hexRGB(css("--carbide"));
+  for(var y=0;y<MH;y++)for(var x=0;x<MW;x++){var p=y*MW+x,c;var m=Math.max(D.mR[p],D.mD[p],x>0?D.mR[p-1]:0,y>0?D.mD[p-MW]:0);
+    if(mapMode==="ipf"){c=ipfColor(mv(tr(D.ori[p]),[0,0,1]));if(m>=hi)c=[20,20,20];}
+    else if(mapMode==="iq"){var g=Math.round(255*D.iq[p]);c=[g,g,g];}
+    else if(mapMode==="gb"){c=bgc;if(m>=hi)c=ink;else if(m>=lo)c=amb;}
+    else{var s=0,n=0;[[1,0],[-1,0],[0,1],[0,-1]].forEach(function(o){var xx=x+o[0],yy=y+o[1];if(xx<0||yy<0||xx>=MW||yy>=MH)return;var mm=o[0]===1?D.mR[p]:o[0]===-1?D.mR[p-1]:o[1]===1?D.mD[p]:D.mD[p-MW];if(mm<lo){s+=mm;n++;}});
+      var k=n?s/n:0;var t=Math.min(1,k/0.5);c=[Math.round(30+225*t),Math.round(40+150*t*(1-t)*2+20*t),Math.round(90*(1-t)+20)];if(m>=hi)c=[0,0,0];}
+    img.data[p*4]=c[0];img.data[p*4+1]=c[1];img.data[p*4+2]=c[2];img.data[p*4+3]=255;}
+  ctx.putImageData(img,0,0);
+  var caps={ipf:"IPF colour along the map normal, high-angle boundaries in black. The two halves of the split grain are almost the same colour: 5° is hard to see in IPF.",
+    iq:"Pattern quality: dark lines at every boundary, where patterns overlap, and the whole bent grain darker, as strain blurs its bands.",
+    gb:"Boundaries: black above the high-angle threshold, amber between the two thresholds. The 5° sub-boundary appears only when the lower threshold is below 5°.",
+    kam:"KAM, neighbours below the lower threshold only, 0 to 0.5°. Only the bent grain lights up; raise the lower threshold and its gradient stays, the boundaries do not."};
+  $("mapCap").textContent=caps[mapMode];}
+function hexRGB(h){h=h.replace("#","");if(h.length===3)h=h.split("").map(function(c){return c+c;}).join("");return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
+document.querySelectorAll("#mapBtns button").forEach(function(b){b.addEventListener("click",function(){mapMode=b.dataset.m;document.querySelectorAll("#mapBtns button").forEach(function(o){o.setAttribute("aria-pressed",o===b?"true":"false");});drawMap();});});
+["lagb","hagb"].forEach(function(id){$(id).addEventListener("input",drawMap);});
+
+/* ---------- speed calculator ---------- */
+function plotCanvas(cv){var dpr=window.devicePixelRatio||1,w=cv.clientWidth||480,h=Math.round(w*0.48);cv.width=w*dpr;cv.height=h*dpr;cv.style.height=h+"px";var ctx=cv.getContext("2d");ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);return {ctx:ctx,w:w,h:h};}
+function fmtT(s){if(s<120)return s.toFixed(s<10?1:0)+" s";if(s<7200)return (s/60).toFixed(1)+" min";return (s/3600).toFixed(1)+" h";}
+function speed(){var W=+$("sw").value,H=+$("sh").value,s=+$("ss").value,rate=Math.pow(10,+$("sr").value),v=Math.pow(10,+$("sv").value),dr=+$("sd").value;
+  $("swo").textContent=W+" μm";$("sho").textContent=H+" μm";$("sso").textContent=s.toFixed(2)+" μm";$("sro").textContent=Math.round(rate)+"/s";$("svo").textContent=(v<0.1?v.toFixed(3):v.toFixed(2))+" μm/s";$("sdo").textContent=dr+" nm/s";
+  var N=Math.round(W/s)*Math.round(H/s),T=N/rate,X=v*T,S=X/s,Dm=dr*T/1000;
+  $("oN").textContent=N.toLocaleString();$("oT").textContent=fmtT(T);$("oX").textContent=(X<1?X.toFixed(2):X<1000?X.toFixed(1):X.toExponential(1))+" μm";$("oS").textContent=S<10?S.toFixed(1):Math.round(S).toLocaleString();$("oD").textContent=(Dm<1?Dm.toFixed(2):Dm.toFixed(1))+" μm";
+  var vd=S<1?"Fair snapshot: the interface moves less than one step per map.":S<=10?"Smeared snapshot: the interface crosses "+S.toFixed(1)+" steps while the map is collected. Usable, with care, for comparing frames.":"Too slow for this interface: it crosses "+Math.round(S)+" steps per map"+(X>W?", farther than the map is wide":"")+". Shrink the map, coarsen the step, or slow the transformation.";
+  if(Dm>s)vd+=" Drift per map is larger than one step, so register frames before comparing pixels.";$("oVerdict").textContent=vd;
+  // plot travel per map vs pattern rate for the two Phelan speeds, log-log
+  var P=plotCanvas($("cvSpeed")),ctx=P.ctx,w=P.w,h=P.h,m={l:46,r:12,t:10,b:30};var ink=css("--muted"),rule=css("--rule");
+  var x0=0,x1=4,y0=-3,y1=4;function X_(lr){return m.l+(lr-x0)/(x1-x0)*(w-m.l-m.r);}function Y_(ly){return h-m.b-(ly-y0)/(y1-y0)*(h-m.t-m.b);}
+  ctx.font="11px JetBrains Mono, monospace";ctx.fillStyle=ink;ctx.strokeStyle=rule;ctx.lineWidth=1;
+  for(var e=x0;e<=x1;e++){ctx.beginPath();ctx.moveTo(X_(e),m.t);ctx.lineTo(X_(e),h-m.b);ctx.stroke();ctx.fillText("10"+["⁰","¹","²","³","⁴"][e],X_(e)-8,h-m.b+14);}
+  for(var e2=y0;e2<=y1;e2++){ctx.beginPath();ctx.moveTo(m.l,Y_(e2));ctx.lineTo(w-m.r,Y_(e2));ctx.stroke();ctx.fillText(e2<0?"10"+["⁻³","⁻²","⁻¹"][e2+3]:"10"+["⁰","¹","²","³","⁴"][e2],4,Y_(e2)+4);}
+  ctx.fillText("patterns per second",X_(2)-60,h-4);ctx.save();ctx.translate(12,m.t+10);ctx.restore();
+  ctx.fillText("steps crossed per map",m.l+4,m.t+12);
+  ctx.fillStyle=css("--ok");ctx.globalAlpha=.12;ctx.fillRect(m.l,Y_(0),w-m.l-m.r,h-m.b-Y_(0));ctx.globalAlpha=1;
+  [[1,css("--ferrite"),"1 μm/s"],[4.5,css("--tip"),"4.5 μm/s"],[v,css("--ink"),"current"]].forEach(function(L,ix){ctx.strokeStyle=L[1];ctx.lineWidth=ix===2?2:1.5;ctx.setLineDash(ix===2?[5,4]:[]);ctx.beginPath();
+    for(var lr=x0;lr<=x1+1e-9;lr+=0.05){var steps=L[0]*(N/Math.pow(10,lr))/s;var ly=Math.log10(Math.max(steps,1e-9));var yy=Math.max(m.t,Math.min(h-m.b,Y_(ly)));if(lr===x0)ctx.moveTo(X_(lr),yy);else ctx.lineTo(X_(lr),yy);}ctx.stroke();ctx.setLineDash([]);});
+  ctx.fillStyle=css("--ink");var lr0=Math.log10(rate),sy=Math.log10(Math.max(S,1e-9));if(sy>=y0&&sy<=y1){ctx.beginPath();ctx.arc(X_(lr0),Y_(sy),4.5,0,7);ctx.fill();}
+  ctx.font="10px JetBrains Mono, monospace";ctx.fillStyle=css("--ferrite");ctx.fillText("1 μm/s",w-m.r-60,Y_(Math.log10(Math.max(1e-9,1*(N/1e4)/s)))-4);ctx.fillStyle=css("--tip");ctx.fillText("4.5 μm/s",w-m.r-60,Y_(Math.log10(Math.max(1e-9,4.5*(N/1e4)/s)))-4);
+  ctx.fillStyle=css("--ok");ctx.fillText("< 1 step: snapshot",m.l+4,h-m.b-6);}
+["sw","sh","ss","sr","sv","sd"].forEach(function(id){$(id).addEventListener("input",speed);});
+$("v1").addEventListener("click",function(){$("sv").value=0;speed();});$("v45").addEventListener("click",function(){$("sv").value=Math.log10(4.5);speed();});$("vslow").addEventListener("click",function(){$("sv").value=-2;speed();});
+
+/* ---------- misorientation profile ---------- */
+var scen="one";
+function prof(){var sig=+$("pn").value,bend=+$("pg").value,stp=+$("pst").value;$("pno").textContent=sig.toFixed(2)+"°";$("pgo").textContent=bend.toFixed(2)+"°/μm";$("psto").textContent=stp.toFixed(2)+" μm";
+  var len=20,steps=scen==="cont"?[]:scen==="one"?[[7,4]]:[[6,4.5],[13,4.5]];var rng=mulberry(11);
+  function gauss(){var u=1-rng(),v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+  var xs=[],tru=[],obs=[];for(var x=0;x<=len+1e-9;x+=stp){var t=bend*x;steps.forEach(function(s){if(x>=s[0])t+=s[1];});xs.push(x);tru.push(t);obs.push(t+sig*gauss());}
+  var thr=3*sig*Math.SQRT2,found=[];for(var i=1;i<obs.length;i++){if(obs[i]-obs[i-1]>thr)found.push(xs[i]);}
+  var P=plotCanvas($("cvProf")),ctx=P.ctx,w=P.w,h=P.h,m={l:40,r:12,t:12,b:30};var ymax=Math.max(12,Math.max.apply(null,obs)+1),ymin=Math.min(-2,Math.min.apply(null,obs)-0.5);
+  function X_(x){return m.l+x/len*(w-m.l-m.r);}function Y_(y){return h-m.b-(y-ymin)/(ymax-ymin)*(h-m.t-m.b);}
+  ctx.font="11px JetBrains Mono, monospace";ctx.strokeStyle=css("--rule");ctx.fillStyle=css("--muted");
+  for(var g=0;g<=20;g+=5){ctx.beginPath();ctx.moveTo(X_(g),m.t);ctx.lineTo(X_(g),h-m.b);ctx.stroke();ctx.fillText(g,X_(g)-5,h-m.b+14);}
+  for(var gy=Math.ceil(ymin/2)*2;gy<=ymax;gy+=2){ctx.beginPath();ctx.moveTo(m.l,Y_(gy));ctx.lineTo(w-m.r,Y_(gy));ctx.stroke();ctx.fillText(gy+"°",4,Y_(gy)+4);}
+  ctx.fillText("distance from allotriomorph centre (μm)",m.l+4,h-4);
+  ctx.fillStyle=css("--gamma");ctx.globalAlpha=.6;ctx.fillRect(X_(0),m.t,X_(5)-X_(0),h-m.t-m.b);ctx.globalAlpha=1;ctx.fillStyle=css("--muted");ctx.fillText("allotriomorph",X_(0)+4,m.t+12);
+  ctx.strokeStyle=css("--muted");ctx.setLineDash([4,4]);ctx.beginPath();xs.forEach(function(x,i){if(i)ctx.lineTo(X_(x),Y_(tru[i]));else ctx.moveTo(X_(x),Y_(tru[i]));});ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle=css("--ferrite");xs.forEach(function(x,i){ctx.beginPath();ctx.arc(X_(x),Y_(obs[i]),2.2,0,7);ctx.fill();});
+  ctx.strokeStyle=css("--tip");ctx.lineWidth=2;found.forEach(function(x){ctx.beginPath();ctx.moveTo(X_(x),m.t);ctx.lineTo(X_(x),h-m.b);ctx.stroke();});ctx.lineWidth=1;
+  var truth=steps.length,txt;var near=function(s){return found.some(function(f){return Math.abs(f-s[0])<=stp+1e-9;});};var hit=steps.filter(near).length,fa=found.length-hit;
+  if(!truth)txt=fa?"No real step, but "+fa+" false step"+(fa>1?"s":"")+" flagged: at this noise a continuous plate can look stepped.":"No step flagged: the record is continuous, as it should be.";
+  else txt=hit+" of "+truth+" real step"+(truth>1?"s":"")+" found"+(fa?", plus "+fa+" false":"")+". Threshold 3σ√2 = "+thr.toFixed(2)+"°."+(hit<truth?" A step smaller than the threshold hides in the noise: averaging along the plate or a finer kernel would be needed.":"");
+  $("profVerdict").textContent=txt;}
+document.querySelectorAll("#scenBtns button").forEach(function(b){b.addEventListener("click",function(){scen=b.dataset.s;document.querySelectorAll("#scenBtns button").forEach(function(o){o.setAttribute("aria-pressed",o===b?"true":"false");});prof();});});
+["pn","pg","pst"].forEach(function(id){$(id).addEventListener("input",prof);});
+
+/* ---------- pattern controls ---------- */
+var pend=0;function schedule(){if(pend)return;pend=requestAnimationFrame(function(){pend=0;renderPattern();});}
+function outs(){$("e1o").textContent=$("e1").value+"°";$("e2o").textContent=$("e2").value+"°";$("e3o").textContent=$("e3").value+"°";$("kvo").textContent=$("kv").value+" kV";$("tCo").textContent=$("tC").value+" °C";$("qqo").textContent=$("qq").value+"%";}
+["e1","e2","e3","kv","tC","qq"].forEach(function(id){$(id).addEventListener("input",function(){outs();schedule();});});
+$("phA").addEventListener("click",function(){st.phase="bcc";this.setAttribute("aria-pressed","true");$("phG").setAttribute("aria-pressed","false");if(+$("tC").value>900){$("tC").value=640;outs();}schedule();});
+$("phG").addEventListener("click",function(){st.phase="fcc";this.setAttribute("aria-pressed","true");$("phA").setAttribute("aria-pressed","false");if(+$("tC").value<727){$("tC").value=950;outs();}schedule();});
+$("lbl").addEventListener("click",function(){st.labels=!st.labels;this.setAttribute("aria-pressed",st.labels?"true":"false");schedule();});
+
+outs();renderPattern();drawMap();speed();prof();
+var rz;window.addEventListener("resize",function(){clearTimeout(rz);rz=setTimeout(function(){drawTri(mv(tr(euler(+$("e1").value,+$("e2").value,+$("e3").value)),[0,0,1]));speed();prof();},120);});
+})();
+</script>
+</body>
+</html>
