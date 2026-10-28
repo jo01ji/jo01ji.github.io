@@ -1,14 +1,14 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>body{margin:0}</style></head><body>
 <title>Metallographic Etching</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: lab-notebook on etched-steel grey, honey/gold/amber/rust palette shared with the other lessons;
    each section pairs a reagent or mechanism with the phase it does or doesn't touch */
 :root{
   --bg:#eef1f3; --panel:#f8fafb; --ink:#17212b; --muted:#56636f; --rule:#cfd6dc;
   --ferrite:#a8650a; --carbide:#e07b12; --tip:#b4480e; --austenite:#d9a62a; --gamma:#f5e6bd; --mart:#5b6670; --ok:#3f7d4e;
-  --display:"Fraunces",Georgia,serif; --body:"Plus Jakarta Sans","Segoe UI",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  --display:"Spectral",Georgia,serif; --body:"Source Sans 3","Segoe UI",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#12171c; --panel:#1a2128; --ink:#e3e8ec; --muted:#9aa6b1; --rule:#2d3740;
@@ -102,13 +102,69 @@ table.matrix td.s3{background:var(--tip);color:#fff;font-weight:600}
     <a href="martensite-traces.html">Martensite traces in 3D</a>
   </div>
   <nav class="toc" aria-label="Sections">
-    <a href="#why">Why etch</a><a href="#mechanism">The chemistry</a><a href="#rules">Rules of thumb</a><a href="#carbon">Carbon &amp; low-alloy steels</a><a href="#pagb">Prior-austenite grain boundaries</a><a href="#stainless">Stainless steels</a><a href="#electrolytic">Electrolytic etching</a><a href="#matrix">What attacks what</a><a href="#safety">Safety</a><a href="#sources">Sources</a>
+    <a href="#history">History</a><a href="#why">Why etch</a><a href="#mechanism">The chemistry</a><a href="#reactions">The reactions</a><a href="#rules">Rules of thumb</a><a href="#carbon">Carbon &amp; low-alloy steels</a><a href="#pagb">Prior-austenite grain boundaries</a><a href="#stainless">Stainless steels</a><a href="#electrolytic">Electrolytic etching</a><a href="#matrix">What attacks what</a><a href="#safety">Safety</a><a href="#sources">Sources</a>
   </nav>
 </header>
 
+<!-- ============ HISTORY ============ -->
+<section id="history">
+  <span class="eyebrow">1 · A short history</span>
+  <h2>Etching is four centuries older than the microstructure it reveals</h2>
+  <p>Etching with acid to reveal pattern in metal is old. What is young, barely more than 160 years, is the idea of etching a <em>polished</em> surface and looking at it down a microscope to see the grains and phases themselves. The gap between those two is the story of how metallography began.</p>
+
+  <div class="grid2">
+    <div class="panel">
+      <svg class="fig" viewBox="0 0 480 300" role="img" aria-label="Timeline of etching milestones from Damascus blades through Widmanstätten meteorites, Réaumur, Sorby, Osmond and Vilella">
+        <line x1="60" y1="20" x2="60" y2="282" style="stroke:var(--rule)" stroke-width="2"></line>
+        <g style="font:11px var(--mono);fill:var(--ink)">
+          <circle cx="60" cy="34" r="4" style="fill:var(--muted)"></circle>
+          <text x="76" y="31" style="fill:var(--muted);font:10px var(--mono)">&lt;1600s</text>
+          <text x="76" y="44">Damascus blades macro-etched</text>
+          <circle cx="60" cy="78" r="4" style="fill:var(--carbide)"></circle>
+          <text x="76" y="75" style="fill:var(--muted);font:10px var(--mono)">1720s</text>
+          <text x="76" y="88">Réaumur: fracture &amp; the nature of steel</text>
+          <circle cx="60" cy="122" r="4" style="fill:var(--austenite)"></circle>
+          <text x="76" y="119" style="fill:var(--muted);font:10px var(--mono)">1808</text>
+          <text x="76" y="132">Widmanstätten &amp; Schreibers: meteorites</text>
+          <circle cx="60" cy="166" r="5" style="fill:var(--tip)"></circle>
+          <text x="76" y="163" style="fill:var(--muted);font:10px var(--mono)">1863</text>
+          <text x="76" y="176" style="fill:var(--ferrite);font:600 11px var(--body)">Sorby: polish + dilute nitric + microscope</text>
+          <circle cx="60" cy="210" r="4" style="fill:var(--ferrite)"></circle>
+          <text x="76" y="207" style="fill:var(--muted);font:10px var(--mono)">1880s</text>
+          <text x="76" y="220">Osmond, Troost, Le Chatelier: structure + heat</text>
+          <circle cx="60" cy="254" r="4" style="fill:var(--mart)"></circle>
+          <text x="76" y="251" style="fill:var(--muted);font:10px var(--mono)">1930s</text>
+          <text x="76" y="264">Vilella: the disturbed-metal layer</text>
+        </g>
+      </svg>
+      <p class="note">Dates and attributions from ASM Handbook Vol. 9, &ldquo;Metallography: An Introduction&rdquo; (p. 3&ndash;20) and C.S. Smith, <i>A History of Metallography</i> (1960).</p>
+    </div>
+    <div class="panel" style="align-content:start">
+      <h3>Before the microscope</h3>
+      <p class="note">Macroetching to bring out the watered pattern of Damascus sword blades and armour predates microscopy &ldquo;by at least four centuries&rdquo; (ASM Vol. 9, p. 4). In 1808, Alois von Widmanstätten and Carl von Schreibers in Vienna etched iron meteorites in nitric acid to reveal the coarse crystalline pattern now named for Widmanstätten &mdash; then inked the etched surface and printed it onto paper, a <em>nature print</em>. These were structures for the naked eye.</p>
+      <h3>Réaumur and the study of fracture</h3>
+      <p class="note">A century earlier, R.A.F. de Réaumur (1720s) had studied steel through its fracture surfaces and quenching, &ldquo;that prince of applied scientists&rdquo; in Smith&rsquo;s phrase &mdash; the first systematic attempt to connect how steel broke to what it was made of, but still without a prepared, etched microsection.</p>
+    </div>
+  </div>
+
+  <blockquote>&ldquo;Widmanstätten and Schreibers etched specimens that could be viewed with the naked eye, but Sorby was the first to etch specimens and observe the true microstructure with a microscope.&rdquo;<cite>ASM Handbook Vol. 9 (2004), &ldquo;Metallography: An Introduction,&rdquo; p. 4</cite></blockquote>
+
+  <div class="pair">
+    <div>
+      <h3>Henry Clifton Sorby, 1863</h3>
+      <p class="note">Sorby (1826&ndash;1908) was a Sheffield geologist who had developed thin-section methods for rocks. In 1863, by way of an interest in the crystalline structure of meteorites, he turned the same care on artificial steel: he cut and polished a specimen to remove &ldquo;all traces of roughness,&rdquo; then etched it in <em>extremely dilute nitric acid</em>, watching the etch so as not to overdo it. He insisted the final polish &ldquo;must not be one which gives bright reflection but one which may show all the irregularities of the material.&rdquo; From this he identified ferrite, graphite, cementite, pearlite and the phosphide eutectic, recognised that iron is made of crystal grains, and inferred that iron changes allotropically on heating &mdash; all essentially correct, and from scratch.</p>
+    </div>
+    <div>
+      <h3>Why it took until 1863</h3>
+      <p class="note">Metals are opaque, so unlike biological samples they need <em>reflected</em>-light microscopy and therefore a carefully prepared flat surface &mdash; which is why the metallurgical microscope arrives two centuries after the biological one. Smith notes Sorby&rsquo;s work was ignored for twenty years, revived in the 1880s only when industrial pressure and Osmond&rsquo;s link to Troost and Le Chatelier joined structural observation to thermal analysis. Very fine unresolved pearlite was for a time called &ldquo;sorbite&rdquo; in his honour; the name he does keep is &ldquo;pearlite,&rdquo; from the &ldquo;mother of pearl&rdquo; look he described.</p>
+    </div>
+  </div>
+  <p class="callout">The last piece is a cautionary one, and it is why your training matters. In the 1930s José Ramón Vilella showed that a layer of &ldquo;distorted or disturbed&rdquo; metal left by coarse grinding produces <em>false</em> structures &mdash; what early workers mistook for &ldquo;sorbite&rdquo; or &ldquo;troostite-sorbite&rdquo; was often just damaged pearlite. His fix, alternate etching and polishing to strip that layer, is the ancestor of the etch-and-repolish cycles still used today (ASM Vol. 9, p. 5). Good etching starts with honest polishing.</p>
+</section>
+
 <!-- ============ WHY ETCH ============ -->
 <section id="why">
-  <span class="eyebrow">1 · Why etch at all</span>
+  <span class="eyebrow">2 · Why etch at all</span>
   <h2>A mirror-polished surface reflects light uniformly, which hides almost everything</h2>
   <p>Only features with a large enough difference in reflectivity, or enough relief, show up unetched &mdash; cracks, pores, pits, and nonmetallic inclusions. The eye cannot resolve the small reflectivity differences between grains or phases on a bare polished surface, so contrast has to be manufactured.</p>
   <blockquote>&ldquo;Although some information may be obtained from as-polished specimens, the microstructure is usually visible only after etching. Only features that exhibit a 10% or greater difference in reflectivity can be viewed without etching.&rdquo;<cite>ASM Handbook Vol. 9 (2004), &ldquo;Contrast Enhancement and Etching,&rdquo; p. 294</cite></blockquote>
@@ -123,7 +179,7 @@ table.matrix td.s3{background:var(--tip);color:#fff;font-weight:600}
 
 <!-- ============ MECHANISM ============ -->
 <section id="mechanism">
-  <span class="eyebrow">2 · The chemistry</span>
+  <span class="eyebrow">3 · The chemistry</span>
   <h2>Most etching is corrosion, deliberately made uneven</h2>
   <p>Chemical and electrolytic etching is controlled corrosion: a cathodic (reduction) reaction absorbs electrons somewhere on the surface while an anodic (oxidation) reaction releases them, with metal leaving the surface as ions at the anodic sites.</p>
   <blockquote>&ldquo;The chemical methods of etching processes involve a process of controlled corrosion from cathodic (reducing) reactions and anodic (oxidizing) reactions&hellip; Acids attack all elements preceding hydrogen (H<sub>2</sub>) as it evolves&hellip; Therefore, microstructural elements of different electrochemical potential are attacked at varying rates, producing differential etching, which results in microstructural contrast.&rdquo;<cite>ASM Handbook Vol. 9 (2004), &ldquo;Contrast Enhancement and Etching,&rdquo; p. 296</cite></blockquote>
@@ -143,12 +199,61 @@ table.matrix td.s3{background:var(--tip);color:#fff;font-weight:600}
       </ul>
     </div>
   </div>
-  <p class="callout c">This is the logic behind having dozens of named reagents instead of one. Each reagent sets up a different set of anodic and cathodic sites on the same surface, so each one reads out a different feature. The next section turns that into rules of thumb you can use to predict what a reagent will do.</p>
+  <p class="callout c">This is the logic behind having dozens of named reagents instead of one. Each reagent sets up a different set of anodic and cathodic sites on the same surface, so each one reads out a different feature. The next section writes out the actual reactions where the sources document them.</p>
+</section>
+
+<!-- ============ REACTIONS ============ -->
+<section id="reactions">
+  <span class="eyebrow">4 · The reactions, written out</span>
+  <h2>What is actually forming at the surface</h2>
+  <p>For most everyday acid etchants the published sources give the <em>mechanism</em> (anodic dissolution balanced by a cathodic reduction) but not a single tidy balanced equation, because the real products depend on acid, concentration and what reduces at the cathodic sites. Where a reagent&rsquo;s chemistry <em>is</em> written down, it is usually a film-forming or staining reagent. Here is what each source actually states, and where it stops.</p>
+
+  <div class="rules">
+    <div class="rule">
+      <span class="k">1 · the general couple</span>
+      <b>Anodic dissolution, cathodic reduction</b>
+      <div class="comp">anodic:    Fe → Fe²⁺ + 2e⁻
+cathodic:  2H⁺ + 2e⁻ → H₂↑        (non-noble metal,
+                                   non-oxidizing acid)
+or:        reduction of dissolved O₂ / the oxidizer</div>
+      <p class="note">Vander Voort: the anodic metal atoms are first adsorbed, then hydrated by water dipoles and carried off as cations; &ldquo;complexly bound ions or relatively insoluble metal compounds may be formed and precipitated onto the metal surface&rdquo; instead (p. 168&ndash;169). In etching a non-noble metal in a non-oxidizing acid, the liberated hydrogen is the electron acceptor; noble metals need an oxidizer (nitric, chromic, picric acid, ferric chloride, persulfate, peroxide) to release oxygen as the acceptor (p. 169).</p>
+    </div>
+    <div class="rule">
+      <span class="k">2 · nital</span>
+      <b>Nitric acid in alcohol &mdash; mechanism, not a quoted equation</b>
+      <p class="note">The handbook describes nital as an <em>attack</em> etchant: &ldquo;The nitric acid in this etchant chemically attacks the ferrite grains&rdquo; (Bramfitt &amp; Lawrence, p. 612). Neither ASM Vol. 9 nor Vander Voort prints a balanced Fe + HNO₃ equation, because with concentrated nitric the reduction product is typically NO or NO₂ rather than H₂, and the net reaction is not single-valued. Treat the couple above as the skeleton; do not quote a specific balanced nital equation as if the handbook gave one.</p>
+    </div>
+    <div class="rule">
+      <span class="k">3 · Murakami&rsquo;s reagent</span>
+      <b>Alkaline ferricyanide &mdash; a documented reaction</b>
+      <div class="comp">2K₃Fe(CN)₆ + 2KOH →
+        2K₄Fe(CN)₆ + H₂O + ½O₂</div>
+      <p class="note">Vander Voort gives this (after Kegley), with the key point that &ldquo;the ferricyanide acts as an oxidizer, however, whether or not a particular constituent is etched depends on the passivation response of the constituent by either nascent oxygen or excess alkali&rdquo; (p. 230). The nascent oxygen is what attacks carbides and &sigma; phase while the ferrite/austenite matrix passivates.</p>
+    </div>
+    <div class="rule">
+      <span class="k">4 · metabisulfite tint</span>
+      <b>Decomposition to a sulfide staining film</b>
+      <div class="comp">Na₂S₂O₅ + H₂O (on the metal surface)
+        → SO₂ + H₂S + … → sulfide film</div>
+      <p class="note">Vander Voort: in aqueous solution the metabisulfite salt &ldquo;decomposes on contact with the metal surface, producing SO₂, H₂S, and H₂&rdquo;; on stainless steel the SO₂ depassivates the surface and the H₂S supplies sulfur ions that combine with Fe or Ni ions to grow the staining film (p. 175). The film is thickest on the anodic constituents, so ferrite and austenite colour while carbides and nitrides stay bright.</p>
+    </div>
+    <div class="rule">
+      <span class="k">5 · tint film colour</span>
+      <b>Interference, not dissolution</b>
+      <p class="note">A tint etchant deposits a transparent film tens to hundreds of nanometres thick. The colour you see is thin-film interference: it is set by the film thickness, which in turn depends on each constituent&rsquo;s reactivity and crystallographic orientation. This is why the <em>colours</em> from a Beraha or Klemm reagent are only loosely reproducible while the <em>response</em> (what films and what stays bright) is reliable (Vander Voort p. 173&ndash;175; ASM Vol. 9 p. 298&ndash;300).</p>
+    </div>
+    <div class="rule">
+      <span class="k">6 · electrolytic</span>
+      <b>The applied current replaces the oxidizer</b>
+      <p class="note">In electrolytic (anodic) etching the external current does the oxidizing: metal ions leave the specimen (the anode) while electrons flow out through the circuit. If those ions meet non-metal ions from the electrolyte and form an insoluble compound, a precipitated film grows instead of clean dissolution (ASM Vol. 9 p. 305) &mdash; the basis of the voltage-selective etches further down.</p>
+    </div>
+  </div>
+  <p class="callout">The honest summary for a trainee: you can always name the <em>roles</em> (what is anodic, what is cathodic, what the oxidizer is) and for the alkaline and tint reagents you can write the reaction down. For a plain acid attack etch, resist the urge to hand someone a neat Fe + HNO₃ equation &mdash; the sources deliberately don&rsquo;t, because it isn&rsquo;t single-valued.</p>
 </section>
 
 <!-- ============ RULES OF THUMB ============ -->
 <section id="rules">
-  <span class="eyebrow">3 · Rules of thumb</span>
+  <span class="eyebrow">5 · Rules of thumb</span>
   <h2>Why acids outline carbides, and what it takes to attack the carbide itself</h2>
   <p>Vander Voort notes that most etchants were found by trial and error, and that the job of each ingredient &ldquo;cannot always be determined with certainty&rdquo; (p. 169). A handful of patterns still explain most of what you see on steels.</p>
 
@@ -224,7 +329,7 @@ table.matrix td.s3{background:var(--tip);color:#fff;font-weight:600}
 
 <!-- ============ CARBON STEELS ============ -->
 <section id="carbon">
-  <span class="eyebrow">4 · Carbon and low-alloy steels</span>
+  <span class="eyebrow">6 · Carbon and low-alloy steels</span>
   <h2>Nital draws ferrite boundaries; picral draws carbide boundaries</h2>
   <div class="grid2">
     <div class="panel">
@@ -252,7 +357,7 @@ table.matrix td.s3{background:var(--tip);color:#fff;font-weight:600}
 
 <!-- ============ PAGB ============ -->
 <section id="pagb">
-  <span class="eyebrow">5 · A thesis-relevant case</span>
+  <span class="eyebrow">7 · A thesis-relevant case</span>
   <h2>Revealing prior-austenite grain boundaries in a steel that is no longer austenite</h2>
   <p>For allotriomorphic ferrite and Widmanstätten sideplates, the prior-austenite grain boundary is the nucleation site and the reference frame for everything that grows from it &mdash; so being able to see it in a quenched or partially transformed sample matters as much as seeing the ferrite itself.</p>
   <div class="grid2">
@@ -276,7 +381,7 @@ sulfonate (40% soln.), 5 drops HCl</div>
 
 <!-- ============ STAINLESS ============ -->
 <section id="stainless">
-  <span class="eyebrow">6 · Stainless steels</span>
+  <span class="eyebrow">8 · Stainless steels</span>
   <h2>The thing that makes stainless steel corrosion-resistant also makes it hard to etch</h2>
   <p>A chromium oxide passive film is exactly what most etchants rely on an active (non-passivating) acid to prevent. Reducing acids &mdash; HCl, H₂SO₄, HF &mdash; are preferred over oxidizing ones; nitric acid is used only in combination, as aqua regia or with a chloride, because on its own it tends to repassivate the surface rather than attack it.</p>
   <blockquote>&ldquo;As the corrosion resistance of the alloys increases, stronger and stronger etchants must be used&hellip; Because alcohol reduces dissociation, alcohol-based reagents can be made more concentrated without becoming too powerful for controlled etching. Stainless steel surfaces passivate; therefore, reducing conditions are preferred to oxidizing conditions that promote passivity.&rdquo;<cite>Vander Voort, Lucas &amp; Manilova, ASM Handbook Vol. 9, p. 679</cite></blockquote>
@@ -305,7 +410,7 @@ sulfonate (40% soln.), 5 drops HCl</div>
 
 <!-- ============ ELECTROLYTIC ============ -->
 <section id="electrolytic">
-  <span class="eyebrow">7 · Electrolytic etching</span>
+  <span class="eyebrow">9 · Electrolytic etching</span>
   <h2>Applying a voltage turns "etch for longer" into "etch at a chosen rate"</h2>
   <div class="grid2">
     <div class="panel">
@@ -322,7 +427,7 @@ sulfonate (40% soln.), 5 drops HCl</div>
 
 <!-- ============ MATRIX ============ -->
 <section id="matrix">
-  <span class="eyebrow">8 · What attacks what</span>
+  <span class="eyebrow">10 · What attacks what</span>
   <h2>The same reagent is rarely neutral to every constituent in the field of view</h2>
   <p>Reading down any column shows why a metallographer reaches for a specific named reagent instead of "the strongest acid in the cabinet": every etchant here is selective, just not for the same thing.</p>
   <div class="matrixwrap">
@@ -343,18 +448,69 @@ sulfonate (40% soln.), 5 drops HCl</div>
 
 <!-- ============ SAFETY ============ -->
 <section id="safety">
-  <span class="eyebrow">9 · Safety</span>
-  <h2>These are the hazards the handbook itself calls out, not an exhaustive MSDS</h2>
-  <div class="warn">
-    <ul class="tight">
-      <li><b>Picric acid</b> (used dry or near-dry) is explosive. The handbook's own instruction: &ldquo;Keep in mind that picric acid crystals in their dry form are highly explosive. Always keep the crystals moist and stored in a special storage cabinet.&rdquo; (p. 613)</li>
-      <li><b>Hydrofluoric acid</b> appears in several reagents (Marshall's with HF addition, titanium etchants) and needs HF-specific handling, not generic acid PPE.</li>
-      <li><b>Sodium cyanide</b> electrolytic etch (reagent 17 in Table 8) is flagged by the handbook itself: &ldquo;Use with care under a hood. Dangerous!&rdquo;</li>
-      <li><b>Glyceregia and its variants</b> must be mixed fresh and discarded, never stored: &ldquo;Use fresh; never store. Discard when reagent is orange coloured.&rdquo; Aged glyceregia can become unstable.</li>
-      <li>Ethanol- or methanol-based etchants on a mount that has not fully cured can craze the resin; both alcohols are flammable, and methanol is also toxic through skin contact, which is why the handbook prefers ethanol at low nitric-acid concentrations.</li>
-    </ul>
-    <p class="note">Always check the current Safety Data Sheet for each reagent before use; the handbook's own etching chapter (p. 312&ndash;314) and ASTM E 3 cover general handling and disposal.</p>
+  <span class="eyebrow">11 · Safety, for the trainer</span>
+  <h2>What you will need to teach, from the handbook&rsquo;s own safety articles</h2>
+  <p>This section is written to be taught from. It follows ASM Handbook Vol. 9&rsquo;s dedicated article &ldquo;Laboratory Safety in Metallography&rdquo; (Vander Voort, p. 1081&ndash;1090) and the &ldquo;Safety Precautions&rdquo; and &ldquo;Preparation and Handling of Etchants&rdquo; parts of &ldquo;Contrast Enhancement and Etching&rdquo; (p. 294&ndash;312). It is a teaching summary, not a substitute for your lab&rsquo;s own risk assessments or the current Safety Data Sheet for each chemical.</p>
+
+  <div class="rules">
+    <div class="rule">
+      <span class="k">A · the four rules that prevent most incidents</span>
+      <b>Order, ventilation, PPE, separation</b>
+      <ul class="tight note" style="margin-top:2px">
+        <li><b>Always add acid (or alkali) to water, slowly, while stirring</b> &mdash; never the reverse. Mixing strong acids, NaOH/KOH or anhydrous AlCl₃ into water evolves large amounts of heat; incomplete mixing can layer and give &ldquo;a delayed violent reaction&rdquo; (p. 312).</li>
+        <li><b>Work under an exhaust hood.</b> Mandatory for large quantities, macroetching, and any lengthy electropolishing (p. 312).</li>
+        <li><b>PPE every time:</b> safety glasses or face shield, gloves, apron. Inspect gloves for holes &mdash; the handbook warns they &ldquo;can impart a false sense of security&rdquo; (p. 1082).</li>
+        <li><b>Store acids, bases, oxidants and flammable solvents separately</b>, in fireproof cabinets. &ldquo;Strong oxidants must not be stored along with acids, bases, or flammable solvents&rdquo; (p. 1083).</li>
+      </ul>
+    </div>
+    <div class="rule">
+      <span class="k">B · the oxidizer + organic trap</span>
+      <b>Nitric or perchloric acid with alcohol, glycerol or acetic anhydride</b>
+      <p class="note">Most steel etchants mix an oxidizer (HNO₃) with an organic modifier (alcohol, glycerol). Mixing oxidizing agents with reducing agents &ldquo;can result in violent or explosive reactions&rdquo; (p. 312). Specifics the handbook names: nitric + glycerin/glycols can be explosive; glycerol should not be used with strong oxidizers (nitroglycerin can form); and the perchloric-acid + acetic-anhydride electropolishing mixtures are &ldquo;exceptionally dangerous and should never be used&rdquo; &mdash; the 1947 Los Angeles electroplating-factory accident killed 17 and injured 150 (p. 1085&ndash;1086).</p>
+    </div>
+    <div class="rule">
+      <span class="k">C · picric acid</span>
+      <b>An explosive when it dries out</b>
+      <p class="note">&ldquo;When picric acid is dry, it is a dangerous explosive&hellip; Picrates, which are metal salts of picric acid, are explosive. When picrates are dry, they can detonate readily, possibly spontaneously.&rdquo; Buy small quantities, keep the crystals moist, store cool, and if it starts to dry, add water (p. 1087). Picral (the alcohol solution) can be stored safely, but &ldquo;the etching residue should be discarded at the end of the day to avoid potential explosions&rdquo; (p. 1087). It is incompatible with all oxidizable substances and with metals (forming picrates).</p>
+    </div>
+    <div class="rule">
+      <span class="k">D · hydrofluoric acid</span>
+      <b>Different from every other acid &mdash; treat it specially</b>
+      <p class="note">HF &ldquo;can cause painful and serious ulcers upon contacting the skin, unless washed off immediately&rdquo; (p. 312). Burns can be deep and delayed; concentrated-HF exposure &ldquo;requires immediate first aid and hospitalization&rdquo; (p. 303). It needs HF-specific PPE, calcium-gluconate first aid on hand, and polyethylene/polypropylene containers (glass is attacked). It appears in Marshall&rsquo;s-with-HF and in titanium etchants.</p>
+    </div>
+    <div class="rule">
+      <span class="k">E · cyanide etchants</span>
+      <b>Never near acid</b>
+      <p class="note">Cyanide-containing etchants (e.g. the electrolytic NaCN etch for stainless &sigma; phase, flagged &ldquo;Dangerous!&rdquo; in Table 8) can evolve hard-to-detect HCN gas from acidic solutions, and cyanide is absorbed through skin. Use an effective hood; render spent solution slightly alkaline with ammonia before flushing it away with copious water (p. 312). Keep cyanides and acids strictly apart.</p>
+    </div>
+    <div class="rule">
+      <span class="k">F · the strong oxidant salts</span>
+      <b>Permanganate, chromic acid, peroxide, bromine</b>
+      <p class="note">&ldquo;Potassium permanganate and sulfuric acid should never be mixed together, because a violent&rdquo; reaction results (p. 1088) &mdash; relevant to Groesbeck&rsquo;s and modified-Murakami reagents. 30% H₂O₂ is &ldquo;as harmful&hellip; as&hellip; sulfuric acid&rdquo; on skin (Marshall&rsquo;s part B). Chromic acid (CrO₃ in water) is a powerful oxidant and a chronic-exposure hazard. Bromine, in deep-etch reagents, gives deep slow-healing burns and should be handled only by qualified staff.</p>
+    </div>
   </div>
+
+  <div class="grid2">
+    <div class="panel" style="align-content:start">
+      <h3>First response, drilled before anyone etches</h3>
+      <ul class="tight note">
+        <li>Chemicals on skin &rarr; wash off promptly with water and soap; seek medical attention for burns, especially over cuts (p. 312).</li>
+        <li>Chemicals in eyes &rarr; flush at once with large quantities of water and get medical help without delay.</li>
+        <li>A face-and-eye wash fountain and, where larger quantities are stored, a safety shower must be present, reachable, and tested on a schedule (p. 312).</li>
+        <li>Know the HF calcium-gluconate protocol separately &mdash; ordinary acid first aid is not enough for HF.</li>
+      </ul>
+    </div>
+    <div class="panel" style="align-content:start">
+      <h3>Before the session: paperwork &amp; disposal</h3>
+      <ul class="tight note">
+        <li>An MSDS/SDS must be on file and read for every chemical (OSHA Hazard Communication; ANSI 16-section format, p. 1081). Teach trainees to read the first-aid and incompatibility sections first.</li>
+        <li>Use vented or pressure-relief caps on stored etchants that can evolve gas (e.g. methanol&ndash;HNO₃), not sealed screw caps (p. 312).</li>
+        <li>Discard spent etchant promptly down a chemically resistant drain under the hood with copious running water; handle strongly acidic, alkaline or toxic solutions with extra care (p. 312).</li>
+        <li>Methanol is toxic through the skin; prefer ethanol at low HNO₃ concentrations, and use methanol only when the handbook calls for it (above ~5% HNO₃ the ethanol solution becomes unstable).</li>
+      </ul>
+    </div>
+  </div>
+  <p class="callout">One sentence to open your training with, straight from the handbook: &ldquo;All chemicals are potentially dangerous; formulating and using etchants requires thorough knowledge of the chemicals involved and the proper procedures for handling and mixing&rdquo; (p. 312).</p>
 </section>
 
 <!-- ============ SOURCES ============ -->
@@ -366,10 +522,13 @@ sulfonate (40% soln.), 5 drops HCl</div>
     <li>B.L. Bramfitt and S.J. Lawrence, &ldquo;Metallography and Microstructures of Carbon and Low-Alloy Steels,&rdquo; <i>Metallography and Microstructures</i>, Vol. 9, <i>ASM Handbook</i>, ASM International, 2004, p. 608&ndash;626.</li>
     <li>&ldquo;Metallography and Microstructures of Low-Carbon Sheet Steels,&rdquo; <i>Metallography and Microstructures</i>, Vol. 9, <i>ASM Handbook</i>, ASM International, 2004, p. 588&ndash;607.</li>
     <li>G.F. Vander Voort, G.M. Lucas, and E.P. Manilova, &ldquo;Metallography and Microstructures of Stainless Steels and Maraging Steels,&rdquo; <i>Metallography and Microstructures</i>, Vol. 9, <i>ASM Handbook</i>, ASM International, 2004, p. 670&ndash;700.</li>
-    <li>G.F. Vander Voort, <i>Metallography: Principles and Practice</i>, McGraw-Hill, 1984; reprinted ASM International, 1999. Ch. 3: &sect;3-2.1 &ldquo;Etching Theory&rdquo; p. 166&ndash;171; tint etching p. 175; carbide and prior-austenite etching p. 213&ndash;224; alkaline ferricyanide (Kegley) p. 229&ndash;231. Printed page numbers.</li>
+    <li>G.F. Vander Voort, <i>Metallography: Principles and Practice</i>, McGraw-Hill, 1984; reprinted ASM International, 1999. Ch. 3: &sect;3-2.1 &ldquo;Etching Theory&rdquo; p. 166&ndash;171; tint etching p. 173&ndash;175; carbide and prior-austenite etching p. 213&ndash;224; alkaline ferricyanide (Kegley) p. 229&ndash;231. Printed page numbers.</li>
+    <li>G.F. Vander Voort, &ldquo;Laboratory Safety in Metallography,&rdquo; <i>Metallography and Microstructures</i>, Vol. 9, <i>ASM Handbook</i>, ASM International, 2004, p. 1081&ndash;1090.</li>
+    <li>&ldquo;Metallography: An Introduction&rdquo; (incl. &ldquo;The Origins of Metallography&rdquo;), <i>Metallography and Microstructures</i>, Vol. 9, <i>ASM Handbook</i>, ASM International, 2004, p. 3&ndash;20.</li>
+    <li>C.S. Smith, <i>A History of Metallography</i>, University of Chicago Press, 1960.</li>
     <li>G. Petzow, <i>Metallographic Etching</i>, 2nd ed., ASM International, 1999 &mdash; cited within Ref. 1 above for etching nomenclature.</li>
   </ol>
-  <p class="note">All of these are in your agents/books/books_metallurgy library. Page numbers above are the handbook's own running page headers, not PDF page indices.</p>
+  <p class="note">All of these are in your phd_2/03-literature/books library. Page numbers above are the handbook's own running page headers, not PDF page indices.</p>
 </section>
 </div>
 
