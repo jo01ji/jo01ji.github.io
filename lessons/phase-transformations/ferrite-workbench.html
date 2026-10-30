@@ -113,6 +113,43 @@ input[type=range]{accent-color:var(--ferrite);width:min(420px,100%)}
 .ans ul li{margin:2px 0}
 .ans .claim-k{font:500 10px var(--mono);text-transform:uppercase;color:var(--muted);border:1px solid var(--rule);border-radius:3px;padding:0 4px;margin-right:4px}
 .conf{font:500 12px var(--mono);color:var(--muted);border-top:1px solid var(--rule);padding-top:7px;margin-top:3px}
+.argh{margin:26px 0 2px;padding-top:18px;border-top:1px solid var(--rule)}
+.argsub{color:var(--muted);font-size:14.5px;max-width:74ch;margin:2px 0 14px}
+.candgroup{background:var(--panel);border:1px solid var(--rule);border-radius:7px;padding:14px 16px}
+.candgroup h4{color:var(--ferrite);font-family:var(--display);font-size:16px;margin-bottom:4px}
+.candlist{display:grid;gap:8px;margin-top:8px}
+.candrow{border:1px solid var(--rule);border-left:3px solid var(--austenite);border-radius:5px;padding:8px 11px;font-size:14px}
+.candrow .nm{font-weight:600}
+.candrow .fam{font:500 10px var(--mono);text-transform:uppercase;letter-spacing:.04em;color:var(--muted);border:1px solid var(--rule);border-radius:3px;padding:0 5px;margin-left:6px}
+.candrow .note{color:var(--muted);font-size:13px;margin-top:2px}
+.disc{background:var(--panel);border:1px solid var(--rule);border-radius:7px;padding:15px 16px;display:grid;gap:9px}
+.disc .obs{font-family:var(--display);font-size:16px;line-height:1.35}
+.disc .topicp{font:500 11px var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.disc h5{font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:6px 0 2px}
+.disc .outcome{font-size:13.5px;border-left:2px solid var(--rule);padding:3px 0 3px 10px;margin:3px 0}
+.disc .outcome b{font-weight:600}
+.disc .notsep{border-left:3px solid var(--tip);background:color-mix(in srgb,var(--tip) 9%,var(--panel));padding:8px 11px;border-radius:0 5px 5px 0;font-size:13.5px}
+.disc .notsep .lab{font:600 11px var(--mono);text-transform:uppercase;letter-spacing:.05em;color:var(--tip);display:block;margin-bottom:2px}
+.disc ul{margin:2px 0;padding-left:18px;font-size:13.5px;line-height:1.45}
+.disc .reso{font:500 12px var(--mono);color:var(--muted);border-top:1px solid var(--rule);padding-top:7px}
+.reltable{width:100%;border-collapse:collapse;font-size:13.5px}
+.reltable td{border-bottom:1px solid var(--rule);padding:8px 8px;vertical-align:top}
+.reltable .rtype{white-space:nowrap}
+.reltag{display:inline-block;font:600 10px var(--mono);text-transform:uppercase;letter-spacing:.04em;border-radius:3px;padding:1px 7px;border:1px solid var(--rule)}
+.reltag.supports{border-color:var(--supp);color:var(--supp)}
+.reltag.challenges{border-color:var(--chal);color:var(--chal)}
+.reltag.mentions{border-color:var(--mart);color:var(--mart)}
+.reltable .obj{font-weight:600}
+.reltable .unres{font:500 11px var(--mono);color:var(--warn);border:1px dashed var(--warn);border-radius:3px;padding:0 5px;margin-left:6px}
+.reltable .rsrc{font:500 11px var(--mono);color:var(--muted);white-space:nowrap}
+.reltable .rtext{color:var(--muted);font-size:13px;overflow-wrap:anywhere}
+#view-arguments .obs,#view-arguments .outcome,#view-arguments .note{overflow-wrap:anywhere}
+@media(max-width:640px){
+  .reltable,.reltable tbody,.reltable tr,.reltable td{display:block;width:auto}
+  .reltable td{border-bottom:none;padding:2px 0}
+  .reltable tr{border-bottom:1px solid var(--rule);padding:9px 0}
+  .reltable .rsrc{white-space:normal;margin-top:3px}
+}
 footer{margin-top:40px;border-top:1px solid var(--rule);padding-top:16px;color:var(--muted);font-size:13.5px;line-height:1.6}
 footer code{font:12px var(--mono)}
 .prov-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
@@ -138,6 +175,7 @@ footer code{font:12px var(--mono)}
     <button role="tab" data-view="evidence" aria-selected="false">2 · Evidence</button>
     <button role="tab" data-view="cutoff" aria-selected="false">3 · Historical cutoff</button>
     <button role="tab" data-view="compare" aria-selected="false">4 · Recorded answers</button>
+    <button role="tab" data-view="arguments" aria-selected="false">5 · Arguments</button>
   </nav>
 
   <section class="view active" id="view-topics">
@@ -189,12 +227,30 @@ footer code{font:12px var(--mono)}
     <div class="condgrid" id="cond-grid"></div>
   </section>
 
+  <section class="view" id="view-arguments">
+    <h2>Arguments &amp; discriminators</h2>
+    <p class="sectlede">Phase 4 adds a typed argument layer over the same evidence: named candidate mechanisms for each case, formal <em>discriminators</em> (what an observation can and — just as important — cannot separate), and relation types that keep "mentions" distinct from "support." Built offline; every record is machine-draft or source-text-checked, none expert-reviewed.</p>
+    <div class="banner" id="arg-cap"></div>
+
+    <h3 class="argh">Candidate mechanisms</h3>
+    <p class="argsub">The competing explanations for each question, with their own ids so a named alternative is representable rather than forced into a global vocabulary.</p>
+    <div class="grid" id="arg-candidates"></div>
+
+    <h3 class="argh">Discriminators — what an observation can and cannot separate</h3>
+    <p class="argsub">For each proposed observable: what each candidate would show, and — the scientifically careful part — what the observation does <strong>not</strong> distinguish and where it stays inconclusive.</p>
+    <div class="grid" id="arg-comparisons"></div>
+
+    <h3 class="argh">Typed argument relations</h3>
+    <p class="argsub" id="arg-rel-sub"></p>
+    <div id="arg-relations"></div>
+  </section>
+
   <footer id="foot"></footer>
 </div>
 
 <script type="application/json" id="payload">{
  "meta": {
-  "generated": "2026-10-30T05:04:07.244667Z",
+  "generated": "2026-10-30T06:59:35.187843Z",
   "data_release": "r3-2026-10-30-srcver",
   "title": "Ferrite Evidence & Reasoning Workbench",
   "subtitle": "A research prototype — provenance-grounded evidence and recorded, unreviewed model outputs.",
@@ -2479,6 +2535,362 @@ footer code{font:12px var(--mono)}
    }
   ],
   "disclaimer": "From a fixed local model (one case, four evidence organizations). This uses the EXACT binary initiation question that generated the saved answers (direct boundary nucleation vs branching/instability), NOT the later revised three-candidate question. The compromised b-full batch is excluded. The comparison does NOT establish any benefit of historical organization."
+ },
+ "phase4": {
+  "export_version": "argexport-v1",
+  "data_release": "arg-r1-2026-10-30",
+  "candidates": [
+   {
+    "topic": "ep-initiation",
+    "topic_title": "Ferrite plate initiation",
+    "items": [
+     {
+      "id": "cand-init-direct",
+      "name": "direct grain boundary nucleation",
+      "family": "other",
+      "stage": "initiation",
+      "note": "a new plate nucleates directly at the austenite grain boundary (no prior ferrite required)"
+     },
+     {
+      "id": "cand-init-sympathetic",
+      "name": "sympathetic nucleation",
+      "family": "sympathetic_nucleation",
+      "stage": "initiation",
+      "note": "a new unit nucleates on an existing allotriomorph/ferrite interface"
+     },
+     {
+      "id": "cand-init-instability",
+      "name": "continuous instability branching",
+      "family": "diffusion_controlled_instability",
+      "stage": "initiation",
+      "note": "an existing allotriomorph destabilises/branches with NO new nucleation event"
+     }
+    ]
+   },
+   {
+    "topic": "ep-3d-morphology",
+    "topic_title": "Apparent 2D morphology versus 3D connectivity",
+    "items": [
+     {
+      "id": "cand-3d-connected",
+      "name": "connected 3d structure",
+      "family": "other",
+      "stage": "observation",
+      "note": "apparent separate 2D arms are sections through one connected 3D unit"
+     },
+     {
+      "id": "cand-3d-isolated",
+      "name": "isolated separate units",
+      "family": "other",
+      "stage": "observation",
+      "note": "apparent separate 2D arms are genuinely distinct units"
+     }
+    ]
+   },
+   {
+    "topic": "ep-interface-conditions",
+    "topic_title": "Interfacial conditions controlling ferrite growth",
+    "items": [
+     {
+      "id": "cand-if-drag",
+      "name": "solute drag",
+      "family": "solute_drag",
+      "stage": "propagation",
+      "note": "segregation/drag governs interface velocity"
+     },
+     {
+      "id": "cand-if-le",
+      "name": "local or para equilibrium",
+      "family": "thermodynamic_driving_force",
+      "stage": "propagation",
+      "note": "LE / NP-LE / paraequilibrium interfacial condition without an explicit drag term"
+     }
+    ]
+   }
+  ],
+  "comparisons": [
+   {
+    "id": "cmp-3d-connectivity",
+    "topic": "3d-morphology",
+    "topic_title": "Apparent 2D morphology versus 3D connectivity",
+    "stage": "observation",
+    "observable": "orientation continuity across apparent arms in ONE SEM/EBSD section",
+    "alternatives": [
+     {
+      "id": "cand-3d-connected",
+      "name": "connected 3d structure",
+      "expected": "continuous / identical orientation across arms (consistent, NOT proof)"
+     },
+     {
+      "id": "cand-3d-isolated",
+      "name": "isolated separate units",
+      "expected": "distinct orientation domains OR coincidentally similar orientation"
+     }
+    ],
+    "assumptions": [
+     "within-section orientation reflects out-of-plane topology",
+     "no coincidental variant alignment of genuinely separate units"
+    ],
+    "shared_outcomes": [
+     "continuous orientation is consistent with a connected unit AND with coincidentally aligned isolated units -> does not discriminate"
+    ],
+    "inconclusive_region": "out-of-plane connectivity from a single section is non-identifiable; serial sectioning or tomography is required to decide",
+    "resolution": "single section; no depth information",
+    "review_status": "machine_draft"
+   },
+   {
+    "id": "cmp-init-site",
+    "topic": "initiation",
+    "topic_title": "Ferrite plate initiation",
+    "stage": "initiation",
+    "observable": "time-resolved in-situ sequence of plate appearance + OR to the boundary/parent ferrite",
+    "alternatives": [
+     {
+      "id": "cand-init-direct",
+      "name": "direct grain boundary nucleation",
+      "expected": "a new plate appears at a bare boundary with a nucleation event"
+     },
+     {
+      "id": "cand-init-sympathetic",
+      "name": "sympathetic nucleation",
+      "expected": "a new unit appears ON an existing ferrite interface (shared OR)"
+     },
+     {
+      "id": "cand-init-instability",
+      "name": "continuous instability branching",
+      "expected": "an existing allotriomorph deforms/branches with NO discrete nucleation event"
+     }
+    ],
+    "assumptions": [
+     "time resolution resolves a discrete nucleation event",
+     "a shared orientation relationship distinguishes sympathetic nucleation from branching"
+    ],
+    "shared_outcomes": [
+     "a shared OR is consistent with BOTH sympathetic nucleation and branching; OR alone does not separate (b) from (c)"
+    ],
+    "inconclusive_region": "without a resolved discrete event, branching (c) and sympathetic nucleation (b) are observationally equivalent",
+    "resolution": "in-situ frame rate and spatial resolution limit event detection",
+    "review_status": "machine_draft"
+   },
+   {
+    "id": "cmp-if-drag",
+    "topic": "interface-conditions",
+    "topic_title": "Interfacial conditions controlling ferrite growth",
+    "stage": "propagation",
+    "observable": "growth-rate vs temperature/composition with MATCHED conditions and reported uncertainty",
+    "alternatives": [
+     {
+      "id": "cand-if-drag",
+      "name": "solute drag",
+      "expected": "a reproducible rate reduction correlated with segregation, beyond uncertainty"
+     },
+     {
+      "id": "cand-if-le",
+      "name": "local or para equilibrium",
+      "expected": "rate explained by the LE/NP-LE tie-line without an explicit drag term"
+     }
+    ],
+    "assumptions": [
+     "conditions are matched across the compared datasets",
+     "sample counts and error bars are reported"
+    ],
+    "shared_outcomes": [
+     "a modest rate change within overlapping uncertainty is consistent with both"
+    ],
+    "inconclusive_region": "large scatter or absent uncertainty leaves the mechanism UNRESOLVED, not refuted; nonsignificance is not established when statistics are absent",
+    "resolution": "requires uncertainty estimates; a single rate without error bars cannot decide",
+    "review_status": "machine_draft"
+   }
+  ],
+  "relations": [
+   {
+    "id": "arel1d88f2e4063756",
+    "type": "challenges",
+    "object_label": "diffusion controlled instability",
+    "object_resolved": true,
+    "assertion_basis": "machine_proposed",
+    "review_status": "source_text_checked",
+    "source_text": "Evidence has been found that supports the theory of a sympathetic nucleation mechanism being responsible for the formation of Widmanstätten ferrite plates.",
+    "source_citation": "D. Phelan, R. Dippenaar (2004)",
+    "source_page": 1
+   },
+   {
+    "id": "arel68a814840a206e",
+    "type": "supports",
+    "object_label": "sympathetic nucleation",
+    "object_resolved": true,
+    "assertion_basis": "machine_proposed",
+    "review_status": "source_text_checked",
+    "source_text": "The EBSD measurements have shown that low-angle misorientations of between 5 and 10 deg exist between ferrite allotriomorphs and Widmanstätten ferrite plates.",
+    "source_citation": "D. Phelan, R. Dippenaar (2004)",
+    "source_page": 1
+   },
+   {
+    "id": "arel7cfab88f9987e3",
+    "type": "mentions",
+    "object_label": "diffusion controlled instability",
+    "object_resolved": true,
+    "assertion_basis": "machine_proposed",
+    "review_status": "source_text_checked",
+    "source_text": "Townsend and Kirkaldy[4] and Kirkaldy[5] have suggested that Widmanstätten ferrite plates form by the propagation of an unstable interface.",
+    "source_citation": "D. Phelan, R. Dippenaar (2004)",
+    "source_page": 1
+   },
+   {
+    "id": "arelab5714d0b50c88",
+    "type": "supports",
+    "object_label": "sympathetic nucleation",
+    "object_resolved": true,
+    "assertion_basis": "machine_proposed",
+    "review_status": "source_text_checked",
+    "source_text": "The three plates appear to grow directly from the stepped regions of the allotriomorph, as would be the case if the plates formed by a process of sympathetic nucleation.",
+    "source_citation": "D. Phelan, R. Dippenaar (2004)",
+    "source_page": 3
+   },
+   {
+    "id": "arel9f9081848ef2e2",
+    "type": "challenges",
+    "object_label": "diffusion controlled instability",
+    "object_resolved": true,
+    "assertion_basis": "machine_proposed",
+    "review_status": "source_text_checked",
+    "source_text": "The proposal that Widmanstätten ferrite plates originate from instabilities that develop in a growing austenite/ferrite interface,[4] the so-called Mullins–Sekerka type instability, is not supported by the experimental evidence obtained in this study.",
+    "source_citation": "D. Phelan, R. Dippenaar (2004)",
+    "source_page": 6
+   },
+   {
+    "id": "arelce60bc7496def6",
+    "type": "supports",
+    "object_label": "observation of double plate nucleation",
+    "object_resolved": false,
+    "assertion_basis": "machine_proposed",
+    "review_status": "unresolved",
+    "source_text": "For these reasons, it is considered that the observations made are in fact genuine sympathetic nucleation, and not a consequence of impingement from another colony of plates below the surface.",
+    "source_citation": "D. Phelan, N. Stanford, R. Dippenaar (2005)",
+    "source_page": 5
+   },
+   {
+    "id": "areldc92ad82a0ba2e",
+    "type": "supports",
+    "object_label": "model result on nucleation energy",
+    "object_resolved": false,
+    "assertion_basis": "machine_proposed",
+    "review_status": "unresolved",
+    "source_text": "This is probably why a bridging step is required before an ideal growth orientation can be met.",
+    "source_citation": "D. Phelan, N. Stanford, R. Dippenaar (2005)",
+    "source_page": 6
+   },
+   {
+    "id": "arel6e7db910f5a18e",
+    "type": "supports",
+    "object_label": "observation of shared poles",
+    "object_resolved": false,
+    "assertion_basis": "machine_proposed",
+    "review_status": "unresolved",
+    "source_text": "This may explain why two nucleation events are sometimes required instead of just one for the same angular misorientation.",
+    "source_citation": "D. Phelan, N. Stanford, R. Dippenaar (2005)",
+    "source_page": 7
+   },
+   {
+    "id": "arele1022caca3b67b",
+    "type": "challenges",
+    "object_label": "previous 2d based morphological classifications",
+    "object_resolved": false,
+    "assertion_basis": "machine_proposed",
+    "review_status": "unresolved",
+    "source_text": "While the two-dimensional (2-D) cross sections of these precipitates appeared to fit into the previously accepted categories of precipitate morphologies, 3-D reconstructions revealed important aspects of connectivity and shape that were not observed earlier.",
+    "source_citation": "Kral (2005)",
+    "source_page": 1
+   },
+   {
+    "id": "arel69fe8106306319",
+    "type": "supports",
+    "object_label": "the limitation of 2d observations",
+    "object_resolved": false,
+    "assertion_basis": "machine_proposed",
+    "review_status": "unresolved",
+    "source_text": "It is clear that the 2-D morphology of this precipitate inferred from the individual micrographs differs significantly among the various sections.",
+    "source_citation": "Kral (2005)",
+    "source_page": 2
+   },
+   {
+    "id": "areld7f234ec88f05a",
+    "type": "challenges",
+    "object_label": "the validity of distinguishing these as separate",
+    "object_resolved": false,
+    "assertion_basis": "machine_proposed",
+    "review_status": "unresolved",
+    "source_text": "several different Dubé morphologies in Figure 3 (primary sideplates, sawteeth, and idiomorphs) could all be represented by different sections through the spike morphology shown in Figure 4.",
+    "source_citation": "Kral (2005)",
+    "source_page": 3
+   },
+   {
+    "id": "arel834cf3385d10e2",
+    "type": "supports",
+    "object_label": "distinct units vs sectioning artifact",
+    "object_resolved": false,
+    "assertion_basis": "machine_proposed",
+    "review_status": "unresolved",
+    "source_text": "Similar observations at many grain boundaries by both optical microscopy and TEM, and serial sectioning studies on other specimens, strongly indicate that these small crystals are not a result of sectioning through the tips of very long plates.",
+    "source_citation": "Spanos (1996)",
+    "source_page": 9
+   },
+   {
+    "id": "arel4c8090a75bcaac",
+    "type": "supports",
+    "object_label": "single crystal nature of primary ferrite",
+    "object_resolved": false,
+    "assertion_basis": "machine_proposed",
+    "review_status": "unresolved",
+    "source_text": "There is no perceptible change in orientation along/within any one of these four ferrite particles, indicating that at these early stages of formation, the individual precipitates resolved by optical microscopy are single crystals.",
+    "source_citation": "Spanos (2005)",
+    "source_page": 3
+   },
+   {
+    "id": "arel3fe41b9cdff856",
+    "type": "supports",
+    "object_label": "the model of evolving interfacial conditions",
+    "object_resolved": false,
+    "assertion_basis": "machine_proposed",
+    "review_status": "unresolved",
+    "source_text": "In spite of this simplicity, the need to take into account the evolution of the interfacial conditions while the reaction proceeds is stressed.",
+    "source_citation": "Hutchinson (2006)",
+    "source_page": 1
+   },
+   {
+    "id": "arela608bb92a9e272",
+    "type": "supports",
+    "object_label": "the role of interfacial conditions in governing",
+    "object_resolved": false,
+    "assertion_basis": "machine_proposed",
+    "review_status": "unresolved",
+    "source_text": "These novel results are attributed to the segregation of Mn to the moving interface. It is thought that this process has the eﬀect of decreasing the Mn concentration on the austenite side of the interface and, consequently, extending the PE state.",
+    "source_citation": "Zurob (2007)",
+    "source_page": 1
+   },
+   {
+    "id": "arelb9509c0919b6e5",
+    "type": "supports",
+    "object_label": "the complexity of interfacial conditions beyond",
+    "object_resolved": false,
+    "assertion_basis": "machine_proposed",
+    "review_status": "unresolved",
+    "source_text": "Experimental observations have been oﬀered to support the existence of PE conditions at the inception of ferrite precipitation from austenite, but it is often found that the ‘ﬁnal’ fraction of ferrite is much less than would be predicted from the simple PE limit [19–21].",
+    "source_citation": "Zurob (2007)",
+    "source_page": 3
+   }
+  ],
+  "review_status_summary": {
+   "relations": {
+    "source_text_checked": 5,
+    "unresolved": 11
+   },
+   "comparisons": {
+    "machine_draft": 3
+   }
+  },
+  "disclaimer": "All records are machine_draft or source_text_checked; none is human_reviewed. Software checks passing imply NO scientific benefit.",
+  "capability": "Phase 4 routes the question (not just an episode id) to the evidence: an inspectable question scope with topic, stage, material and cutoff; off-domain questions (e.g. astronomy) are refused with a coverage note rather than handed the ferrite packet. Loose relation strings became typed assertions where 'mentions' is never upgraded to 'support' and targets that don't map to a mechanism are kept explicitly unresolved. Built offline with mock/replay — no model was run, and retrieval quality and discriminator validity are NOT measured here."
  }
 }</script>
 <script>
@@ -2618,6 +3030,60 @@ DATA.comparison.conditions.forEach(cd=>{
   box.appendChild(foot);
   cg.appendChild(box);
 });
+
+/* ---- phase 4: arguments ---- */
+const P4 = DATA.phase4;
+if(!P4){ const b=$('#tabs button[data-view="arguments"]'); if(b) b.classList.add('hidden'); }
+else {
+  $('#arg-cap').innerHTML = '<b>Question-aware, offline.</b> '+esc(P4.capability);
+  // candidates
+  const ac=$('#arg-candidates');
+  P4.candidates.forEach(g=>{
+    const p=el('div','candgroup'); p.appendChild(el('h4',null,g.topic_title));
+    const list=el('div','candlist');
+    g.items.forEach(it=>{const r=el('div','candrow');
+      const nm=el('div'); nm.innerHTML=`<span class="nm">${esc(it.name)}</span><span class="fam">${esc(it.stage)}</span>`;
+      r.appendChild(nm); r.appendChild(el('div','note',it.note)); list.appendChild(r);});
+    p.appendChild(list); ac.appendChild(p);
+  });
+  // comparisons / discriminators
+  const acm=$('#arg-comparisons');
+  P4.comparisons.forEach(c=>{
+    const d=el('div','disc');
+    d.appendChild(el('div','topicp', `${esc(c.topic)} · ${esc(c.stage)} · ${esc(c.review_status)}`));
+    d.appendChild(el('div','obs', c.observable));
+    d.appendChild(el('h5',null,'What each candidate would show'));
+    c.alternatives.forEach(a=>{const o=el('div','outcome');
+      o.innerHTML=`<b>${esc(a.name)}:</b> ${esc(a.expected)}`; d.appendChild(o);});
+    if(c.shared_outcomes&&c.shared_outcomes.length){
+      const ns=el('div','notsep'); ns.appendChild(Object.assign(el('span','lab'),{textContent:'Does NOT separate'}));
+      const u=el('ul'); c.shared_outcomes.forEach(s=>{const li=el('li'); li.textContent=s; u.appendChild(li);});
+      ns.appendChild(u); d.appendChild(ns);
+    }
+    if(c.inconclusive_region){const h=el('h5',null,'Inconclusive region'); d.appendChild(h);
+      d.appendChild(Object.assign(el('div',null),{textContent:c.inconclusive_region,style:'font-size:13.5px'}));}
+    if(c.assumptions&&c.assumptions.length){d.appendChild(el('h5',null,'Assumptions'));
+      const u=el('ul'); c.assumptions.forEach(s=>{const li=el('li'); li.textContent=s; u.appendChild(li);}); d.appendChild(u);}
+    if(c.resolution) d.appendChild(el('div','reso','resolution limit: '+c.resolution));
+    acm.appendChild(d);
+  });
+  // relations
+  const rs=P4.review_status_summary&&P4.review_status_summary.relations||{};
+  $('#arg-rel-sub').innerHTML = `The ${P4.relations.length} relations migrated from loose strings into typed assertions `+
+    `(${esc(rs.source_text_checked||0)} resolve to a mechanism and are source-text-checked; ${esc(rs.unresolved||0)} point at a target that does not map to a mechanism and are kept <strong>unresolved</strong> rather than invented). "mentions" is never upgraded to "support."`;
+  const rt=el('table','reltable'); const tb=el('tbody');
+  P4.relations.forEach(r=>{
+    const tr=el('tr');
+    const td1=el('td','rtype'); td1.innerHTML=`<span class="reltag ${esc(r.type)}">${esc(r.type)}</span>`; tr.appendChild(td1);
+    const td2=el('td');
+    td2.innerHTML=`<span class="obj">→ ${esc(r.object_label)}</span>`+(r.object_resolved?'':'<span class="unres">unresolved</span>')+
+      (r.source_text?`<div class="rtext">"${esc(r.source_text.slice(0,160))}${r.source_text.length>160?'…':''}"</div>`:'');
+    tr.appendChild(td2);
+    const td3=el('td','rsrc'); td3.textContent=(r.source_citation||'')+(r.source_page?` p${r.source_page}`:''); tr.appendChild(td3);
+    tb.appendChild(tr);
+  });
+  rt.appendChild(tb); $('#arg-relations').appendChild(rt);
+}
 
 /* ---- footer ---- */
 $('#foot').innerHTML = `
