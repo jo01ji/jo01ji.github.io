@@ -1,0 +1,2633 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ferrite Evidence &amp; Reasoning Workbench</title>
+<meta name="description" content="A research prototype for provenance-grounded ferrite-morphology evidence and recorded, unreviewed model reasoning. Part of the patina2 historical-epistemic AI project.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#eef1f3; --panel:#f8fafb; --panel2:#eef2f5; --ink:#17212b; --muted:#56636f; --rule:#cfd6dc;
+  --ferrite:#a8650a; --carbide:#e07b12; --tip:#b4480e; --austenite:#d9a62a; --gamma:#f5e6bd; --mart:#5b6670;
+  --ok:#3f7d4e; --warn:#b4480e; --chal:#9a3412; --supp:#3f7d4e;
+  --display:"Spectral",Georgia,serif; --body:"Source Sans 3","Segoe UI",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12171c; --panel:#1a2128; --panel2:#151b21; --ink:#e3e8ec; --muted:#9aa6b1; --rule:#2d3740;
+  --ferrite:#f2b84b; --carbide:#f39a3c; --tip:#ff7a3d; --austenite:#e8c252; --gamma:#3a3221; --mart:#aab4bd;
+  --ok:#74c08a; --warn:#ff9a62; --chal:#f0906a; --supp:#74c08a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12171c; --panel:#1a2128; --panel2:#151b21; --ink:#e3e8ec; --muted:#9aa6b1; --rule:#2d3740;
+  --ferrite:#f2b84b; --carbide:#f39a3c; --tip:#ff7a3d; --austenite:#e8c252; --gamma:#3a3221; --mart:#aab4bd;
+  --ok:#74c08a; --warn:#ff9a62; --chal:#f0906a; --supp:#74c08a; color-scheme:dark}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--body);margin:0;padding:0}
+.wrap{max-width:1040px;margin:0 auto;padding:28px 16px 80px}
+h1,h2,h3,h4{font-family:var(--display);font-weight:600;text-wrap:balance;margin:0}
+h1{font-size:clamp(28px,4.4vw,44px);line-height:1.08}
+h2{font-size:clamp(21px,3vw,27px);margin:0 0 4px}
+h3{font-size:18px;margin:0}
+h4{font-size:15px;font-family:var(--body);font-weight:600}
+p{margin:8px 0}
+a{color:var(--ferrite)}
+.eyebrow{font:500 12px var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.lede{color:var(--muted);font-size:17px;margin-top:10px;max-width:72ch}
+.mono{font:13px var(--mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+header.top{border-bottom:1px solid var(--rule);padding-bottom:18px;margin-bottom:8px}
+.banner{border-left:3px solid var(--tip);background:color-mix(in srgb,var(--tip) 10%,var(--panel));
+  padding:11px 14px;border-radius:0 6px 6px 0;font-size:14.5px;margin:16px 0 4px;max-width:80ch}
+.banner b{color:var(--tip)}
+nav.tabs{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:6px;padding:12px 0;
+  background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(6px);margin-bottom:6px;border-bottom:1px solid var(--rule)}
+nav.tabs button{font:500 12.5px var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--muted);
+  background:transparent;border:1px solid var(--rule);border-radius:4px;padding:7px 12px;cursor:pointer}
+nav.tabs button:hover{border-color:var(--ferrite);color:var(--ink)}
+nav.tabs button[aria-selected="true"]{color:var(--ink);border-color:var(--ferrite);
+  box-shadow:inset 0 -3px 0 var(--ferrite);background:var(--panel)}
+section.view{display:none;padding-top:10px}
+section.view.active{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.sectlede{color:var(--muted);font-size:15.5px;max-width:74ch;margin:2px 0 18px}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:7px;padding:16px 18px;min-width:0}
+.grid{display:grid;gap:14px}
+.topic{display:grid;gap:8px}
+.topic .q{font-family:var(--display);font-size:19px;font-weight:600;color:var(--ferrite)}
+details.tech{margin-top:4px;border-top:1px dashed var(--rule);padding-top:8px}
+details.tech summary{font:500 12px var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);cursor:pointer;list-style:none}
+details.tech summary::-webkit-details-marker{display:none}
+details.tech summary::before{content:"▸ ";color:var(--ferrite)}
+details.tech[open] summary::before{content:"▾ "}
+details.tech .body{font-size:14.5px;color:var(--ink);margin-top:8px;line-height:1.6}
+.meta-row{display:flex;flex-wrap:wrap;gap:8px 16px;font:500 12px var(--mono);color:var(--muted);margin-top:2px}
+.tag{display:inline-block;font:500 11px var(--mono);letter-spacing:.05em;text-transform:uppercase;
+  border:1px solid var(--rule);border-radius:3px;padding:1px 7px;color:var(--muted);vertical-align:middle;white-space:nowrap}
+.tag.obs{border-color:var(--austenite);color:var(--austenite)}
+.tag.interp{border-color:var(--carbide);color:var(--carbide)}
+.tag.infer{border-color:var(--ferrite);color:var(--ferrite)}
+.tag.ku{border-color:var(--mart);color:var(--mart)}
+.tag.supp{border-color:var(--supp);color:var(--supp)}
+.tag.chal{border-color:var(--chal);color:var(--chal)}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:16px}
+.controls label{font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+select,.btn{font:inherit;font-size:14px;color:var(--ink);background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:6px 11px;cursor:pointer}
+select:hover,.btn:hover{border-color:var(--ferrite)}
+.cards{display:grid;gap:12px}
+@media(min-width:720px){.cards{grid-template-columns:1fr 1fr}}
+.card{background:var(--panel);border:1px solid var(--rule);border-radius:7px;padding:14px 15px;display:grid;gap:8px;min-width:0}
+.card .src{font-family:var(--display);font-size:16px;font-weight:600;line-height:1.25}
+.card .prop{font-size:15px;line-height:1.5}
+.card blockquote{margin:0;padding:6px 0 6px 12px;border-left:2px solid var(--rule);
+  font-family:var(--display);font-size:14.5px;color:var(--muted);line-height:1.45}
+.card .foot{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font:500 11px var(--mono);color:var(--muted);border-top:1px solid var(--rule);padding-top:8px;margin-top:2px}
+.card .foot .sv{font-size:10.5px;opacity:.8}
+.loc-note{font:500 11px var(--mono);color:var(--warn)}
+.cutoff-head{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-bottom:6px}
+input[type=range]{accent-color:var(--ferrite);width:min(420px,100%)}
+.year-read{font-family:var(--display);font-size:34px;font-weight:600;color:var(--ferrite);line-height:1}
+.eff{font:500 12px var(--mono);color:var(--muted)}
+.cutoff-cols{display:grid;gap:14px;margin-top:14px}
+@media(min-width:760px){.cutoff-cols{grid-template-columns:1fr 1fr}}
+.col h4{margin-bottom:8px}
+.elig-item,.excl-item{border:1px solid var(--rule);border-radius:5px;padding:8px 10px;font-size:13.5px;margin-bottom:7px;background:var(--panel)}
+.elig-item{border-left:3px solid var(--ok)}
+.excl-item{border-left:3px solid var(--mart);color:var(--muted)}
+.excl-item .why{font:500 11px var(--mono);color:var(--warn);display:block;margin-top:3px}
+.insuff{border:1px dashed var(--tip);border-radius:7px;padding:18px;text-align:center;color:var(--tip);font-family:var(--display);font-size:17px}
+.statusline{font:500 12px var(--mono);color:var(--muted);margin-top:4px}
+.cmp-q{background:var(--panel2);border:1px solid var(--rule);border-left:3px solid var(--ferrite);border-radius:0 6px 6px 0;padding:12px 15px;margin-bottom:16px}
+.cmp-q .lab{font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.cmp-q .qt{font-family:var(--display);font-size:16px;line-height:1.5;margin-top:4px}
+.condgrid{display:grid;gap:14px}
+@media(min-width:860px){.condgrid{grid-template-columns:1fr 1fr}}
+.cond{background:var(--panel);border:1px solid var(--rule);border-radius:7px;padding:14px 16px;display:grid;gap:9px;min-width:0}
+.cond .ch{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+.cond .ch .code{font:600 13px var(--mono);color:var(--ferrite);border:1px solid var(--ferrite);border-radius:3px;padding:1px 7px}
+.cond .ch .nm{font-family:var(--display);font-size:17px;font-weight:600}
+.cond .plain{font-size:13.5px;color:var(--muted);line-height:1.5}
+.ans h5{font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:10px 0 3px}
+.ans .concl{font-size:14.5px;line-height:1.5}
+.ans ul{margin:3px 0;padding-left:18px;font-size:13.5px;line-height:1.5}
+.ans ul li{margin:2px 0}
+.ans .claim-k{font:500 10px var(--mono);text-transform:uppercase;color:var(--muted);border:1px solid var(--rule);border-radius:3px;padding:0 4px;margin-right:4px}
+.conf{font:500 12px var(--mono);color:var(--muted);border-top:1px solid var(--rule);padding-top:7px;margin-top:3px}
+footer{margin-top:40px;border-top:1px solid var(--rule);padding-top:16px;color:var(--muted);font-size:13.5px;line-height:1.6}
+footer code{font:12px var(--mono)}
+.prov-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+.prov-table th,.prov-table td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--rule);vertical-align:top}
+.prov-table th{font:500 11px var(--mono);text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.toggle{margin-left:auto;font:500 11px var(--mono);letter-spacing:.05em;text-transform:uppercase}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a href="./" style="color:var(--muted);font-size:14px;font-family:var(--mono);text-decoration:none">← Phase transformations</a>
+    <div class="eyebrow" style="margin-top:10px">patina2 · historical-epistemic AI · research prototype</div>
+    <h1 id="h-title">Ferrite Evidence &amp; Reasoning Workbench</h1>
+    <p class="lede" id="h-sub"></p>
+    <div class="banner" id="h-disc"></div>
+    <div class="meta-row" id="h-meta"></div>
+  </header>
+
+  <nav class="tabs" role="tablist" id="tabs">
+    <button role="tab" data-view="topics" aria-selected="true">1 · Questions</button>
+    <button role="tab" data-view="evidence" aria-selected="false">2 · Evidence</button>
+    <button role="tab" data-view="cutoff" aria-selected="false">3 · Historical cutoff</button>
+    <button role="tab" data-view="compare" aria-selected="false">4 · Recorded answers</button>
+  </nav>
+
+  <section class="view active" id="view-topics">
+    <h2>What the project is asking</h2>
+    <p class="sectlede">Three open questions in the austenite→ferrite transformation that the prototype organises evidence around. Plain language first; expand for the exact technical framing used in the data.</p>
+    <div class="grid" id="topics-grid"></div>
+  </section>
+
+  <section class="view" id="view-evidence">
+    <h2>Inspect the evidence</h2>
+    <p class="sectlede">A small curated set of source-grounded propositions. Each card carries its paper, source location, role (observation / interpretation / proposed inference), review status and source-version id. A verified quotation is shown; its scientific interpretation is <em>not</em> yet reviewed.</p>
+    <div class="controls">
+      <label for="f-topic">Topic</label>
+      <select id="f-topic"><option value="">All topics</option></select>
+      <label for="f-role">Role</label>
+      <select id="f-role"><option value="">All roles</option></select>
+      <span class="statusline" id="ev-count"></span>
+    </div>
+    <div class="cards" id="evidence-cards"></div>
+  </section>
+
+  <section class="view" id="view-cutoff">
+    <h2>Explore a historical cutoff</h2>
+    <p class="sectlede">Choose a cutoff year. The prototype shows which supplied evidence would have been available by then and why the rest is excluded. These are <strong>precomputed eligibility bundles</strong>, not a reconstructed knowledge state — no intermediate history is invented.</p>
+    <div class="panel">
+      <div class="cutoff-head">
+        <div>
+          <div class="eyebrow">Cutoff year</div>
+          <div class="year-read" id="cut-year">2005</div>
+        </div>
+        <div style="flex:1;min-width:220px">
+          <input type="range" id="cut-range" min="0" max="0" step="1" value="0">
+          <div class="eff" id="cut-eff"></div>
+        </div>
+      </div>
+      <p class="muted" id="cut-note" style="font-size:13.5px;margin:0"></p>
+    </div>
+    <div id="cutoff-body"></div>
+  </section>
+
+  <section class="view" id="view-compare">
+    <h2>Compare recorded answers</h2>
+    <p class="sectlede">One clean case (<code>b-init01</code>): the same fixed model answered the same question under four different evidence organisations. These are recorded, unreviewed pilot outputs — the comparison does not establish that any organisation helps.</p>
+    <div class="banner" id="cmp-disc"></div>
+    <div class="cmp-q">
+      <div class="lab">Exact frozen question (as stored in each generation request)</div>
+      <div class="qt" id="cmp-question"></div>
+    </div>
+    <div class="condgrid" id="cond-grid"></div>
+  </section>
+
+  <footer id="foot"></footer>
+</div>
+
+<script type="application/json" id="payload">{
+ "meta": {
+  "generated": "2026-10-30T05:04:07.244667Z",
+  "data_release": "r3-2026-10-30-srcver",
+  "title": "Ferrite Evidence & Reasoning Workbench",
+  "subtitle": "A research prototype — provenance-grounded evidence and recorded, unreviewed model outputs.",
+  "disclaimer": "Every proposition is traceable to a verified source span, but interpretations are NOT yet scientifically reviewed, and no historical-benefit or discovery claim is made. Model answers are recorded, unreviewed pilot outputs.",
+  "counts": {
+   "topics": 3,
+   "evidence_cards": 40,
+   "sources": 7
+  }
+ },
+ "topics": [
+  {
+   "id": "ep-initiation",
+   "title": "Ferrite plate initiation",
+   "plain": "When a steel cools, flat ferrite grows along the old austenite grain boundaries, but some ferrite instead shoots inward as thin plates (Widmanstätten ferrite). How does a plate get started? Does a brand-new plate nucleate directly on the boundary, does it nucleate sympathetically on an existing ferrite unit, or does an existing flat unit simply become unstable and branch — with no new nucleation at all? And how much of what we 'see' is really just the 2D slice we cut?",
+   "technical": "How does Widmanstatten/plate ferrite initiate, among THREE distinct candidates: (a) direct nucleation of a new plate at the austenite grain boundary; (b) sympathetic nucleation on an existing allotriomorph/ferrite interface; (c) continuous instability/branching (e.g. Mullins-Sekerka) of an existing allotriomorph without a new nucleation event? How do the in-situ observations bear on each, and which do they fail to distinguish? Separate observation/sectioning artefact from physical initiation. (Candidate separation per phase-3 audit finding 5; the physical adjudication is for the expert, not asserted here.)",
+   "cutoff": "2005",
+   "n_evidence": 3,
+   "n_annotations": 17
+  },
+  {
+   "id": "ep-3d-morphology",
+   "title": "Apparent 2D morphology versus 3D connectivity",
+   "plain": "A polished metallographic section is a flat 2D cut through a 3D object. Features that look like separate ferrite 'plates' in one section may be slices through one connected 3D structure. Serial-sectioning and 3D reconstruction ask: are these distinct units, or artefacts of where we cut? Keeping the sectioning artefact separate from a real claim about which morphology is selected is the whole difficulty.",
+   "technical": "Are features seen as separate ferrite 'plates' in 2D sections distinct units, or sections through a connected 3D structure, per the serial-section/3D studies? Separate observation artefact from morphological selection.",
+   "cutoff": "2005",
+   "n_evidence": 4,
+   "n_annotations": 7
+  },
+  {
+   "id": "ep-interface-conditions",
+   "title": "Interfacial conditions controlling ferrite growth",
+   "plain": "How fast ferrite grows depends on the thermodynamic condition right at the moving austenite/ferrite interface — full local equilibrium, negligible-partition local equilibrium, paraequilibrium, or solute drag. These accounts changed over time as alloying (Mn, Mo) and interface segregation were brought in. The question is which condition governs the growth RATE, kept separate from which shape is selected.",
+   "technical": "What interfacial condition governs ferrite growth rate (local equilibrium / NP-LE / paraequilibrium / solute drag), and how did the accounts change over time? Keep propagation (growth rate) separate from morphological selection.",
+   "cutoff": "2012",
+   "n_evidence": 2,
+   "n_annotations": 7
+  }
+ ],
+ "sources": {
+  "hutchinson2006growth": {
+   "source_id": "hutchinson2006growth",
+   "authors": "Hutchinson",
+   "year": "2006",
+   "title": "The growth of ferrite in fe c x alloys the role of thermodynamics diffusion and interfacial conditions",
+   "doi": null,
+   "link": null,
+   "source_version": "78db7d6a5c29",
+   "rights": "unknown"
+  },
+  "kral2005three": {
+   "source_id": "kral2005three",
+   "authors": "Kral",
+   "year": "2005",
+   "title": "Three dimensional analysis and classification of grain boundary nucleated proeutectoid ferrite precipitates",
+   "doi": null,
+   "link": null,
+   "source_version": "5e35c9f7955e",
+   "rights": "unknown"
+  },
+  "phelan2004widmanstatten": {
+   "source_id": "phelan2004widmanstatten",
+   "authors": "D. Phelan, R. Dippenaar",
+   "year": "2004",
+   "title": "Widmanstätten Ferrite Plate Formation in Low-Carbon Steels",
+   "doi": null,
+   "link": null,
+   "source_version": "7262b7c7590d",
+   "rights": "unknown"
+  },
+  "phelan2005insitu": {
+   "source_id": "phelan2005insitu",
+   "authors": "D. Phelan, N. Stanford, R. Dippenaar",
+   "year": "2005",
+   "title": "In situ observations of Widmanstätten ferrite formation in a low-carbon steel",
+   "doi": "10.1016/j.msea.2005.07.015",
+   "link": "https://doi.org/10.1016/j.msea.2005.07.015",
+   "source_version": "8d1cd02c428d",
+   "rights": "unknown"
+  },
+  "spanos1996formation": {
+   "source_id": "spanos1996formation",
+   "authors": "Spanos",
+   "year": "1996",
+   "title": "The formation mechanisms morphology and crystallography of ferrite sideplates",
+   "doi": null,
+   "link": null,
+   "source_version": "ba6c7a6b0110",
+   "rights": "unknown"
+  },
+  "spanos2005new": {
+   "source_id": "spanos2005new",
+   "authors": "Spanos",
+   "year": "2005",
+   "title": "New insights into the widmanstaetten proeutectoid ferrite transformation integraion of crystallographic and three dimensional morphological observations",
+   "doi": null,
+   "link": null,
+   "source_version": "010bd01dd167",
+   "rights": "unknown"
+  },
+  "zurob2007transition": {
+   "source_id": "zurob2007transition",
+   "authors": "Zurob",
+   "year": "2007",
+   "title": "A transition from local equilibrium to paraequilibrium kinetics for ferrite growth in fe c mn a possible role of interfacial segregation",
+   "doi": "10.1016/j.actamat.2008.01.016",
+   "link": "https://doi.org/10.1016/j.actamat.2008.01.016",
+   "source_version": "2efde003863e",
+   "rights": "unknown"
+  }
+ },
+ "evidence_cards": [
+  {
+   "id": "hev78c3c96ab9c85d",
+   "topic": "ep-initiation",
+   "source_id": "phelan2004widmanstatten",
+   "citation": "D. Phelan, R. Dippenaar (2004)",
+   "title": "Widmanstätten Ferrite Plate Formation in Low-Carbon Steels",
+   "link": null,
+   "doi": null,
+   "source_version": "7262b7c7590d",
+   "rights": "unknown",
+   "page": 1,
+   "pages": [
+    1
+   ],
+   "source_location": "p1",
+   "location_note": null,
+   "proposition": "EBSD measurements reveal low-angle misorientations (5-10 degrees) between ferrite allotriomorphs and Widmanstätten ferrite plates.",
+   "verbatim_span": "The EBSD measurements have shown that low-angle misorientations of between 5 and 10 deg exist between ferrite allotriomorphs and Widmanstätten ferrite plates.",
+   "role": "observation",
+   "controversy_group": "supporting",
+   "availability_year": "2004",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "hevb9bc0cb5e61203",
+   "topic": "ep-initiation",
+   "source_id": "phelan2005insitu",
+   "citation": "D. Phelan, N. Stanford, R. Dippenaar (2005)",
+   "title": "In situ observations of Widmanstätten ferrite formation in a low-carbon steel",
+   "link": "https://doi.org/10.1016/j.msea.2005.07.015",
+   "doi": "10.1016/j.msea.2005.07.015",
+   "source_version": "8d1cd02c428d",
+   "rights": "unknown",
+   "page": 5,
+   "pages": [
+    5
+   ],
+   "source_location": "p5",
+   "location_note": null,
+   "proposition": "When a second nucleation event occurs, it moves the ferrite orientation further away from the original allotriomorph rather than closer to it.",
+   "verbatim_span": "In cases where two boundaries were observed, the second rotation always increased the misorientation of the plate from the pre-existing allotriomorph—in other words, a second nucleation event did not yield an orientation closer in orientation to the grain boundary",
+   "role": "observation",
+   "controversy_group": "supporting",
+   "availability_year": "2005",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "hev34514398caf6b5",
+   "topic": "ep-initiation",
+   "source_id": "phelan2005insitu",
+   "citation": "D. Phelan, N. Stanford, R. Dippenaar (2005)",
+   "title": "In situ observations of Widmanstätten ferrite formation in a low-carbon steel",
+   "link": "https://doi.org/10.1016/j.msea.2005.07.015",
+   "doi": "10.1016/j.msea.2005.07.015",
+   "source_version": "8d1cd02c428d",
+   "rights": "unknown",
+   "page": 6,
+   "pages": [
+    6
+   ],
+   "source_location": "p6",
+   "location_note": null,
+   "proposition": "The energy barrier for nucleation is lower for smaller misorientations, which explains why bridging steps (multiple small rotations) are energetically favorable over a single large rotation.",
+   "verbatim_span": "Although two low angle boundaries give the system a higher energy than a single higher angle boundary, we can see from Eq. (6) and Fig. 8 that the energy required to form the critical nucleus is signiﬁcantly lower at smaller misorientations.",
+   "role": "observation",
+   "controversy_group": "supporting",
+   "availability_year": "2005",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "han355092214d7c6c",
+   "topic": "ep-initiation",
+   "source_id": "phelan2004widmanstatten",
+   "citation": "D. Phelan, R. Dippenaar (2004)",
+   "title": "Widmanstätten Ferrite Plate Formation in Low-Carbon Steels",
+   "link": null,
+   "doi": null,
+   "source_version": "7262b7c7590d",
+   "rights": "unknown",
+   "page": 1,
+   "pages": [
+    1
+   ],
+   "source_location": "p1",
+   "location_note": null,
+   "proposition": "The authors conclude that their evidence supports the sympathetic nucleation mechanism for Widmanstätten ferrite plate formation.",
+   "verbatim_span": "Evidence has been found that supports the theory of a sympathetic nucleation mechanism being responsible for the formation of Widmanstätten ferrite plates.",
+   "role": "interpretation",
+   "controversy_group": "contested",
+   "availability_year": "2004",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "hrel5eeb91473810e5",
+   "topic": "ep-initiation",
+   "source_id": "phelan2004widmanstatten",
+   "citation": "D. Phelan, R. Dippenaar (2004)",
+   "title": "Widmanstätten Ferrite Plate Formation in Low-Carbon Steels",
+   "link": null,
+   "doi": null,
+   "source_version": "7262b7c7590d",
+   "rights": "unknown",
+   "page": 1,
+   "pages": [
+    1
+   ],
+   "source_location": "p1",
+   "location_note": null,
+   "proposition": "challenges: unstable interface mechanism",
+   "verbatim_span": "Evidence has been found that supports the theory of a sympathetic nucleation mechanism being responsible for the formation of Widmanstätten ferrite plates.",
+   "role": "proposed inference (claim relationship)",
+   "controversy_group": "contested",
+   "availability_year": "2004",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "hreld3190c4c721ca5",
+   "topic": "ep-initiation",
+   "source_id": "phelan2004widmanstatten",
+   "citation": "D. Phelan, R. Dippenaar (2004)",
+   "title": "Widmanstätten Ferrite Plate Formation in Low-Carbon Steels",
+   "link": null,
+   "doi": null,
+   "source_version": "7262b7c7590d",
+   "rights": "unknown",
+   "page": 1,
+   "pages": [
+    1
+   ],
+   "source_location": "p1",
+   "location_note": null,
+   "proposition": "supports: sympathetic nucleation mechanism",
+   "verbatim_span": "The EBSD measurements have shown that low-angle misorientations of between 5 and 10 deg exist between ferrite allotriomorphs and Widmanstätten ferrite plates.",
+   "role": "proposed inference (claim relationship)",
+   "controversy_group": "supporting",
+   "availability_year": "2004",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "han0a817b0273721c",
+   "topic": "ep-initiation",
+   "source_id": "phelan2004widmanstatten",
+   "citation": "D. Phelan, R. Dippenaar (2004)",
+   "title": "Widmanstätten Ferrite Plate Formation in Low-Carbon Steels",
+   "link": null,
+   "doi": null,
+   "source_version": "7262b7c7590d",
+   "rights": "unknown",
+   "page": 1,
+   "pages": [
+    1
+   ],
+   "source_location": "p1",
+   "location_note": null,
+   "proposition": "Townsend and Kirkaldy proposed that Widmanstätten ferrite plates form via the propagation of an unstable interface.",
+   "verbatim_span": "Townsend and Kirkaldy[4] and Kirkaldy[5] have suggested that Widmanstätten ferrite plates form by the propagation of an unstable interface.",
+   "role": "interpretation",
+   "controversy_group": "supporting",
+   "availability_year": "2004",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "hrelc4f948387d6958",
+   "topic": "ep-initiation",
+   "source_id": "phelan2004widmanstatten",
+   "citation": "D. Phelan, R. Dippenaar (2004)",
+   "title": "Widmanstätten Ferrite Plate Formation in Low-Carbon Steels",
+   "link": null,
+   "doi": null,
+   "source_version": "7262b7c7590d",
+   "rights": "unknown",
+   "page": 1,
+   "pages": [
+    1
+   ],
+   "source_location": "p1",
+   "location_note": null,
+   "proposition": "mentions: unstable interface mechanism",
+   "verbatim_span": "Townsend and Kirkaldy[4] and Kirkaldy[5] have suggested that Widmanstätten ferrite plates form by the propagation of an unstable interface.",
+   "role": "proposed inference (claim relationship)",
+   "controversy_group": "supporting",
+   "availability_year": "2004",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "hanf70b1402984313",
+   "topic": "ep-initiation",
+   "source_id": "phelan2004widmanstatten",
+   "citation": "D. Phelan, R. Dippenaar (2004)",
+   "title": "Widmanstätten Ferrite Plate Formation in Low-Carbon Steels",
+   "link": null,
+   "doi": null,
+   "source_version": "7262b7c7590d",
+   "rights": "unknown",
+   "page": 3,
+   "pages": [
+    3
+   ],
+   "source_location": "p3",
+   "location_note": null,
+   "proposition": "In-situ observations show plates growing from stepped regions of the allotriomorph, consistent with sympathetic nucleation.",
+   "verbatim_span": "The three plates appear to grow directly from the stepped regions of the allotriomorph, as would be the case if the plates formed by a process of sympathetic nucleation.",
+   "role": "interpretation",
+   "controversy_group": "supporting",
+   "availability_year": "2004",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "hrelf0d5cfb9223f4d",
+   "topic": "ep-initiation",
+   "source_id": "phelan2004widmanstatten",
+   "citation": "D. Phelan, R. Dippenaar (2004)",
+   "title": "Widmanstätten Ferrite Plate Formation in Low-Carbon Steels",
+   "link": null,
+   "doi": null,
+   "source_version": "7262b7c7590d",
+   "rights": "unknown",
+   "page": 3,
+   "pages": [
+    3
+   ],
+   "source_location": "p3",
+   "location_note": null,
+   "proposition": "supports: sympathetic nucleation mechanism",
+   "verbatim_span": "The three plates appear to grow directly from the stepped regions of the allotriomorph, as would be the case if the plates formed by a process of sympathetic nucleation.",
+   "role": "proposed inference (claim relationship)",
+   "controversy_group": "supporting",
+   "availability_year": "2004",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "han2931898cc5e99b",
+   "topic": "ep-initiation",
+   "source_id": "phelan2004widmanstatten",
+   "citation": "D. Phelan, R. Dippenaar (2004)",
+   "title": "Widmanstätten Ferrite Plate Formation in Low-Carbon Steels",
+   "link": null,
+   "doi": null,
+   "source_version": "7262b7c7590d",
+   "rights": "unknown",
+   "page": 3,
+   "pages": [
+    3
+   ],
+   "source_location": "p3",
+   "location_note": null,
+   "proposition": "Optical resolution in LSCM is insufficient to distinguish between the two nucleation theories, but crystallographic analysis can.",
+   "verbatim_span": "Although the optical resolution in the confocal microscope is not high enough to discriminate between the nucleation events proposed by the two theories of Widmanstätten ferrite formation, crystallographic orientation analysis can.",
+   "role": "known unknown",
+   "controversy_group": "supporting",
+   "availability_year": "2004",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "han000dd85f778520",
+   "topic": "ep-initiation",
+   "source_id": "phelan2004widmanstatten",
+   "citation": "D. Phelan, R. Dippenaar (2004)",
+   "title": "Widmanstätten Ferrite Plate Formation in Low-Carbon Steels",
+   "link": null,
+   "doi": null,
+   "source_version": "7262b7c7590d",
+   "rights": "unknown",
+   "page": 6,
+   "pages": [
+    6
+   ],
+   "source_location": "p6",
+   "location_note": null,
+   "proposition": "The experimental evidence does not support the Mullins-Sekerka instability mechanism for Widmanstätten ferrite formation.",
+   "verbatim_span": "The proposal that Widmanstätten ferrite plates originate from instabilities that develop in a growing austenite/ferrite interface,[4] the so-called Mullins–Sekerka type instability, is not supported by the experimental evidence obtained in this study.",
+   "role": "interpretation",
+   "controversy_group": "contested",
+   "availability_year": "2004",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "hrel844b40d841d063",
+   "topic": "ep-initiation",
+   "source_id": "phelan2004widmanstatten",
+   "citation": "D. Phelan, R. Dippenaar (2004)",
+   "title": "Widmanstätten Ferrite Plate Formation in Low-Carbon Steels",
+   "link": null,
+   "doi": null,
+   "source_version": "7262b7c7590d",
+   "rights": "unknown",
+   "page": 6,
+   "pages": [
+    6
+   ],
+   "source_location": "p6",
+   "location_note": null,
+   "proposition": "challenges:Mullins-Sekerka instability",
+   "verbatim_span": "The proposal that Widmanstätten ferrite plates originate from instabilities that develop in a growing austenite/ferrite interface,[4] the so-called Mullins–Sekerka type instability, is not supported by the experimental evidence obtained in this study.",
+   "role": "proposed inference (claim relationship)",
+   "controversy_group": "contested",
+   "availability_year": "2004",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "han8fbab0077bfcd3",
+   "topic": "ep-initiation",
+   "source_id": "phelan2005insitu",
+   "citation": "D. Phelan, N. Stanford, R. Dippenaar (2005)",
+   "title": "In situ observations of Widmanstätten ferrite formation in a low-carbon steel",
+   "link": "https://doi.org/10.1016/j.msea.2005.07.015",
+   "doi": "10.1016/j.msea.2005.07.015",
+   "source_version": "8d1cd02c428d",
+   "rights": "unknown",
+   "page": 5,
+   "pages": [
+    5
+   ],
+   "source_location": "p5",
+   "location_note": null,
+   "proposition": "The authors conclude that the observed multiple nucleation events are genuine sympathetic nucleation phenomena.",
+   "verbatim_span": "For these reasons, it is considered that the observations made are in fact genuine sympathetic nucleation, and not a consequence of impingement from another colony of plates below the surface.",
+   "role": "interpretation",
+   "controversy_group": "supporting",
+   "availability_year": "2005",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "hrel64d745a49408ab",
+   "topic": "ep-initiation",
+   "source_id": "phelan2005insitu",
+   "citation": "D. Phelan, N. Stanford, R. Dippenaar (2005)",
+   "title": "In situ observations of Widmanstätten ferrite formation in a low-carbon steel",
+   "link": "https://doi.org/10.1016/j.msea.2005.07.015",
+   "doi": "10.1016/j.msea.2005.07.015",
+   "source_version": "8d1cd02c428d",
+   "rights": "unknown",
+   "page": 5,
+   "pages": [
+    5
+   ],
+   "source_location": "p5",
+   "location_note": null,
+   "proposition": "supports: observation of double plate nucleation",
+   "verbatim_span": "For these reasons, it is considered that the observations made are in fact genuine sympathetic nucleation, and not a consequence of impingement from another colony of plates below the surface.",
+   "role": "proposed inference (claim relationship)",
+   "controversy_group": "supporting",
+   "availability_year": "2005",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "han646f4c45398e22",
+   "topic": "ep-initiation",
+   "source_id": "phelan2005insitu",
+   "citation": "D. Phelan, N. Stanford, R. Dippenaar (2005)",
+   "title": "In situ observations of Widmanstätten ferrite formation in a low-carbon steel",
+   "link": "https://doi.org/10.1016/j.msea.2005.07.015",
+   "doi": "10.1016/j.msea.2005.07.015",
+   "source_version": "8d1cd02c428d",
+   "rights": "unknown",
+   "page": 6,
+   "pages": [
+    6
+   ],
+   "source_location": "p6",
+   "location_note": null,
+   "proposition": "The authors pose the question of why direct nucleation of the fast growth orientation does not always occur, necessitating bridging steps.",
+   "verbatim_span": "In other words, why is the bridging event required, and why can the exact growth orientation not be immediately formed?",
+   "role": "interpretation",
+   "controversy_group": "supporting",
+   "availability_year": "2005",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "han47e7c03816b39b",
+   "topic": "ep-initiation",
+   "source_id": "phelan2005insitu",
+   "citation": "D. Phelan, N. Stanford, R. Dippenaar (2005)",
+   "title": "In situ observations of Widmanstätten ferrite formation in a low-carbon steel",
+   "link": "https://doi.org/10.1016/j.msea.2005.07.015",
+   "doi": "10.1016/j.msea.2005.07.015",
+   "source_version": "8d1cd02c428d",
+   "rights": "unknown",
+   "page": 6,
+   "pages": [
+    6
+   ],
+   "source_location": "p6",
+   "location_note": null,
+   "proposition": "The lower nucleation energy at small misorientations is the probable reason for the observed bridging nucleation steps.",
+   "verbatim_span": "This is probably why a bridging step is required before an ideal growth orientation can be met.",
+   "role": "interpretation",
+   "controversy_group": "supporting",
+   "availability_year": "2005",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "hrel6b54c1451b2aee",
+   "topic": "ep-initiation",
+   "source_id": "phelan2005insitu",
+   "citation": "D. Phelan, N. Stanford, R. Dippenaar (2005)",
+   "title": "In situ observations of Widmanstätten ferrite formation in a low-carbon steel",
+   "link": "https://doi.org/10.1016/j.msea.2005.07.015",
+   "doi": "10.1016/j.msea.2005.07.015",
+   "source_version": "8d1cd02c428d",
+   "rights": "unknown",
+   "page": 6,
+   "pages": [
+    6
+   ],
+   "source_location": "p6",
+   "location_note": null,
+   "proposition": "supports: model result on nucleation energy",
+   "verbatim_span": "This is probably why a bridging step is required before an ideal growth orientation can be met.",
+   "role": "proposed inference (claim relationship)",
+   "controversy_group": "supporting",
+   "availability_year": "2005",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "hancf5f48f2fdfe59",
+   "topic": "ep-initiation",
+   "source_id": "phelan2005insitu",
+   "citation": "D. Phelan, N. Stanford, R. Dippenaar (2005)",
+   "title": "In situ observations of Widmanstätten ferrite formation in a low-carbon steel",
+   "link": "https://doi.org/10.1016/j.msea.2005.07.015",
+   "doi": "10.1016/j.msea.2005.07.015",
+   "source_version": "8d1cd02c428d",
+   "rights": "unknown",
+   "page": 7,
+   "pages": [
+    7
+   ],
+   "source_location": "p7",
+   "location_note": null,
+   "proposition": "The lack of shared crystallographic poles in double nucleation cases may explain why two steps are required instead of one.",
+   "verbatim_span": "This may explain why two nucleation events are sometimes required instead of just one for the same angular misorientation.",
+   "role": "interpretation",
+   "controversy_group": "supporting",
+   "availability_year": "2005",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "hrel6a6cca60e62723",
+   "topic": "ep-initiation",
+   "source_id": "phelan2005insitu",
+   "citation": "D. Phelan, N. Stanford, R. Dippenaar (2005)",
+   "title": "In situ observations of Widmanstätten ferrite formation in a low-carbon steel",
+   "link": "https://doi.org/10.1016/j.msea.2005.07.015",
+   "doi": "10.1016/j.msea.2005.07.015",
+   "source_version": "8d1cd02c428d",
+   "rights": "unknown",
+   "page": 7,
+   "pages": [
+    7
+   ],
+   "source_location": "p7",
+   "location_note": null,
+   "proposition": "supports: observation of shared poles",
+   "verbatim_span": "This may explain why two nucleation events are sometimes required instead of just one for the same angular misorientation.",
+   "role": "proposed inference (claim relationship)",
+   "controversy_group": "supporting",
+   "availability_year": "2005",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "hev14548b50f72292",
+   "topic": "ep-3d-morphology",
+   "source_id": "kral2005three",
+   "citation": "Kral (2005)",
+   "title": "Three dimensional analysis and classification of grain boundary nucleated proeutectoid ferrite precipitates",
+   "link": null,
+   "doi": null,
+   "source_version": "5e35c9f7955e",
+   "rights": "unknown",
+   "page": 1,
+   "pages": [
+    1
+   ],
+   "source_location": "p1",
+   "location_note": null,
+   "proposition": "2D sections align with existing morphological categories, but 3D reconstruction reveals connectivity and shape features invisible in 2D.",
+   "verbatim_span": "While the two-dimensional (2-D) cross sections of these precipitates appeared to fit into the previously accepted categories of precipitate morphologies, 3-D reconstructions revealed important aspects of connectivity and shape that were not observed earlier.",
+   "role": "observation",
+   "controversy_group": "contested",
+   "availability_year": "2005",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "hev0a0a41d7b7e501",
+   "topic": "ep-3d-morphology",
+   "source_id": "kral2005three",
+   "citation": "Kral (2005)",
+   "title": "Three dimensional analysis and classification of grain boundary nucleated proeutectoid ferrite precipitates",
+   "link": null,
+   "doi": null,
+   "source_version": "5e35c9f7955e",
+   "rights": "unknown",
+   "page": 2,
+   "pages": [
+    2
+   ],
+   "source_location": "p2",
+   "location_note": null,
+   "proposition": "The apparent 2D morphology of a single precipitate varies significantly depending on the specific section depth observed.",
+   "verbatim_span": "It is clear that the 2-D morphology of this precipitate inferred from the individual micrographs differs significantly among the various sections.",
+   "role": "observation",
+   "controversy_group": "supporting",
+   "availability_year": "2005",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "hev25d430aeeff0f8",
+   "topic": "ep-3d-morphology",
+   "source_id": "spanos1996formation",
+   "citation": "Spanos (1996)",
+   "title": "The formation mechanisms morphology and crystallography of ferrite sideplates",
+   "link": null,
+   "doi": null,
+   "source_version": "ba6c7a6b0110",
+   "rights": "unknown",
+   "page": 9,
+   "pages": [
+    9
+   ],
+   "source_location": "p9",
+   "location_note": null,
+   "proposition": "Serial sectioning and multi-technique observations confirm that small ferrite crystals are distinct units, not artifacts of sectioning through long plates.",
+   "verbatim_span": "Similar observations at many grain boundaries by both optical microscopy and TEM, and serial sectioning studies on other specimens, strongly indicate that these small crystals are not a result of sectioning through the tips of very long plates.",
+   "role": "observation",
+   "controversy_group": "supporting",
+   "availability_year": "1996",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "hevc761253efc0822",
+   "topic": "ep-3d-morphology",
+   "source_id": "spanos2005new",
+   "citation": "Spanos (2005)",
+   "title": "New insights into the widmanstaetten proeutectoid ferrite transformation integraion of crystallographic and three dimensional morphological observations",
+   "link": null,
+   "doi": null,
+   "source_version": "010bd01dd167",
+   "rights": "unknown",
+   "page": 3,
+   "pages": [
+    3
+   ],
+   "source_location": "p3",
+   "location_note": null,
+   "proposition": "Primary ferrite precipitates resolved by optical microscopy are single crystals at early stages of formation, as indicated by uniform orientation.",
+   "verbatim_span": "There is no perceptible change in orientation along/within any one of these four ferrite particles, indicating that at these early stages of formation, the individual precipitates resolved by optical microscopy are single crystals.",
+   "role": "observation",
+   "controversy_group": "supporting",
+   "availability_year": "2005",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "hrel7d003603762f35",
+   "topic": "ep-3d-morphology",
+   "source_id": "kral2005three",
+   "citation": "Kral (2005)",
+   "title": "Three dimensional analysis and classification of grain boundary nucleated proeutectoid ferrite precipitates",
+   "link": null,
+   "doi": null,
+   "source_version": "5e35c9f7955e",
+   "rights": "unknown",
+   "page": 1,
+   "pages": [
+    1
+   ],
+   "source_location": "p1",
+   "location_note": null,
+   "proposition": "challenges: previous 2D-based morphological classifications",
+   "verbatim_span": "While the two-dimensional (2-D) cross sections of these precipitates appeared to fit into the previously accepted categories of precipitate morphologies, 3-D reconstructions revealed important aspects of connectivity and shape that were not observed earlier.",
+   "role": "proposed inference (claim relationship)",
+   "controversy_group": "contested",
+   "availability_year": "2005",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "hrelfb3fba8b9d5bdf",
+   "topic": "ep-3d-morphology",
+   "source_id": "kral2005three",
+   "citation": "Kral (2005)",
+   "title": "Three dimensional analysis and classification of grain boundary nucleated proeutectoid ferrite precipitates",
+   "link": null,
+   "doi": null,
+   "source_version": "5e35c9f7955e",
+   "rights": "unknown",
+   "page": 2,
+   "pages": [
+    2
+   ],
+   "source_location": "p2",
+   "location_note": null,
+   "proposition": "supports: the limitation of 2D observations",
+   "verbatim_span": "It is clear that the 2-D morphology of this precipitate inferred from the individual micrographs differs significantly among the various sections.",
+   "role": "proposed inference (claim relationship)",
+   "controversy_group": "supporting",
+   "availability_year": "2005",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "han6302977bde4d29",
+   "topic": "ep-3d-morphology",
+   "source_id": "kral2005three",
+   "citation": "Kral (2005)",
+   "title": "Three dimensional analysis and classification of grain boundary nucleated proeutectoid ferrite precipitates",
+   "link": null,
+   "doi": null,
+   "source_version": "5e35c9f7955e",
+   "rights": "unknown",
+   "page": 3,
+   "pages": [
+    3
+   ],
+   "source_location": "p3",
+   "location_note": null,
+   "proposition": "Different Dubé 2D morphologies (sideplates, sawteeth, idiomorphs) are artifacts of sectioning a single 3D spike structure.",
+   "verbatim_span": "several different Dubé morphologies in Figure 3 (primary sideplates, sawteeth, and idiomorphs) could all be represented by different sections through the spike morphology shown in Figure 4.",
+   "role": "interpretation",
+   "controversy_group": "contested",
+   "availability_year": "2005",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "hrel93d60e54a68c42",
+   "topic": "ep-3d-morphology",
+   "source_id": "kral2005three",
+   "citation": "Kral (2005)",
+   "title": "Three dimensional analysis and classification of grain boundary nucleated proeutectoid ferrite precipitates",
+   "link": null,
+   "doi": null,
+   "source_version": "5e35c9f7955e",
+   "rights": "unknown",
+   "page": 3,
+   "pages": [
+    3
+   ],
+   "source_location": "p3",
+   "location_note": null,
+   "proposition": "challenges: the validity of distinguishing these as separate morphological units in 2D",
+   "verbatim_span": "several different Dubé morphologies in Figure 3 (primary sideplates, sawteeth, and idiomorphs) could all be represented by different sections through the spike morphology shown in Figure 4.",
+   "role": "proposed inference (claim relationship)",
+   "controversy_group": "contested",
+   "availability_year": "2005",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "hana74307dd452b53",
+   "topic": "ep-3d-morphology",
+   "source_id": "kral2005three",
+   "citation": "Kral (2005)",
+   "title": "Three dimensional analysis and classification of grain boundary nucleated proeutectoid ferrite precipitates",
+   "link": null,
+   "doi": null,
+   "source_version": "5e35c9f7955e",
+   "rights": "unknown",
+   "page": 5,
+   "pages": [
+    5
+   ],
+   "source_location": "p5",
+   "location_note": null,
+   "proposition": "The 3D reconstruction underestimates the true length of sideplates because the serial sectioning volume truncated the precipitates at the boundaries of the reconstructed box.",
+   "verbatim_span": "The actual length of these precipitates along the grain-boundary plane should be considerably greater than what is presented here, due to the fact that, in this reconstruction from 41 sections, they clearly have been truncated at the front and back faces of the box",
+   "role": "known unknown",
+   "controversy_group": "supporting",
+   "availability_year": "2005",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "hrelc4bf5779d50a7a",
+   "topic": "ep-3d-morphology",
+   "source_id": "spanos1996formation",
+   "citation": "Spanos (1996)",
+   "title": "The formation mechanisms morphology and crystallography of ferrite sideplates",
+   "link": null,
+   "doi": null,
+   "source_version": "ba6c7a6b0110",
+   "rights": "unknown",
+   "page": 9,
+   "pages": [
+    9
+   ],
+   "source_location": "p9",
+   "location_note": null,
+   "proposition": "supports: distinct units vs sectioning artifact",
+   "verbatim_span": "Similar observations at many grain boundaries by both optical microscopy and TEM, and serial sectioning studies on other specimens, strongly indicate that these small crystals are not a result of sectioning through the tips of very long plates.",
+   "role": "proposed inference (claim relationship)",
+   "controversy_group": "supporting",
+   "availability_year": "1996",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "hrel934f9c475abb4d",
+   "topic": "ep-3d-morphology",
+   "source_id": "spanos2005new",
+   "citation": "Spanos (2005)",
+   "title": "New insights into the widmanstaetten proeutectoid ferrite transformation integraion of crystallographic and three dimensional morphological observations",
+   "link": null,
+   "doi": null,
+   "source_version": "010bd01dd167",
+   "rights": "unknown",
+   "page": 3,
+   "pages": [
+    3
+   ],
+   "source_location": "p3",
+   "location_note": null,
+   "proposition": "supports:single crystal nature of primary ferrite",
+   "verbatim_span": "There is no perceptible change in orientation along/within any one of these four ferrite particles, indicating that at these early stages of formation, the individual precipitates resolved by optical microscopy are single crystals.",
+   "role": "proposed inference (claim relationship)",
+   "controversy_group": "supporting",
+   "availability_year": "2005",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "hev57d119667b2da7",
+   "topic": "ep-interface-conditions",
+   "source_id": "hutchinson2006growth",
+   "citation": "Hutchinson (2006)",
+   "title": "The growth of ferrite in fe c x alloys the role of thermodynamics diffusion and interfacial conditions",
+   "link": null,
+   "doi": null,
+   "source_version": "78db7d6a5c29",
+   "rights": "unknown",
+   "page": 1,
+   "pages": [
+    1
+   ],
+   "source_location": "p1",
+   "location_note": null,
+   "proposition": "The field has historically focused on distinguishing between local equilibrium with partitioning, local equilibrium with negligible partitioning, and paraequilibrium as governing conditions for ferrite growth.",
+   "verbatim_span": "The general problem of the possible thermodynamic conditions for growth, namely, local equilibrium with partitioning (LEP), local equilibrium with negligible partitioning (LENP), and paraequilibrium (PE), have all received considerable attention",
+   "role": "observation",
+   "controversy_group": "supporting",
+   "availability_year": "2006",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "heve99711b544dc83",
+   "topic": "ep-interface-conditions",
+   "source_id": "zurob2007transition",
+   "citation": "Zurob (2007)",
+   "title": "A transition from local equilibrium to paraequilibrium kinetics for ferrite growth in fe c mn a possible role of interfacial segregation",
+   "link": "https://doi.org/10.1016/j.actamat.2008.01.016",
+   "doi": "10.1016/j.actamat.2008.01.016",
+   "source_version": "2efde003863e",
+   "rights": "unknown",
+   "page": 3,
+   "pages": [
+    3
+   ],
+   "source_location": "p3",
+   "location_note": null,
+   "proposition": "While PE conditions are often observed at the start of ferrite precipitation, the final ferrite fraction is typically lower than predicted by the simple PE limit.",
+   "verbatim_span": "Experimental observations have been oﬀered to support the existence of PE conditions at the inception of ferrite precipitation from austenite, but it is often found that the ‘ﬁnal’ fraction of ferrite is much less than would be predicted from the simple PE limit [19–21].",
+   "role": "observation",
+   "controversy_group": "supporting",
+   "availability_year": "2007",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "han3cce5df3c57cb0",
+   "topic": "ep-interface-conditions",
+   "source_id": "hutchinson2006growth",
+   "citation": "Hutchinson (2006)",
+   "title": "The growth of ferrite in fe c x alloys the role of thermodynamics diffusion and interfacial conditions",
+   "link": null,
+   "doi": null,
+   "source_version": "78db7d6a5c29",
+   "rights": "unknown",
+   "page": 1,
+   "pages": [
+    1
+   ],
+   "source_location": "p1",
+   "location_note": null,
+   "proposition": "The paper identifies two key unresolved issues: determining the correct interfacial thermodynamic condition and assessing the impact of solute drag on growth kinetics.",
+   "verbatim_span": "These are the selection of the appropriate interfacial conditions, and the possible role of solute drag in the ferrite growth kinetics in Fe-C-X alloys.",
+   "role": "interpretation",
+   "controversy_group": "supporting",
+   "availability_year": "2006",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "han76635ac7d5aa07",
+   "topic": "ep-interface-conditions",
+   "source_id": "hutchinson2006growth",
+   "citation": "Hutchinson (2006)",
+   "title": "The growth of ferrite in fe c x alloys the role of thermodynamics diffusion and interfacial conditions",
+   "link": null,
+   "doi": null,
+   "source_version": "78db7d6a5c29",
+   "rights": "unknown",
+   "page": 1,
+   "pages": [
+    1
+   ],
+   "source_location": "p1",
+   "location_note": null,
+   "proposition": "Even in simple systems like Fe-C-Ni where solute interactions are weak, the interfacial conditions are not static but evolve during the growth process.",
+   "verbatim_span": "In spite of this simplicity, the need to take into account the evolution of the interfacial conditions while the reaction proceeds is stressed.",
+   "role": "interpretation",
+   "controversy_group": "supporting",
+   "availability_year": "2006",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "hrel26b4d866e2e864",
+   "topic": "ep-interface-conditions",
+   "source_id": "hutchinson2006growth",
+   "citation": "Hutchinson (2006)",
+   "title": "The growth of ferrite in fe c x alloys the role of thermodynamics diffusion and interfacial conditions",
+   "link": null,
+   "doi": null,
+   "source_version": "78db7d6a5c29",
+   "rights": "unknown",
+   "page": 1,
+   "pages": [
+    1
+   ],
+   "source_location": "p1",
+   "location_note": null,
+   "proposition": "supports: the model of evolving interfacial conditions",
+   "verbatim_span": "In spite of this simplicity, the need to take into account the evolution of the interfacial conditions while the reaction proceeds is stressed.",
+   "role": "proposed inference (claim relationship)",
+   "controversy_group": "supporting",
+   "availability_year": "2006",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "han29b5a8d02829fd",
+   "topic": "ep-interface-conditions",
+   "source_id": "hutchinson2006growth",
+   "citation": "Hutchinson (2006)",
+   "title": "The growth of ferrite in fe c x alloys the role of thermodynamics diffusion and interfacial conditions",
+   "link": null,
+   "doi": null,
+   "source_version": "78db7d6a5c29",
+   "rights": "unknown",
+   "page": 1,
+   "pages": [
+    1
+   ],
+   "source_location": "p1",
+   "location_note": null,
+   "proposition": "In Fe-C-Mo systems, extra energy dissipation observed experimentally is interpreted as a solute drag effect caused by the interaction of Mo with the moving interface.",
+   "verbatim_span": "The experimental evidence of a clear additional dissipation associated with the Mo addition is presented in Section V. This dissipation may be interpreted in terms of a solute drag effect on the moving interface.",
+   "role": "interpretation",
+   "controversy_group": "supporting",
+   "availability_year": "2006",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "hanc373194a8bf667",
+   "topic": "ep-interface-conditions",
+   "source_id": "zurob2007transition",
+   "citation": "Zurob (2007)",
+   "title": "A transition from local equilibrium to paraequilibrium kinetics for ferrite growth in fe c mn a possible role of interfacial segregation",
+   "link": "https://doi.org/10.1016/j.actamat.2008.01.016",
+   "doi": "10.1016/j.actamat.2008.01.016",
+   "source_version": "2efde003863e",
+   "rights": "unknown",
+   "page": 1,
+   "pages": [
+    1
+   ],
+   "source_location": "p1",
+   "location_note": null,
+   "proposition": "The observed transition to PE kinetics is attributed to Mn segregation at the interface, which lowers the austenite-side Mn concentration and extends the PE state.",
+   "verbatim_span": "These novel results are attributed to the segregation of Mn to the moving interface. It is thought that this process has the eﬀect of decreasing the Mn concentration on the austenite side of the interface and, consequently, extending the PE state.",
+   "role": "interpretation",
+   "controversy_group": "supporting",
+   "availability_year": "2007",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "hrel3f1b43827fe0e9",
+   "topic": "ep-interface-conditions",
+   "source_id": "zurob2007transition",
+   "citation": "Zurob (2007)",
+   "title": "A transition from local equilibrium to paraequilibrium kinetics for ferrite growth in fe c mn a possible role of interfacial segregation",
+   "link": "https://doi.org/10.1016/j.actamat.2008.01.016",
+   "doi": "10.1016/j.actamat.2008.01.016",
+   "source_version": "2efde003863e",
+   "rights": "unknown",
+   "page": 1,
+   "pages": [
+    1
+   ],
+   "source_location": "p1",
+   "location_note": null,
+   "proposition": "supports: the role of interfacial conditions in governing growth kinetics",
+   "verbatim_span": "These novel results are attributed to the segregation of Mn to the moving interface. It is thought that this process has the eﬀect of decreasing the Mn concentration on the austenite side of the interface and, consequently, extending the PE state.",
+   "role": "proposed inference (claim relationship)",
+   "controversy_group": "supporting",
+   "availability_year": "2007",
+   "review_status": "source_text_checked"
+  },
+  {
+   "id": "hrel2ce358a894fae8",
+   "topic": "ep-interface-conditions",
+   "source_id": "zurob2007transition",
+   "citation": "Zurob (2007)",
+   "title": "A transition from local equilibrium to paraequilibrium kinetics for ferrite growth in fe c mn a possible role of interfacial segregation",
+   "link": "https://doi.org/10.1016/j.actamat.2008.01.016",
+   "doi": "10.1016/j.actamat.2008.01.016",
+   "source_version": "2efde003863e",
+   "rights": "unknown",
+   "page": 3,
+   "pages": [
+    3
+   ],
+   "source_location": "p3",
+   "location_note": null,
+   "proposition": "supports: the complexity of interfacial conditions beyond simple PE",
+   "verbatim_span": "Experimental observations have been oﬀered to support the existence of PE conditions at the inception of ferrite precipitation from austenite, but it is often found that the ‘ﬁnal’ fraction of ferrite is much less than would be predicted from the simple PE limit [19–21].",
+   "role": "proposed inference (claim relationship)",
+   "controversy_group": "supporting",
+   "availability_year": "2007",
+   "review_status": "source_text_checked"
+  }
+ ],
+ "cutoff": {
+  "years": [
+   1990,
+   1996,
+   2004,
+   2005,
+   2006,
+   2007,
+   2009,
+   2012
+  ],
+  "bundles": {
+   "1990": {
+    "effective_cutoff": "1990-12-31",
+    "eligible": [],
+    "excluded": [
+     {
+      "id": "hev78c3c96ab9c85d",
+      "status": "excluded_future",
+      "reason": "own latest availability 2004-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "hevb9bc0cb5e61203",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "hev34514398caf6b5",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "hev14548b50f72292",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "hev0a0a41d7b7e501",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "hev25d430aeeff0f8",
+      "status": "excluded_future",
+      "reason": "own latest availability 1996-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "hevc761253efc0822",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "hev57d119667b2da7",
+      "status": "excluded_future",
+      "reason": "own latest availability 2006-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "heve99711b544dc83",
+      "status": "excluded_future",
+      "reason": "own latest availability 2007-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "han355092214d7c6c",
+      "status": "excluded_future",
+      "reason": "own latest availability 2004-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "hrel5eeb91473810e5",
+      "status": "excluded_future",
+      "reason": "own latest availability 2004-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "hreld3190c4c721ca5",
+      "status": "excluded_future",
+      "reason": "own latest availability 2004-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "han0a817b0273721c",
+      "status": "excluded_future",
+      "reason": "own latest availability 2004-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "hrelc4f948387d6958",
+      "status": "excluded_future",
+      "reason": "own latest availability 2004-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "hanf70b1402984313",
+      "status": "excluded_future",
+      "reason": "own latest availability 2004-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "hrelf0d5cfb9223f4d",
+      "status": "excluded_future",
+      "reason": "own latest availability 2004-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "han2931898cc5e99b",
+      "status": "excluded_future",
+      "reason": "own latest availability 2004-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "han000dd85f778520",
+      "status": "excluded_future",
+      "reason": "own latest availability 2004-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "hrel844b40d841d063",
+      "status": "excluded_future",
+      "reason": "own latest availability 2004-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "han8fbab0077bfcd3",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "hrel64d745a49408ab",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "han646f4c45398e22",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "han47e7c03816b39b",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "hrel6b54c1451b2aee",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "hancf5f48f2fdfe59",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "hrel6a6cca60e62723",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "hrel7d003603762f35",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "hrelfb3fba8b9d5bdf",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "han6302977bde4d29",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "hrel93d60e54a68c42",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "hana74307dd452b53",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "hrelc4bf5779d50a7a",
+      "status": "excluded_future",
+      "reason": "own latest availability 1996-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "hrel934f9c475abb4d",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "han3cce5df3c57cb0",
+      "status": "excluded_future",
+      "reason": "own latest availability 2006-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "han76635ac7d5aa07",
+      "status": "excluded_future",
+      "reason": "own latest availability 2006-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "hrel26b4d866e2e864",
+      "status": "excluded_future",
+      "reason": "own latest availability 2006-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "han29b5a8d02829fd",
+      "status": "excluded_future",
+      "reason": "own latest availability 2006-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "hanc373194a8bf667",
+      "status": "excluded_future",
+      "reason": "own latest availability 2007-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "hrel3f1b43827fe0e9",
+      "status": "excluded_future",
+      "reason": "own latest availability 2007-12-31 > cutoff 1990-12-31"
+     },
+     {
+      "id": "hrel2ce358a894fae8",
+      "status": "excluded_future",
+      "reason": "own latest availability 2007-12-31 > cutoff 1990-12-31"
+     }
+    ],
+    "n_eligible": 0,
+    "insufficient": true
+   },
+   "1996": {
+    "effective_cutoff": "1996-12-31",
+    "eligible": [
+     "hev25d430aeeff0f8",
+     "hrelc4bf5779d50a7a"
+    ],
+    "excluded": [
+     {
+      "id": "hev78c3c96ab9c85d",
+      "status": "excluded_future",
+      "reason": "own latest availability 2004-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "hevb9bc0cb5e61203",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "hev34514398caf6b5",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "hev14548b50f72292",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "hev0a0a41d7b7e501",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "hevc761253efc0822",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "hev57d119667b2da7",
+      "status": "excluded_future",
+      "reason": "own latest availability 2006-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "heve99711b544dc83",
+      "status": "excluded_future",
+      "reason": "own latest availability 2007-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "han355092214d7c6c",
+      "status": "excluded_future",
+      "reason": "own latest availability 2004-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "hrel5eeb91473810e5",
+      "status": "excluded_future",
+      "reason": "own latest availability 2004-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "hreld3190c4c721ca5",
+      "status": "excluded_future",
+      "reason": "own latest availability 2004-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "han0a817b0273721c",
+      "status": "excluded_future",
+      "reason": "own latest availability 2004-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "hrelc4f948387d6958",
+      "status": "excluded_future",
+      "reason": "own latest availability 2004-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "hanf70b1402984313",
+      "status": "excluded_future",
+      "reason": "own latest availability 2004-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "hrelf0d5cfb9223f4d",
+      "status": "excluded_future",
+      "reason": "own latest availability 2004-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "han2931898cc5e99b",
+      "status": "excluded_future",
+      "reason": "own latest availability 2004-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "han000dd85f778520",
+      "status": "excluded_future",
+      "reason": "own latest availability 2004-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "hrel844b40d841d063",
+      "status": "excluded_future",
+      "reason": "own latest availability 2004-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "han8fbab0077bfcd3",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "hrel64d745a49408ab",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "han646f4c45398e22",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "han47e7c03816b39b",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "hrel6b54c1451b2aee",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "hancf5f48f2fdfe59",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "hrel6a6cca60e62723",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "hrel7d003603762f35",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "hrelfb3fba8b9d5bdf",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "han6302977bde4d29",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "hrel93d60e54a68c42",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "hana74307dd452b53",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "hrel934f9c475abb4d",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "han3cce5df3c57cb0",
+      "status": "excluded_future",
+      "reason": "own latest availability 2006-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "han76635ac7d5aa07",
+      "status": "excluded_future",
+      "reason": "own latest availability 2006-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "hrel26b4d866e2e864",
+      "status": "excluded_future",
+      "reason": "own latest availability 2006-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "han29b5a8d02829fd",
+      "status": "excluded_future",
+      "reason": "own latest availability 2006-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "hanc373194a8bf667",
+      "status": "excluded_future",
+      "reason": "own latest availability 2007-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "hrel3f1b43827fe0e9",
+      "status": "excluded_future",
+      "reason": "own latest availability 2007-12-31 > cutoff 1996-12-31"
+     },
+     {
+      "id": "hrel2ce358a894fae8",
+      "status": "excluded_future",
+      "reason": "own latest availability 2007-12-31 > cutoff 1996-12-31"
+     }
+    ],
+    "n_eligible": 2,
+    "insufficient": false
+   },
+   "2004": {
+    "effective_cutoff": "2004-12-31",
+    "eligible": [
+     "hev78c3c96ab9c85d",
+     "hev25d430aeeff0f8",
+     "han355092214d7c6c",
+     "hrel5eeb91473810e5",
+     "hreld3190c4c721ca5",
+     "han0a817b0273721c",
+     "hrelc4f948387d6958",
+     "hanf70b1402984313",
+     "hrelf0d5cfb9223f4d",
+     "han2931898cc5e99b",
+     "han000dd85f778520",
+     "hrel844b40d841d063",
+     "hrelc4bf5779d50a7a"
+    ],
+    "excluded": [
+     {
+      "id": "hevb9bc0cb5e61203",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 2004-12-31"
+     },
+     {
+      "id": "hev34514398caf6b5",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 2004-12-31"
+     },
+     {
+      "id": "hev14548b50f72292",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 2004-12-31"
+     },
+     {
+      "id": "hev0a0a41d7b7e501",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 2004-12-31"
+     },
+     {
+      "id": "hevc761253efc0822",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 2004-12-31"
+     },
+     {
+      "id": "hev57d119667b2da7",
+      "status": "excluded_future",
+      "reason": "own latest availability 2006-12-31 > cutoff 2004-12-31"
+     },
+     {
+      "id": "heve99711b544dc83",
+      "status": "excluded_future",
+      "reason": "own latest availability 2007-12-31 > cutoff 2004-12-31"
+     },
+     {
+      "id": "han8fbab0077bfcd3",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 2004-12-31"
+     },
+     {
+      "id": "hrel64d745a49408ab",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 2004-12-31"
+     },
+     {
+      "id": "han646f4c45398e22",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 2004-12-31"
+     },
+     {
+      "id": "han47e7c03816b39b",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 2004-12-31"
+     },
+     {
+      "id": "hrel6b54c1451b2aee",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 2004-12-31"
+     },
+     {
+      "id": "hancf5f48f2fdfe59",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 2004-12-31"
+     },
+     {
+      "id": "hrel6a6cca60e62723",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 2004-12-31"
+     },
+     {
+      "id": "hrel7d003603762f35",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 2004-12-31"
+     },
+     {
+      "id": "hrelfb3fba8b9d5bdf",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 2004-12-31"
+     },
+     {
+      "id": "han6302977bde4d29",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 2004-12-31"
+     },
+     {
+      "id": "hrel93d60e54a68c42",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 2004-12-31"
+     },
+     {
+      "id": "hana74307dd452b53",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 2004-12-31"
+     },
+     {
+      "id": "hrel934f9c475abb4d",
+      "status": "excluded_future",
+      "reason": "own latest availability 2005-12-31 > cutoff 2004-12-31"
+     },
+     {
+      "id": "han3cce5df3c57cb0",
+      "status": "excluded_future",
+      "reason": "own latest availability 2006-12-31 > cutoff 2004-12-31"
+     },
+     {
+      "id": "han76635ac7d5aa07",
+      "status": "excluded_future",
+      "reason": "own latest availability 2006-12-31 > cutoff 2004-12-31"
+     },
+     {
+      "id": "hrel26b4d866e2e864",
+      "status": "excluded_future",
+      "reason": "own latest availability 2006-12-31 > cutoff 2004-12-31"
+     },
+     {
+      "id": "han29b5a8d02829fd",
+      "status": "excluded_future",
+      "reason": "own latest availability 2006-12-31 > cutoff 2004-12-31"
+     },
+     {
+      "id": "hanc373194a8bf667",
+      "status": "excluded_future",
+      "reason": "own latest availability 2007-12-31 > cutoff 2004-12-31"
+     },
+     {
+      "id": "hrel3f1b43827fe0e9",
+      "status": "excluded_future",
+      "reason": "own latest availability 2007-12-31 > cutoff 2004-12-31"
+     },
+     {
+      "id": "hrel2ce358a894fae8",
+      "status": "excluded_future",
+      "reason": "own latest availability 2007-12-31 > cutoff 2004-12-31"
+     }
+    ],
+    "n_eligible": 13,
+    "insufficient": false
+   },
+   "2005": {
+    "effective_cutoff": "2005-12-31",
+    "eligible": [
+     "hev78c3c96ab9c85d",
+     "hevb9bc0cb5e61203",
+     "hev34514398caf6b5",
+     "hev14548b50f72292",
+     "hev0a0a41d7b7e501",
+     "hev25d430aeeff0f8",
+     "hevc761253efc0822",
+     "han355092214d7c6c",
+     "hrel5eeb91473810e5",
+     "hreld3190c4c721ca5",
+     "han0a817b0273721c",
+     "hrelc4f948387d6958",
+     "hanf70b1402984313",
+     "hrelf0d5cfb9223f4d",
+     "han2931898cc5e99b",
+     "han000dd85f778520",
+     "hrel844b40d841d063",
+     "han8fbab0077bfcd3",
+     "hrel64d745a49408ab",
+     "han646f4c45398e22",
+     "han47e7c03816b39b",
+     "hrel6b54c1451b2aee",
+     "hancf5f48f2fdfe59",
+     "hrel6a6cca60e62723",
+     "hrel7d003603762f35",
+     "hrelfb3fba8b9d5bdf",
+     "han6302977bde4d29",
+     "hrel93d60e54a68c42",
+     "hana74307dd452b53",
+     "hrelc4bf5779d50a7a",
+     "hrel934f9c475abb4d"
+    ],
+    "excluded": [
+     {
+      "id": "hev57d119667b2da7",
+      "status": "excluded_future",
+      "reason": "own latest availability 2006-12-31 > cutoff 2005-12-31"
+     },
+     {
+      "id": "heve99711b544dc83",
+      "status": "excluded_future",
+      "reason": "own latest availability 2007-12-31 > cutoff 2005-12-31"
+     },
+     {
+      "id": "han3cce5df3c57cb0",
+      "status": "excluded_future",
+      "reason": "own latest availability 2006-12-31 > cutoff 2005-12-31"
+     },
+     {
+      "id": "han76635ac7d5aa07",
+      "status": "excluded_future",
+      "reason": "own latest availability 2006-12-31 > cutoff 2005-12-31"
+     },
+     {
+      "id": "hrel26b4d866e2e864",
+      "status": "excluded_future",
+      "reason": "own latest availability 2006-12-31 > cutoff 2005-12-31"
+     },
+     {
+      "id": "han29b5a8d02829fd",
+      "status": "excluded_future",
+      "reason": "own latest availability 2006-12-31 > cutoff 2005-12-31"
+     },
+     {
+      "id": "hanc373194a8bf667",
+      "status": "excluded_future",
+      "reason": "own latest availability 2007-12-31 > cutoff 2005-12-31"
+     },
+     {
+      "id": "hrel3f1b43827fe0e9",
+      "status": "excluded_future",
+      "reason": "own latest availability 2007-12-31 > cutoff 2005-12-31"
+     },
+     {
+      "id": "hrel2ce358a894fae8",
+      "status": "excluded_future",
+      "reason": "own latest availability 2007-12-31 > cutoff 2005-12-31"
+     }
+    ],
+    "n_eligible": 31,
+    "insufficient": false
+   },
+   "2006": {
+    "effective_cutoff": "2006-12-31",
+    "eligible": [
+     "hev78c3c96ab9c85d",
+     "hevb9bc0cb5e61203",
+     "hev34514398caf6b5",
+     "hev14548b50f72292",
+     "hev0a0a41d7b7e501",
+     "hev25d430aeeff0f8",
+     "hevc761253efc0822",
+     "hev57d119667b2da7",
+     "han355092214d7c6c",
+     "hrel5eeb91473810e5",
+     "hreld3190c4c721ca5",
+     "han0a817b0273721c",
+     "hrelc4f948387d6958",
+     "hanf70b1402984313",
+     "hrelf0d5cfb9223f4d",
+     "han2931898cc5e99b",
+     "han000dd85f778520",
+     "hrel844b40d841d063",
+     "han8fbab0077bfcd3",
+     "hrel64d745a49408ab",
+     "han646f4c45398e22",
+     "han47e7c03816b39b",
+     "hrel6b54c1451b2aee",
+     "hancf5f48f2fdfe59",
+     "hrel6a6cca60e62723",
+     "hrel7d003603762f35",
+     "hrelfb3fba8b9d5bdf",
+     "han6302977bde4d29",
+     "hrel93d60e54a68c42",
+     "hana74307dd452b53",
+     "hrelc4bf5779d50a7a",
+     "hrel934f9c475abb4d",
+     "han3cce5df3c57cb0",
+     "han76635ac7d5aa07",
+     "hrel26b4d866e2e864",
+     "han29b5a8d02829fd"
+    ],
+    "excluded": [
+     {
+      "id": "heve99711b544dc83",
+      "status": "excluded_future",
+      "reason": "own latest availability 2007-12-31 > cutoff 2006-12-31"
+     },
+     {
+      "id": "hanc373194a8bf667",
+      "status": "excluded_future",
+      "reason": "own latest availability 2007-12-31 > cutoff 2006-12-31"
+     },
+     {
+      "id": "hrel3f1b43827fe0e9",
+      "status": "excluded_future",
+      "reason": "own latest availability 2007-12-31 > cutoff 2006-12-31"
+     },
+     {
+      "id": "hrel2ce358a894fae8",
+      "status": "excluded_future",
+      "reason": "own latest availability 2007-12-31 > cutoff 2006-12-31"
+     }
+    ],
+    "n_eligible": 36,
+    "insufficient": false
+   },
+   "2007": {
+    "effective_cutoff": "2007-12-31",
+    "eligible": [
+     "hev78c3c96ab9c85d",
+     "hevb9bc0cb5e61203",
+     "hev34514398caf6b5",
+     "hev14548b50f72292",
+     "hev0a0a41d7b7e501",
+     "hev25d430aeeff0f8",
+     "hevc761253efc0822",
+     "hev57d119667b2da7",
+     "heve99711b544dc83",
+     "han355092214d7c6c",
+     "hrel5eeb91473810e5",
+     "hreld3190c4c721ca5",
+     "han0a817b0273721c",
+     "hrelc4f948387d6958",
+     "hanf70b1402984313",
+     "hrelf0d5cfb9223f4d",
+     "han2931898cc5e99b",
+     "han000dd85f778520",
+     "hrel844b40d841d063",
+     "han8fbab0077bfcd3",
+     "hrel64d745a49408ab",
+     "han646f4c45398e22",
+     "han47e7c03816b39b",
+     "hrel6b54c1451b2aee",
+     "hancf5f48f2fdfe59",
+     "hrel6a6cca60e62723",
+     "hrel7d003603762f35",
+     "hrelfb3fba8b9d5bdf",
+     "han6302977bde4d29",
+     "hrel93d60e54a68c42",
+     "hana74307dd452b53",
+     "hrelc4bf5779d50a7a",
+     "hrel934f9c475abb4d",
+     "han3cce5df3c57cb0",
+     "han76635ac7d5aa07",
+     "hrel26b4d866e2e864",
+     "han29b5a8d02829fd",
+     "hanc373194a8bf667",
+     "hrel3f1b43827fe0e9",
+     "hrel2ce358a894fae8"
+    ],
+    "excluded": [],
+    "n_eligible": 40,
+    "insufficient": false
+   },
+   "2009": {
+    "effective_cutoff": "2009-12-31",
+    "eligible": [
+     "hev78c3c96ab9c85d",
+     "hevb9bc0cb5e61203",
+     "hev34514398caf6b5",
+     "hev14548b50f72292",
+     "hev0a0a41d7b7e501",
+     "hev25d430aeeff0f8",
+     "hevc761253efc0822",
+     "hev57d119667b2da7",
+     "heve99711b544dc83",
+     "han355092214d7c6c",
+     "hrel5eeb91473810e5",
+     "hreld3190c4c721ca5",
+     "han0a817b0273721c",
+     "hrelc4f948387d6958",
+     "hanf70b1402984313",
+     "hrelf0d5cfb9223f4d",
+     "han2931898cc5e99b",
+     "han000dd85f778520",
+     "hrel844b40d841d063",
+     "han8fbab0077bfcd3",
+     "hrel64d745a49408ab",
+     "han646f4c45398e22",
+     "han47e7c03816b39b",
+     "hrel6b54c1451b2aee",
+     "hancf5f48f2fdfe59",
+     "hrel6a6cca60e62723",
+     "hrel7d003603762f35",
+     "hrelfb3fba8b9d5bdf",
+     "han6302977bde4d29",
+     "hrel93d60e54a68c42",
+     "hana74307dd452b53",
+     "hrelc4bf5779d50a7a",
+     "hrel934f9c475abb4d",
+     "han3cce5df3c57cb0",
+     "han76635ac7d5aa07",
+     "hrel26b4d866e2e864",
+     "han29b5a8d02829fd",
+     "hanc373194a8bf667",
+     "hrel3f1b43827fe0e9",
+     "hrel2ce358a894fae8"
+    ],
+    "excluded": [],
+    "n_eligible": 40,
+    "insufficient": false
+   },
+   "2012": {
+    "effective_cutoff": "2012-12-31",
+    "eligible": [
+     "hev78c3c96ab9c85d",
+     "hevb9bc0cb5e61203",
+     "hev34514398caf6b5",
+     "hev14548b50f72292",
+     "hev0a0a41d7b7e501",
+     "hev25d430aeeff0f8",
+     "hevc761253efc0822",
+     "hev57d119667b2da7",
+     "heve99711b544dc83",
+     "han355092214d7c6c",
+     "hrel5eeb91473810e5",
+     "hreld3190c4c721ca5",
+     "han0a817b0273721c",
+     "hrelc4f948387d6958",
+     "hanf70b1402984313",
+     "hrelf0d5cfb9223f4d",
+     "han2931898cc5e99b",
+     "han000dd85f778520",
+     "hrel844b40d841d063",
+     "han8fbab0077bfcd3",
+     "hrel64d745a49408ab",
+     "han646f4c45398e22",
+     "han47e7c03816b39b",
+     "hrel6b54c1451b2aee",
+     "hancf5f48f2fdfe59",
+     "hrel6a6cca60e62723",
+     "hrel7d003603762f35",
+     "hrelfb3fba8b9d5bdf",
+     "han6302977bde4d29",
+     "hrel93d60e54a68c42",
+     "hana74307dd452b53",
+     "hrelc4bf5779d50a7a",
+     "hrel934f9c475abb4d",
+     "han3cce5df3c57cb0",
+     "han76635ac7d5aa07",
+     "hrel26b4d866e2e864",
+     "han29b5a8d02829fd",
+     "hanc373194a8bf667",
+     "hrel3f1b43827fe0e9",
+     "hrel2ce358a894fae8"
+    ],
+    "excluded": [],
+    "n_eligible": 40,
+    "insufficient": false
+   }
+  },
+  "note": "Precomputed eligibility bundles, not an evolving historical knowledge state. A record is eligible only if its own and every dependency's latest availability is at or before the cutoff; unknown/missing/undated dependencies are quarantined (fail closed)."
+ },
+ "comparison": {
+  "case": "hc-init-01",
+  "batch": "b-init01",
+  "cutoff": "2005",
+  "frozen_question": "Given only the evidence available by the end of 2005, state the single most consequential UNRESOLVED question about how Widmanstatten/plate ferrite initiates (direct boundary nucleation vs branching/instability from an existing allotriomorph). Separate what is an observation artefact from what is a physical-initiation uncertainty, and say what cannot yet be inferred.",
+  "conditions": [
+   {
+    "name": "C",
+    "label": "Controversy organization",
+    "plain": "Evidence is grouped by the scientific dispute — which findings support a mechanism and which challenge it — so competing positions sit side by side.",
+    "answer_id": "ad06abb23a484501",
+    "model": "qwen3.8-27b-local",
+    "prompt_hash": "3b08977d865c6289",
+    "evidence_organization": "EVIDENCE (cite each supporting statement with the id in [...]):\n-- SUPPORTING --\n[hev78c3c96ab9c85d | phelan2004widmanstatten p1 | 2004-12-31] The EBSD measurements have shown that low-angle misorientations of between 5 and 10 deg exist between ferrite allotriomorphs and Widmanstätten ferrite plates.\n[hevb9bc0cb5e61203 | phelan2005insitu p5 | 2005-12-31] In cases where two boundaries were observed, the second rotation always increased the misorientation of the plate from the pre-existing allotriomorph—in other words, a second nucleation event did not yield an orientation closer in orientation to the grain boundary\n[hev34514398caf6b5 | phelan2005insitu p5 | 2005-12-31] Although two low angle boundaries give the system a higher energy than a single higher angle boundary, we can see from Eq. (6) and Fig. 8 that the energy required to form the critical nucleus is signiﬁcantly lower at smaller misorientations.\n[hreld3190c4c721ca5 | curator:source_documented | 2004-12-31] supports: sympathetic nucleation mechanism\n[han0a817b0273721c | curator:source_documented | 2004-12-31] Townsend and Kirkaldy proposed that Widmanstätten ferrite plates form via the propagation of an unstable interface.\n[hrelc4f948387d6958 | curator:source_documented | 2004-12-31] mentions: unstable interface mechanism\n[hanf70b1402984313 | curator:source_documented | 2004-12-31] In-situ observations show plates growing from stepped regions of the allotriomorph, consistent with sympathetic nucleation.\n[hrelf0d5cfb9223f4d | curator:source_documented | 2004-12-31] supports: sympathetic nucleation mechanism\n[han2931898cc5e99b | curator:source_documented | 2004-12-31] Optical resolution in LSCM is insufficient to distinguish between the two nucleation theories, but crystallographic analysis can.\n[han8fbab0077bfcd3 | curator:source_documented | 2005-12-31] The authors conclude that the observed multiple nucleation events are genuine sympathetic nucleation phenomena.\n[hrel64d745a49408ab | curator:source_documented | 2005-12-31] supports: observation of double plate nucleation\n[han646f4c45398e22 | curator:source_documented | 2005-12-31] The authors pose the question of why direct nucleation of the fast growth orientation does not always occur, necessitating bridging steps.\n[han47e7c03816b39b | curator:source_documented | 2005-12-31] The lower nucleation energy at small misorientations is the probable reason for the observed bridging nucleation steps.\n[hrel6b54c1451b2aee | curator:source_documented | 2005-12-31] supports: model result on nucleation energy\n[hancf5f48f2fdfe59 | curator:source_documented | 2005-12-31] The lack of shared crystallographic poles in double nucleation cases may explain why two steps are required instead of one.\n[hrel6a6cca60e62723 | curator:source_documented | 2005-12-31] supports: observation of shared poles\n-- CONTESTED / OPEN-QUESTION --\n[han355092214d7c6c | curator:source_documented | 2004-12-31] The authors conclude that their evidence supports the sympathetic nucleation mechanism for Widmanstätten ferrite plate formation.\n[hrel5eeb91473810e5 | curator:source_documented | 2004-12-31] challenges: unstable interface mechanism\n[han000dd85f778520 | curator:source_documented | 2004-12-31] The experimental evidence does not support the Mullins-Sekerka instability mechanism for Widmanstätten ferrite formation.\n[hrel844b40d841d063 | curator:source_documented | 2004-12-31] challenges:Mullins-Sekerka instability",
+    "answer": {
+     "problem": "Does Widmanstatten/plate ferrite initiate via direct nucleation on the prior-austenite grain boundary or via sympathetic nucleation/branching from an existing allotriomorph, and can the 2005 evidence distinguish these initiation modes?",
+     "admissible_conclusion": "The evidence supports sympathetic nucleation as a valid initiation mechanism but cannot definitively exclude direct boundary nucleation or resolve the 2D/3D observation artifacts that complicate interpretation.",
+     "claims": [
+      {
+       "statement": "Low-angle misorientations (5-10 deg) exist between ferrite allotriomorphs and Widmanstatten ferrite plates, consistent with sympathetic nucleation.",
+       "kind": "source_supported",
+       "cites": [
+        "#hev78c3c96ab9c85d"
+       ]
+      },
+      {
+       "statement": "In-situ observations show plates growing from stepped regions of the allotriomorph, consistent with sympathetic nucleation.",
+       "kind": "source_supported",
+       "cites": [
+        "#hanf70b1402984313",
+        "#hrelf0d5cfb9223f4d"
+       ]
+      },
+      {
+       "statement": "The experimental evidence does not support the Mullins-Sekerka instability mechanism for Widmanstatten ferrite formation.",
+       "kind": "source_supported",
+       "cites": [
+        "#han000dd85f778520",
+        "#hrel844b40d841d063"
+       ]
+      },
+      {
+       "statement": "Optical resolution in LSCM is insufficient to distinguish between the two nucleation theories, but crystallographic analysis can.",
+       "kind": "source_supported",
+       "cites": [
+        "#han2931898cc5e99b"
+       ]
+      },
+      {
+       "statement": "The lower nucleation energy at small misorientations is the probable reason for the observed bridging nucleation steps.",
+       "kind": "source_supported",
+       "cites": [
+        "#han47e7c03816b39b",
+        "#hrel6b54c1451b2aee"
+       ]
+      },
+      {
+       "statement": "The lack of shared crystallographic poles in double nucleation cases may explain why two steps are required instead of one.",
+       "kind": "source_supported",
+       "cites": [
+        "#hancf5f48f2fdfe59",
+        "#hrel6a6cca60e62723"
+       ]
+      },
+      {
+       "statement": "The authors conclude that the observed multiple nucleation events are genuine sympathetic nucleation phenomena.",
+       "kind": "source_supported",
+       "cites": [
+        "#han8fbab0077bfcd3",
+        "#hrel64d745a49408ab"
+       ]
+      },
+      {
+       "statement": "The authors pose the question of why direct nucleation of the fast growth orientation does not always occur, necessitating bridging steps.",
+       "kind": "source_supported",
+       "cites": [
+        "#han646f4c45398e22"
+       ]
+      },
+      {
+       "statement": "In cases where two boundaries were observed, the second rotation always increased the misorientation of the plate from the pre-existing allotriomorph.",
+       "kind": "source_supported",
+       "cites": [
+        "#hevb9bc0cb5e61203"
+       ]
+      },
+      {
+       "statement": "Although two low angle boundaries give the system a higher energy than a single higher angle boundary, the energy required to form the critical nucleus is significantly lower at smaller misorientations.",
+       "kind": "source_supported",
+       "cites": [
+        "#hev34514398caf6b5"
+       ]
+      }
+     ],
+     "assumptions": [
+      "The 2D metallographic sections and LSCM observations are representative of the 3D initiation events, despite the inherent 2D/3D ambiguity.",
+      "The crystallographic analysis is accurate and not affected by measurement errors or sample preparation artifacts.",
+      "The observed low-angle misorientations are intrinsic to the nucleation process and not due to post-nucleation deformation or measurement noise."
+     ],
+     "predictions": [
+      {
+       "statement": "If sympathetic nucleation is the dominant mechanism, we should observe a higher frequency of plates with low-angle misorientations relative to the allotriomorph compared to direct boundary nucleation.",
+       "direction": "qualitative trend",
+       "assumptions": [
+        "The crystallographic analysis is accurate.",
+        "The 2D/3D ambiguity does not significantly bias the observed misorientations."
+       ],
+       "falsifier": "A high frequency of plates with high-angle misorientations relative to the allotriomorph, consistent with direct boundary nucleation.",
+       "discriminates": [
+        "sympathetic_nucleation",
+        "thermodynamic_driving_force"
+       ]
+      }
+     ],
+     "discriminating_observations": [
+      "Crystallographic analysis showing a consistent low-angle misorientation between the allotriomorph and the plate, supporting sympathetic nucleation.",
+      "In-situ observations of plates nucleating from stepped regions of the allotriomorph, consistent with sympathetic nucleation.",
+      "The absence of evidence for Mullins-Sekerka instability, which would support a diffusion-controlled instability mechanism."
+     ],
+     "mechanisms_considered": [
+      "sympathetic_nucleation",
+      "diffusion_controlled_instability",
+      "thermodynamic_driving_force"
+     ],
+     "confidence": {
+      "level": "medium",
+      "basis": "The evidence strongly supports sympathetic nucleation but cannot definitively exclude direct boundary nucleation due to the 2D/3D observation artifacts and the inherent limitations of the imaging methods."
+     },
+     "cannot_determine": [
+      "Whether direct boundary nucleation occurs in some cases, as the 2D/3D ambiguity and imaging limitations prevent a definitive distinction.",
+      "The exact role of solute drag and interface mobility anisotropy in the initiation process, as these are not directly addressed by the 2005 evidence.",
+      "The full 3D morphology of the initiation events, as the observations are limited to 2D sections and surface/near-surface imaging."
+     ]
+    }
+   },
+   {
+    "name": "H-order",
+    "label": "Historical order",
+    "plain": "Exactly the same facts, presented in chronological order (oldest first), the way the literature accumulated.",
+    "answer_id": "a02239945691a94d",
+    "model": "qwen3.8-27b-local",
+    "prompt_hash": "7939b7a3f6e07ad8",
+    "evidence_organization": "EVIDENCE (chronological; cite each supporting statement with the id in [...]):\n[hev78c3c96ab9c85d | phelan2004widmanstatten p1 | 2004-12-31] The EBSD measurements have shown that low-angle misorientations of between 5 and 10 deg exist between ferrite allotriomorphs and Widmanstätten ferrite plates.\n[han355092214d7c6c | curator:source_documented | 2004-12-31] The authors conclude that their evidence supports the sympathetic nucleation mechanism for Widmanstätten ferrite plate formation.\n[hrel5eeb91473810e5 | curator:source_documented | 2004-12-31] challenges: unstable interface mechanism\n[hreld3190c4c721ca5 | curator:source_documented | 2004-12-31] supports: sympathetic nucleation mechanism\n[han0a817b0273721c | curator:source_documented | 2004-12-31] Townsend and Kirkaldy proposed that Widmanstätten ferrite plates form via the propagation of an unstable interface.\n[hrelc4f948387d6958 | curator:source_documented | 2004-12-31] mentions: unstable interface mechanism\n[hanf70b1402984313 | curator:source_documented | 2004-12-31] In-situ observations show plates growing from stepped regions of the allotriomorph, consistent with sympathetic nucleation.\n[hrelf0d5cfb9223f4d | curator:source_documented | 2004-12-31] supports: sympathetic nucleation mechanism\n[han2931898cc5e99b | curator:source_documented | 2004-12-31] Optical resolution in LSCM is insufficient to distinguish between the two nucleation theories, but crystallographic analysis can.\n[han000dd85f778520 | curator:source_documented | 2004-12-31] The experimental evidence does not support the Mullins-Sekerka instability mechanism for Widmanstätten ferrite formation.\n[hrel844b40d841d063 | curator:source_documented | 2004-12-31] challenges:Mullins-Sekerka instability\n[hevb9bc0cb5e61203 | phelan2005insitu p5 | 2005-12-31] In cases where two boundaries were observed, the second rotation always increased the misorientation of the plate from the pre-existing allotriomorph—in other words, a second nucleation event did not yield an orientation closer in orientation to the grain boundary\n[hev34514398caf6b5 | phelan2005insitu p5 | 2005-12-31] Although two low angle boundaries give the system a higher energy than a single higher angle boundary, we can see from Eq. (6) and Fig. 8 that the energy required to form the critical nucleus is signiﬁcantly lower at smaller misorientations.\n[han8fbab0077bfcd3 | curator:source_documented | 2005-12-31] The authors conclude that the observed multiple nucleation events are genuine sympathetic nucleation phenomena.\n[hrel64d745a49408ab | curator:source_documented | 2005-12-31] supports: observation of double plate nucleation\n[han646f4c45398e22 | curator:source_documented | 2005-12-31] The authors pose the question of why direct nucleation of the fast growth orientation does not always occur, necessitating bridging steps.\n[han47e7c03816b39b | curator:source_documented | 2005-12-31] The lower nucleation energy at small misorientations is the probable reason for the observed bridging nucleation steps.\n[hrel6b54c1451b2aee | curator:source_documented | 2005-12-31] supports: model result on nucleation energy\n[hancf5f48f2fdfe59 | curator:source_documented | 2005-12-31] The lack of shared crystallographic poles in double nucleation cases may explain why two steps are required instead of one.\n[hrel6a6cca60e62723 | curator:source_documented | 2005-12-31] supports: observation of shared poles",
+    "answer": {
+     "problem": "Does Widmanstatten/plate ferrite initiate via direct nucleation on the prior-austenite boundary or via branching/instability from an existing allotriomorph, given the 2005 evidence?",
+     "admissible_conclusion": "The evidence supports sympathetic nucleation (a form of branching from an existing allotriomorph) as the dominant mechanism, but the specific physical origin of the initial nucleation event (direct boundary nucleation vs. instability) remains unresolved due to observational limitations and the distinction between initiation and propagation.",
+     "claims": [
+      {
+       "statement": "EBSD measurements show low-angle misorientations (5-10 deg) between ferrite allotriomorphs and Widmanstatten ferrite plates.",
+       "kind": "source_supported",
+       "cites": [
+        "#hev78c3c96ab9c85d"
+       ]
+      },
+      {
+       "statement": "In-situ observations show plates growing from stepped regions of the allotriomorph, consistent with sympathetic nucleation.",
+       "kind": "source_supported",
+       "cites": [
+        "#hanf70b1402984313"
+       ]
+      },
+      {
+       "statement": "Optical resolution in LSCM is insufficient to distinguish between the two nucleation theories, but crystallographic analysis can.",
+       "kind": "source_supported",
+       "cites": [
+        "#han2931898cc5e99b"
+       ]
+      },
+      {
+       "statement": "The experimental evidence does not support the Mullins-Sekerka instability mechanism for Widmanstatten ferrite formation.",
+       "kind": "source_supported",
+       "cites": [
+        "#han000dd85f778520"
+       ]
+      },
+      {
+       "statement": "The authors conclude that their evidence supports the sympathetic nucleation mechanism for Widmanstatten ferrite plate formation.",
+       "kind": "source_supported",
+       "cites": [
+        "#han355092214d7c6c"
+       ]
+      },
+      {
+       "statement": "The lower nucleation energy at small misorientations is the probable reason for the observed bridging nucleation steps.",
+       "kind": "source_supported",
+       "cites": [
+        "#han47e7c03816b39b"
+       ]
+      }
+     ],
+     "assumptions": [
+      "The 2D metallographic sections and LSCM observations are representative of the 3D bulk morphology.",
+      "The crystallographic analysis is accurate and not affected by measurement errors.",
+      "The sympathetic nucleation mechanism is the only viable alternative to direct boundary nucleation."
+     ],
+     "predictions": [
+      {
+       "statement": "If sympathetic nucleation is the dominant mechanism, we should observe a higher frequency of plates with low-angle misorientations relative to the allotriomorph.",
+       "direction": "qualitative trend",
+       "assumptions": [
+        "The crystallographic analysis is accurate.",
+        "The sympathetic nucleation mechanism is the dominant one."
+       ],
+       "falsifier": "Observation of plates with high-angle misorientations relative to the allotriomorph.",
+       "discriminates": [
+        "sympathetic_nucleation",
+        "direct_boundary_nucleation"
+       ]
+      }
+     ],
+     "discriminating_observations": [
+      "Crystallographic analysis of the misorientations between the allotriomorph and the plates.",
+      "In-situ observations of the nucleation events."
+     ],
+     "mechanisms_considered": [
+      "sympathetic_nucleation",
+      "diffusion_controlled_instability"
+     ],
+     "confidence": {
+      "level": "medium",
+      "basis": "The evidence strongly supports sympathetic nucleation, but the specific physical origin of the initial nucleation event remains unresolved due to observational limitations."
+     },
+     "cannot_determine": [
+      "The specific physical origin of the initial nucleation event (direct boundary nucleation vs. instability).",
+      "The 3D morphology of the nucleation events."
+     ]
+    }
+   },
+   {
+    "name": "H-state",
+    "label": "Knowledge-state roles",
+    "plain": "The same facts, grouped by their role in the decision — documented positions, known unknowns, methods/constraints. A fact-ordering / role-grouping layout, NOT an engine that evolves a decision state over time.",
+    "answer_id": "acd7d7e3d9191408",
+    "model": "qwen3.8-27b-local",
+    "prompt_hash": "45a0d25fce9591c6",
+    "evidence_organization": null,
+    "answer": {
+     "problem": "Does Widmanstatten/plate ferrite initiate by direct nucleation at the austenite grain boundary or by instability/branching from an existing allotriomorph, and how do the in-situ observations bear on this?",
+     "admissible_conclusion": "The evidence supports sympathetic nucleation (nucleation on existing ferrite) over the Mullins-Sekerka instability mechanism, but the specific physical mechanism of initiation (direct boundary vs. branching) remains unresolved due to the inability of optical resolution to distinguish the theories.",
+     "claims": [
+      {
+       "statement": "The experimental evidence does not support the Mullins-Sekerka instability mechanism for Widmanstätten ferrite formation.",
+       "kind": "source_supported",
+       "cites": [
+        "han000dd85f778520"
+       ]
+      },
+      {
+       "statement": "The authors conclude that their evidence supports the sympathetic nucleation mechanism for Widmanstätten ferrite plate formation.",
+       "kind": "source_supported",
+       "cites": [
+        "han355092214d7c6c"
+       ]
+      },
+      {
+       "statement": "Optical resolution in LSCM is insufficient to distinguish between the two nucleation theories, but crystallographic analysis can.",
+       "kind": "source_supported",
+       "cites": [
+        "han2931898cc5e99b"
+       ]
+      },
+      {
+       "statement": "In-situ observations show plates growing from stepped regions of the allotriomorph, consistent with sympathetic nucleation.",
+       "kind": "source_supported",
+       "cites": [
+        "hanf70b1402984313"
+       ]
+      }
+     ],
+     "assumptions": [
+      "The distinction between 'direct boundary nucleation' and 'branching/instability' is the primary unresolved question.",
+      "Crystallographic analysis is capable of distinguishing the mechanisms where optical resolution fails."
+     ],
+     "predictions": [],
+     "discriminating_observations": [
+      "Crystallographic analysis of the nucleation sites to determine if they are on the grain boundary or on existing ferrite.",
+      "Observation of the specific morphology of the nucleation event (e.g., stepped regions vs. planar front)."
+     ],
+     "mechanisms_considered": [
+      "sympathetic_nucleation",
+      "diffusion_controlled_instability"
+     ],
+     "cannot_determine": [
+      "The specific physical mechanism of initiation (direct boundary vs. branching) due to the limitations of optical resolution in LSCM."
+     ],
+     "confidence": {
+      "level": "medium",
+      "basis": "The evidence strongly supports sympathetic nucleation over Mullins-Sekerka instability, but the specific mechanism of initiation remains unresolved due to observational limitations."
+     }
+    }
+   },
+   {
+    "name": "N-order",
+    "label": "Neutral / shuffled",
+    "plain": "The same facts in a shuffled, unstructured list — the control with no imposed organization.",
+    "answer_id": "a7442dc975a7ec9f",
+    "model": "qwen3.8-27b-local",
+    "prompt_hash": "bdb5f9c3749fae6b",
+    "evidence_organization": "EVIDENCE (cite each supporting statement with the id in [...]):\n[han47e7c03816b39b | curator:source_documented | 2005-12-31] The lower nucleation energy at small misorientations is the probable reason for the observed bridging nucleation steps.\n[hancf5f48f2fdfe59 | curator:source_documented | 2005-12-31] The lack of shared crystallographic poles in double nucleation cases may explain why two steps are required instead of one.\n[han355092214d7c6c | curator:source_documented | 2004-12-31] The authors conclude that their evidence supports the sympathetic nucleation mechanism for Widmanstätten ferrite plate formation.\n[hanf70b1402984313 | curator:source_documented | 2004-12-31] In-situ observations show plates growing from stepped regions of the allotriomorph, consistent with sympathetic nucleation.\n[hrel6a6cca60e62723 | curator:source_documented | 2005-12-31] supports: observation of shared poles\n[han2931898cc5e99b | curator:source_documented | 2004-12-31] Optical resolution in LSCM is insufficient to distinguish between the two nucleation theories, but crystallographic analysis can.\n[hrelc4f948387d6958 | curator:source_documented | 2004-12-31] mentions: unstable interface mechanism\n[hrel64d745a49408ab | curator:source_documented | 2005-12-31] supports: observation of double plate nucleation\n[hrel844b40d841d063 | curator:source_documented | 2004-12-31] challenges:Mullins-Sekerka instability\n[hevb9bc0cb5e61203 | phelan2005insitu p5 | 2005-12-31] In cases where two boundaries were observed, the second rotation always increased the misorientation of the plate from the pre-existing allotriomorph—in other words, a second nucleation event did not yield an orientation closer in orientation to the grain boundary\n[hreld3190c4c721ca5 | curator:source_documented | 2004-12-31] supports: sympathetic nucleation mechanism\n[hev34514398caf6b5 | phelan2005insitu p5 | 2005-12-31] Although two low angle boundaries give the system a higher energy than a single higher angle boundary, we can see from Eq. (6) and Fig. 8 that the energy required to form the critical nucleus is signiﬁcantly lower at smaller misorientations.\n[han646f4c45398e22 | curator:source_documented | 2005-12-31] The authors pose the question of why direct nucleation of the fast growth orientation does not always occur, necessitating bridging steps.\n[hrel6b54c1451b2aee | curator:source_documented | 2005-12-31] supports: model result on nucleation energy\n[hrel5eeb91473810e5 | curator:source_documented | 2004-12-31] challenges: unstable interface mechanism\n[han0a817b0273721c | curator:source_documented | 2004-12-31] Townsend and Kirkaldy proposed that Widmanstätten ferrite plates form via the propagation of an unstable interface.\n[han000dd85f778520 | curator:source_documented | 2004-12-31] The experimental evidence does not support the Mullins-Sekerka instability mechanism for Widmanstätten ferrite formation.\n[hrelf0d5cfb9223f4d | curator:source_documented | 2004-12-31] supports: sympathetic nucleation mechanism\n[hev78c3c96ab9c85d | phelan2004widmanstatten p1 | 2004-12-31] The EBSD measurements have shown that low-angle misorientations of between 5 and 10 deg exist between ferrite allotriomorphs and Widmanstätten ferrite plates.\n[han8fbab0077bfcd3 | curator:source_documented | 2005-12-31] The authors conclude that the observed multiple nucleation events are genuine sympathetic nucleation phenomena.",
+    "answer": {
+     "problem": "Does Widmanstatten/plate ferrite initiate via direct nucleation on the prior-austenite boundary or via branching/instability from an existing allotriomorph, given the 2005 evidence?",
+     "admissible_conclusion": "cannot determine",
+     "claims": [
+      {
+       "statement": "In-situ observations show plates growing from stepped regions of the allotriomorph, consistent with sympathetic nucleation.",
+       "kind": "source_supported",
+       "cites": [
+        "hanf70b1402984313"
+       ]
+      },
+      {
+       "statement": "The experimental evidence does not support the Mullins-Sekerka instability mechanism for Widmanstätten ferrite formation.",
+       "kind": "source_supported",
+       "cites": [
+        "han000dd85f778520"
+       ]
+      },
+      {
+       "statement": "Optical resolution in LSCM is insufficient to distinguish between the two nucleation theories, but crystallographic analysis can.",
+       "kind": "source_supported",
+       "cites": [
+        "han2931898cc5e99b"
+       ]
+      },
+      {
+       "statement": "The lower nucleation energy at small misorientations is the probable reason for the observed bridging nucleation steps.",
+       "kind": "source_supported",
+       "cites": [
+        "han47e7c03816b39b"
+       ]
+      },
+      {
+       "statement": "The authors conclude that their evidence supports the sympathetic nucleation mechanism for Widmanstätten ferrite plate formation.",
+       "kind": "source_supported",
+       "cites": [
+        "han355092214d7c6c"
+       ]
+      }
+     ],
+     "assumptions": [
+      "The 2005 evidence includes in-situ observations and crystallographic analysis.",
+      "The distinction between direct boundary nucleation and branching/instability is the key unresolved question."
+     ],
+     "predictions": [
+      {
+       "statement": "If sympathetic nucleation is correct, plates should show low-angle misorientations relative to the allotriomorph.",
+       "direction": "qualitative trend",
+       "assumptions": [
+        "Sympathetic nucleation involves low-angle boundaries."
+       ],
+       "falsifier": "Plates show high-angle misorientations relative to the allotriomorph.",
+       "discriminates": [
+        "sympathetic_nucleation",
+        "diffusion_controlled_instability"
+       ]
+      }
+     ],
+     "discriminating_observations": [
+      "Crystallographic analysis showing low-angle misorientations between ferrite allotriomorphs and Widmanstätten ferrite plates.",
+      "In-situ observations of plates growing from stepped regions of the allotriomorph."
+     ],
+     "mechanisms_considered": [
+      "sympathetic_nucleation",
+      "diffusion_controlled_instability"
+     ],
+     "confidence": {
+      "level": "low",
+      "basis": "The evidence supports sympathetic nucleation but does not definitively rule out other mechanisms, and the optical resolution is insufficient to distinguish between the two nucleation theories."
+     },
+     "cannot_determine": [
+      "Whether direct boundary nucleation or branching/instability from an existing allotriomorph is the primary initiation mechanism for Widmanstatten/plate ferrite."
+     ]
+    }
+   }
+  ],
+  "disclaimer": "From a fixed local model (one case, four evidence organizations). This uses the EXACT binary initiation question that generated the saved answers (direct boundary nucleation vs branching/instability), NOT the later revised three-candidate question. The compromised b-full batch is excluded. The comparison does NOT establish any benefit of historical organization."
+ }
+}</script>
+<script>
+const DATA = JSON.parse(document.getElementById('payload').textContent);
+const $ = (s,r=document)=>r.querySelector(s);
+const el = (t,c,txt)=>{const e=document.createElement(t); if(c)e.className=c; if(txt!=null)e.textContent=txt; return e;};
+const esc = s => (s==null?'':String(s));
+
+/* ---- header ---- */
+$('#h-title').textContent = DATA.meta.title;
+$('#h-sub').textContent = DATA.meta.subtitle;
+$('#h-disc').innerHTML = '<b>Research prototype.</b> '+esc(DATA.meta.disclaimer);
+const m = DATA.meta.counts;
+$('#h-meta').innerHTML = `<span>${m.topics} topics</span><span>${m.evidence_cards} source cards</span>`+
+  `<span>${m.sources} papers</span><span>data release ${esc(DATA.meta.data_release)}</span>`;
+
+/* ---- tabs ---- */
+const tabs = [...document.querySelectorAll('#tabs button')];
+tabs.forEach(b=>b.onclick=()=>{
+  tabs.forEach(x=>x.setAttribute('aria-selected', x===b));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  $('#view-'+b.dataset.view).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+
+/* ---- topics ---- */
+const tg = $('#topics-grid');
+DATA.topics.forEach(t=>{
+  const p = el('div','panel topic');
+  p.appendChild(el('div','q', t.title));
+  p.appendChild(el('p',null, t.plain));
+  const meta = el('div','meta-row');
+  meta.innerHTML = `<span>cutoff ${esc(t.cutoff)}</span><span>${t.n_evidence} evidence</span><span>${t.n_annotations} curator notes</span>`;
+  p.appendChild(meta);
+  const d = el('details','tech'); d.appendChild(el('summary',null,'Technical framing'));
+  d.appendChild(el('div','body', t.technical));
+  p.appendChild(d);
+  tg.appendChild(p);
+});
+
+/* ---- evidence ---- */
+const roleClass = r => r.startsWith('observation')?'obs': r.startsWith('interpretation')?'interp':
+  r.startsWith('proposed')||r.startsWith('model')?'infer': r.startsWith('known')?'ku':'interp';
+const topicTitle = id => (DATA.topics.find(t=>t.id===id)||{}).title || id;
+const ft = $('#f-topic'), fr = $('#f-role');
+DATA.topics.forEach(t=>ft.appendChild(new Option(t.title,t.id)));
+[...new Set(DATA.evidence_cards.map(c=>c.role))].sort().forEach(r=>fr.appendChild(new Option(r,r)));
+function renderEvidence(){
+  const box=$('#evidence-cards'); box.innerHTML='';
+  const tf=ft.value, rf=fr.value;
+  const list=DATA.evidence_cards.filter(c=>(!tf||c.topic===tf)&&(!rf||c.role===rf));
+  $('#ev-count').textContent = `${list.length} of ${DATA.evidence_cards.length} cards`;
+  list.forEach(c=>{
+    const card=el('div','card');
+    const head=el('div','src');
+    if(c.link){const a=el('a',null,c.title); a.href=c.link; a.target='_blank'; a.rel='noopener'; head.appendChild(a);}
+    else head.appendChild(document.createTextNode(c.title));
+    card.appendChild(head);
+    const cite=el('div','mono muted'); cite.textContent=`${c.citation} · ${c.source_location}`;
+    card.appendChild(cite);
+    const tags=el('div');
+    tags.appendChild(el('span','tag '+roleClass(c.role), c.role));
+    if(c.controversy_group) tags.appendChild(document.createTextNode(' '));
+    if(c.controversy_group) tags.appendChild(el('span','tag '+(c.controversy_group==='contested'?'chal':'supp'), c.controversy_group==='contested'?'contested':'supporting'));
+    card.appendChild(tags);
+    if(c.proposition) card.appendChild(Object.assign(el('div','prop'),{textContent:c.proposition}));
+    if(c.verbatim_span){const bq=el('blockquote'); bq.textContent='“'+c.verbatim_span+'”'; card.appendChild(bq);}
+    const foot=el('div','foot');
+    foot.appendChild(el('span',null,'quotation verified — interpretation not reviewed'));
+    if(c.source_version) foot.appendChild(el('span','sv','src '+c.source_version));
+    if(c.link){const a=el('a',null,'DOI'); a.href=c.link; a.target='_blank'; a.rel='noopener'; foot.appendChild(a);}
+    else foot.appendChild(el('span',null,'no DOI recorded'));
+    card.appendChild(foot);
+    if(c.location_note){const ln=el('div','loc-note'); ln.textContent='⚑ '+c.location_note; card.appendChild(ln);}
+    box.appendChild(card);
+  });
+}
+ft.onchange=renderEvidence; fr.onchange=renderEvidence; renderEvidence();
+
+/* ---- cutoff ---- */
+const years=DATA.cutoff.years;
+const cr=$('#cut-range'); cr.max=years.length-1;
+const defIdx=Math.max(0,years.indexOf(2005)); cr.value=defIdx;
+$('#cut-note').textContent=DATA.cutoff.note;
+const cardById={};
+DATA.evidence_cards.forEach(c=>cardById[c.id]=c);
+function renderCutoff(){
+  const y=years[+cr.value]; const b=DATA.cutoff.bundles[String(y)];
+  $('#cut-year').textContent=y;
+  $('#cut-eff').textContent=`effective cutoff ${b.effective_cutoff} · ${b.n_eligible} eligible / ${b.excluded.length} excluded`;
+  const body=$('#cutoff-body'); body.innerHTML='';
+  if(b.insufficient){
+    const d=el('div','insuff');
+    d.innerHTML=`Insufficient supplied evidence at ${y}.<br><span class="mono muted" style="font-size:12px">No curated record in this demo has a demonstrable availability date at or before ${b.effective_cutoff}. The prototype returns an explicit unknown rather than falling back to the full corpus.</span>`;
+    body.appendChild(d); return;
+  }
+  const cols=el('div','cutoff-cols');
+  const ce=el('div','col'); ce.appendChild(el('h4',null,`Available by ${y} (${b.n_eligible})`));
+  b.eligible.forEach(id=>{const c=cardById[id]; const it=el('div','elig-item');
+    it.innerHTML=`<b>${esc(c?c.citation:id)}</b> · ${esc(c?c.source_location:'')} <span class="tag ${roleClass(c?c.role:'')}">${esc(c?c.role:'')}</span><br>${esc(c?(c.proposition||c.verbatim_span):'')}`;
+    ce.appendChild(it);});
+  const cx=el('div','col'); cx.appendChild(el('h4',null,`Excluded (${b.excluded.length})`));
+  b.excluded.forEach(x=>{const c=cardById[x.id]; const it=el('div','excl-item');
+    it.innerHTML=`<b>${esc(c?c.citation:x.id)}</b> · ${esc(c?c.source_location:'')}<span class="why">${esc(x.status)} — ${esc(x.reason)}</span>`;
+    cx.appendChild(it);});
+  cols.appendChild(ce); cols.appendChild(cx); body.appendChild(cols);
+}
+cr.oninput=renderCutoff; renderCutoff();
+
+/* ---- compare ---- */
+$('#cmp-disc').innerHTML='<b>Recorded, unreviewed pilot answers.</b> '+esc(DATA.comparison.disclaimer);
+$('#cmp-question').textContent=DATA.comparison.frozen_question;
+const cg=$('#cond-grid');
+function li(arr){const u=el('ul'); (arr||[]).forEach(x=>{const l=el('li');
+  if(x&&typeof x==='object'){ l.textContent = x.statement||JSON.stringify(x);} else l.textContent=esc(x); u.appendChild(l);}); return u;}
+DATA.comparison.conditions.forEach(cd=>{
+  const a=cd.answer||{};
+  const box=el('div','cond');
+  const ch=el('div','ch'); ch.appendChild(el('span','code',cd.name)); ch.appendChild(el('span','nm',cd.label));
+  box.appendChild(ch);
+  box.appendChild(el('div','plain',cd.plain));
+  const ans=el('div','ans');
+  if(a.admissible_conclusion){ans.appendChild(el('h5',null,'Admissible conclusion'));
+    ans.appendChild(Object.assign(el('div','concl'),{textContent:a.admissible_conclusion}));}
+  if(a.claims&&a.claims.length){ans.appendChild(el('h5',null,'Claims'));
+    const u=el('ul'); a.claims.forEach(c=>{const l=el('li');
+      const k=el('span','claim-k',(c.kind||'').replace('_',' ')); l.appendChild(k);
+      l.appendChild(document.createTextNode(esc(c.statement))); u.appendChild(l);}); ans.appendChild(u);}
+  if(a.discriminating_observations&&a.discriminating_observations.length){
+    ans.appendChild(el('h5',null,'Proposed discriminating observations')); ans.appendChild(li(a.discriminating_observations));}
+  if(a.assumptions&&a.assumptions.length){ans.appendChild(el('h5',null,'Assumptions')); ans.appendChild(li(a.assumptions));}
+  if(a.cannot_determine&&a.cannot_determine.length){ans.appendChild(el('h5',null,'Unresolved / cannot determine')); ans.appendChild(li(a.cannot_determine));}
+  box.appendChild(ans);
+  if(a.confidence){const cf=el('div','conf'); cf.textContent=`confidence: ${esc(a.confidence.level)} — ${esc(a.confidence.basis)}`; box.appendChild(cf);}
+  const foot=el('div','foot mono muted'); foot.style.marginTop='4px';
+  foot.textContent=`model ${esc(cd.model)} · answer ${esc(cd.answer_id)} · prompt ${esc(cd.prompt_hash)}`;
+  box.appendChild(foot);
+  cg.appendChild(box);
+});
+
+/* ---- footer ---- */
+$('#foot').innerHTML = `
+  <strong>Provenance &amp; scope.</strong> This public demo is a curated payload from the patina2
+  <em>historical-epistemic AI</em> project (an extension of the Patina history-of-phase-transformations work).
+  It deliberately excludes PDFs, the full corpus, raw execution logs, credentials and private review material.
+  Propositions are shown with a verified source span and a source-version id (<code>sha1_prefix</code>); interpretations
+  are machine-draft and not yet expert-reviewed. The four-condition comparison replays recorded pilot outputs from a
+  fixed local model and makes no claim that historical organisation improves scientific reasoning. Generated
+  <code>${esc(DATA.meta.generated)}</code> · data release <code>${esc(DATA.meta.data_release)}</code>.`;
+</script>
+</body>
+</html>
