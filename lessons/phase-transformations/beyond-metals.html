@@ -1,0 +1,983 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Phase Transformations Everywhere</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+body{margin:0}
+:root{
+  --bg:#eef1f3; --panel:#f8fafb; --ink:#17212b; --muted:#56636f; --rule:#cfd6dc;
+  --ferrite:#a8650a; --carbide:#e07b12; --tip:#b4480e; --austenite:#d9a62a; --gamma:#f5e6bd; --mart:#5b6670; --ok:#3f7d4e;
+  --display:"Fraunces",Georgia,serif; --body:"Plus Jakarta Sans","Segoe UI",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12171c; --panel:#1a2128; --ink:#e3e8ec; --muted:#9aa6b1; --rule:#2d3740;
+  --ferrite:#f2b84b; --carbide:#f39a3c; --tip:#ff7a3d; --austenite:#e8c252; --gamma:#3a3221; --mart:#aab4bd; --ok:#74c08a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12171c; --panel:#1a2128; --ink:#e3e8ec; --muted:#9aa6b1; --rule:#2d3740;
+  --ferrite:#f2b84b; --carbide:#f39a3c; --tip:#ff7a3d; --austenite:#e8c252; --gamma:#3a3221; --mart:#aab4bd; --ok:#74c08a; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--body)}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px}
+h1,h2,h3{font-family:var(--display);font-weight:600;text-wrap:balance;margin:0}
+h1{font-size:clamp(30px,4.6vw,46px);line-height:1.08}
+h2{font-size:clamp(22px,3vw,28px);margin-top:8px}
+h3{font-size:18px}
+p{margin:0;max-width:68ch}
+.lede{color:var(--muted);font-size:17px;margin-top:10px}
+.eyebrow{font:500 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+section{display:grid;gap:14px;padding-block:34px;border-top:1px solid var(--rule)}
+header{display:grid;gap:6px;padding-bottom:26px}
+.links{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:10px;font-size:15px}
+nav.toc{display:flex;flex-wrap:wrap;gap:6px 8px;margin-top:14px}
+nav.toc a{font:500 12px var(--mono);text-decoration:none;border:1px solid var(--rule);border-radius:3px;padding:3px 8px;color:var(--muted)}
+nav.toc a:hover{border-color:var(--ferrite);color:var(--ink)}
+a{color:var(--ferrite)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:820px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:14px;display:grid;gap:10px;min-width:0}
+canvas{display:block;width:100%;max-width:100%;height:auto;border-radius:4px}
+svg.fig{display:block;width:100%;max-width:100%;height:auto}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}
+.rule{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:12px 14px;display:grid;gap:6px;align-content:start;min-width:0}
+.rule b{font-family:var(--display);font-size:17px}
+.rule .k{font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+button,select{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--rule);border-radius:4px;padding:6px 11px;cursor:pointer}
+button:hover{border-color:var(--ferrite)}
+button[aria-pressed="true"]{border-color:var(--c,var(--ferrite));background:var(--panel);font-weight:600;box-shadow:inset 0 -3px 0 var(--c,var(--ferrite))}
+:focus-visible{outline:2px solid var(--ferrite);outline-offset:2px}
+.note{font-size:14px;color:var(--muted)}
+.callout{border-left:3px solid var(--tip);padding:4px 0 4px 12px;font-size:15px;max-width:none}
+.callout.c{border-left-color:var(--carbide)}
+.callout.a{border-left-color:var(--austenite)}
+blockquote{margin:0;padding:6px 0 6px 14px;border-left:2px solid var(--rule);font-family:var(--display);font-size:17px;max-width:70ch}
+blockquote cite{display:block;font:500 12px var(--mono);font-style:normal;color:var(--muted);margin-top:4px}
+.defs{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.defs div{display:grid;gap:4px;align-content:start;min-width:0}
+.defs b{font-family:var(--display);font-size:17px}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;font-size:14px;width:100%}
+th,td{padding:6px 10px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font:500 12px var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+td.m,code,.m{font:13px var(--mono);font-variant-numeric:tabular-nums}
+.tag{display:inline-block;font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--rule);border-radius:3px;padding:1px 6px;color:var(--muted);vertical-align:middle}
+.tag.own{border-color:var(--tip);color:var(--tip)}
+ul.tight,ol.tight{margin:0;padding-left:20px;display:grid;gap:4px;max-width:72ch}
+ol.refs{margin:0;padding-left:22px;display:grid;gap:5px;font-size:14px;color:var(--muted);max-width:92ch}
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:18px}
+.pair>div{display:grid;gap:8px;align-content:start;min-width:0}
+.ctrl{display:grid;grid-template-columns:minmax(0,9em) minmax(0,1fr) minmax(0,5.5em);gap:6px 10px;align-items:center;font-size:14px}
+.ctrl label{color:var(--muted)}
+.ctrl input[type=range]{width:100%;accent-color:var(--ferrite)}
+.ctrl .val{font:13px var(--mono);text-align:right;color:var(--ink)}
+.warn{border-left:3px solid var(--tip);background:color-mix(in srgb, var(--tip) 10%, var(--panel));padding:10px 14px;border-radius:0 6px 6px 0;font-size:14px}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+.sim-controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.sim-controls button{font-size:13px;padding:4px 10px}
+.sim-stat{font:13px var(--mono);color:var(--muted)}
+.op-table td:first-child{font-weight:600;color:var(--ferrite)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <span class="eyebrow">Phase transformations &middot; the universal language</span>
+  <h1>Phase transformations everywhere</h1>
+  <p class="lede">The thermodynamics you know from steel &mdash; free energy, nucleation, spinodal decomposition, order parameters, interfacial energy &mdash; is the same thermodynamics that governs ice crystals, liquid crystals, superconductors, protein droplets in living cells, and the symmetry-breaking that shaped the early universe. This page is about what happens when you follow those ideas out of the metallurgy building.</p>
+  <div class="links">
+    <a href="metallographic-etching.html">Metallographic etching</a>
+    <a href="sympathetic-nucleation.html">Sympathetic nucleation</a>
+    <a href="ple-nple.html">PLE, NPLE &amp; paraequilibrium</a>
+  </div>
+  <nav class="toc" aria-label="Sections">
+    <a href="#history">History</a><a href="#language">The common language</a><a href="#landau">Landau model</a><a href="#nucleation">Nucleation &amp; spinodal</a><a href="#water">Water &amp; ice</a><a href="#soft">Soft matter</a><a href="#earth">Deep in the Earth</a><a href="#magnet">Magnetism</a><a href="#ising">Ising model</a><a href="#super">Superconductivity</a><a href="#bio">Biology</a><a href="#cosmos">The early universe</a><a href="#universality">Universality</a><a href="#pi">For a future PI</a><a href="#sources">Sources</a>
+  </nav>
+</header>
+
+<!-- ============ HISTORY ============ -->
+<section id="history">
+  <span class="eyebrow">1 &middot; A short history</span>
+  <h2>One subject, many disguises: how phase transitions became universal</h2>
+  <p>For most of the nineteenth century, the melting of ice and the quenching of steel were studied by different people in different buildings. The recognition that they are examples of the same thing &mdash; that a single mathematical framework describes every transition from one stable state of matter to another &mdash; took a hundred years and five Nobel Prizes.</p>
+
+  <div class="grid2">
+    <div class="panel">
+      <svg class="fig" viewBox="0 0 520 420" role="img" aria-label="Timeline from Gibbs 1876 through Landau, Onsager, Cahn-Hilliard, Wilson to Brangwynne 2009">
+        <line x1="60" y1="20" x2="60" y2="400" style="stroke:var(--rule)" stroke-width="2"></line>
+        <g style="font:11px var(--mono);fill:var(--ink)">
+          <circle cx="60" cy="34" r="5" style="fill:var(--tip)"></circle>
+          <text x="76" y="31" style="fill:var(--muted);font:10px var(--mono)">1876</text>
+          <text x="76" y="44" style="fill:var(--ferrite);font:600 11px var(--body)">Gibbs: equilibrium of heterogeneous substances</text>
+
+          <circle cx="60" cy="88" r="4" style="fill:var(--carbide)"></circle>
+          <text x="76" y="85" style="fill:var(--muted);font:10px var(--mono)">1895</text>
+          <text x="76" y="98">Pierre Curie: magnetic transition &amp; symmetry</text>
+
+          <circle cx="60" cy="132" r="4" style="fill:var(--austenite)"></circle>
+          <text x="76" y="129" style="fill:var(--muted);font:10px var(--mono)">1933</text>
+          <text x="76" y="142">Ehrenfest: first &amp; second-order classification</text>
+
+          <circle cx="60" cy="176" r="5" style="fill:var(--tip)"></circle>
+          <text x="76" y="173" style="fill:var(--muted);font:10px var(--mono)">1937</text>
+          <text x="76" y="186" style="fill:var(--ferrite);font:600 11px var(--body)">Landau: order parameters &amp; symmetry breaking</text>
+
+          <circle cx="60" cy="220" r="4" style="fill:var(--carbide)"></circle>
+          <text x="76" y="217" style="fill:var(--muted);font:10px var(--mono)">1944</text>
+          <text x="76" y="230">Onsager: exact solution of the 2D Ising model</text>
+
+          <circle cx="60" cy="264" r="4" style="fill:var(--austenite)"></circle>
+          <text x="76" y="261" style="fill:var(--muted);font:10px var(--mono)">1958</text>
+          <text x="76" y="274">Cahn &amp; Hilliard: spinodal decomposition theory</text>
+
+          <circle cx="60" cy="308" r="5" style="fill:var(--tip)"></circle>
+          <text x="76" y="305" style="fill:var(--muted);font:10px var(--mono)">1971</text>
+          <text x="76" y="318" style="fill:var(--ferrite);font:600 11px var(--body)">Wilson: renormalization group &amp; universality</text>
+
+          <circle cx="60" cy="352" r="4" style="fill:var(--mart)"></circle>
+          <text x="76" y="349" style="fill:var(--muted);font:10px var(--mono)">1995</text>
+          <text x="76" y="362">Cornell &amp; Wieman: first Bose&ndash;Einstein condensate</text>
+
+          <circle cx="60" cy="396" r="4" style="fill:var(--ok)"></circle>
+          <text x="76" y="393" style="fill:var(--muted);font:10px var(--mono)">2009</text>
+          <text x="76" y="406">Brangwynne: liquid&ndash;liquid phase separation in cells</text>
+        </g>
+      </svg>
+      <p class="note">Not every milestone is here &mdash; van der Waals&rsquo; equation of state (1873), Weiss&rsquo; molecular field (1907), Bragg &amp; Williams on order&ndash;disorder in alloys (1934), and Fisher, Kadanoff and many others all belong in the full story. This timeline picks the moments that pulled the subject together across fields.</p>
+    </div>
+    <div class="panel" style="align-content:start">
+      <h3>Gibbs and the unifying principle</h3>
+      <p class="note">J. Willard Gibbs&rsquo; 1876&ndash;78 monograph <i>On the Equilibrium of Heterogeneous Substances</i> gave thermodynamics its modern language: chemical potential, phase rule, the conditions for coexistence and for stability. Every phase diagram you have ever read &mdash; Fe&ndash;C, water, a polymer blend &mdash; is a map of the regions where Gibbs&rsquo; free energy is minimised. Gibbs wrote it for chemists and engineers; it took decades before its full generality was appreciated.</p>
+      <h3>Landau&rsquo;s breakthrough</h3>
+      <p class="note">In 1937, Lev Landau proposed that every phase transition could be described by a single quantity &mdash; an <em>order parameter</em> &mdash; that is zero in the disordered (high-symmetry) phase and nonzero in the ordered (low-symmetry) one. For a magnet, the order parameter is the magnetisation. For a liquid crystal, it is the alignment of the molecules. For the ferrite&ndash;austenite transition in steel, you could use the tetragonality of the lattice. Landau&rsquo;s theory does not work perfectly at the critical point (it gets the critical exponents slightly wrong), but its <em>structure</em> &mdash; write down a free energy as a polynomial in the order parameter, then minimise &mdash; is still how most theorists start.</p>
+      <h3>Wilson and universality</h3>
+      <p class="note">Kenneth Wilson&rsquo;s renormalization group theory (1971; Nobel Prize 1982) explained the deepest surprise of all: that systems that look nothing alike &mdash; a magnet at its Curie point and a fluid at its critical point &mdash; obey the same power laws with the same critical exponents, because at the critical point the correlation length diverges and the microscopic details wash out. What matters is only the <em>dimensionality</em> and the <em>symmetry of the order parameter</em>. This is called universality, and it is why the physics you learn from steel applies far beyond it.</p>
+    </div>
+  </div>
+
+  <blockquote>&ldquo;The systems we shall be considering include magnets, liquid&ndash;vapor transitions, alloys, superfluids, superconductors, and other systems. The critical behaviour turns out to be the same for all these systems, so that one can study any convenient system and obtain results applicable to all the other systems.&rdquo;<cite>K.G. Wilson, &ldquo;The renormalization group and critical phenomena,&rdquo; Nobel lecture (1982)</cite></blockquote>
+
+  <p class="callout">If you have studied the Fe&ndash;C phase diagram, nucleation theory, spinodal decomposition, and martensitic transformations, you already know more about phase transitions than most people in any single field outside metallurgy. The point of this page is to show you the map: where those same ideas appear in different disguises, and what changes when you move to a new system.</p>
+</section>
+
+<!-- ============ COMMON LANGUAGE ============ -->
+<section id="language">
+  <span class="eyebrow">2 &middot; The common language</span>
+  <h2>Order parameters, free energy, and two kinds of transition</h2>
+  <p>Every phase transition can be described by asking: what quantity is zero on one side and nonzero on the other? That quantity is the <em>order parameter</em>. The free energy, written as a function of the order parameter, tells you which phase is stable and how the transition happens.</p>
+
+  <div class="tablewrap">
+    <table class="op-table">
+      <thead><tr><th>System</th><th>Order parameter</th><th>High-T phase</th><th>Low-T phase</th><th>Metallurgy analogue</th></tr></thead>
+      <tbody>
+        <tr><td>Ferromagnet</td><td>Magnetisation <i>M</i></td><td>Paramagnetic (<i>M</i> = 0)</td><td>Ferromagnetic (<i>M</i> &ne; 0)</td><td>Order&ndash;disorder in Cu<sub>3</sub>Au</td></tr>
+        <tr><td>Liquid &harr; gas</td><td>Density difference &Delta;&rho;</td><td>Supercritical fluid</td><td>Two phases</td><td>Miscibility gap in Fe&ndash;Cr</td></tr>
+        <tr><td>Liquid crystal</td><td>Nematic alignment <i>S</i></td><td>Isotropic liquid</td><td>Nematic (aligned rods)</td><td>Texture (preferred orientation)</td></tr>
+        <tr><td>Superconductor</td><td>Cooper-pair condensate &Psi;</td><td>Normal metal</td><td>Superconducting</td><td>&mdash;</td></tr>
+        <tr><td>Water &harr; ice</td><td>Crystalline order</td><td>Liquid</td><td>Ice I<sub>h</sub></td><td>Solidification (casting)</td></tr>
+        <tr><td>Polymer blend</td><td>Composition &phi;</td><td>Mixed</td><td>Two phases</td><td>Fe&ndash;Cr spinodal, Al&ndash;Zn GP zones</td></tr>
+        <tr><td>Biological LLPS</td><td>Protein concentration</td><td>Dilute solution</td><td>Condensate + dilute phase</td><td>Precipitation (GP zones!)</td></tr>
+        <tr><td>Early universe</td><td>Higgs field <i>v</i></td><td>Electroweak symmetric</td><td>Broken symmetry</td><td>Spontaneous symmetry breaking</td></tr>
+        <tr><td>Quartz &alpha;&harr;&beta;</td><td>Si&ndash;O tilt angle</td><td>&beta;-quartz (hexagonal)</td><td>&alpha;-quartz (trigonal)</td><td>Displacive (martensitic!) transition</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pair" style="margin-top:10px">
+    <div>
+      <h3>First-order transitions</h3>
+      <p class="note">The order parameter jumps discontinuously. There is a latent heat. The two phases coexist. Nucleation and growth is the usual mechanism, though spinodal decomposition is possible inside the spinodal. Your Fe&ndash;C diagram is full of first-order transitions: liquid &rarr; austenite, austenite &rarr; ferrite, the eutectoid.</p>
+    </div>
+    <div>
+      <h3>Continuous (second-order) transitions</h3>
+      <p class="note">The order parameter grows continuously from zero. No latent heat. No two-phase coexistence. Instead, fluctuations diverge at the critical point. The ferromagnetic transition (Curie point) and the superfluid transition in helium are textbook examples. These are where universality is most striking.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LANDAU FREE ENERGY ============ -->
+<section id="landau">
+  <span class="eyebrow">3 &middot; Interactive: the Landau free energy</span>
+  <h2>Watch symmetry break as you cool through T<sub>c</sub></h2>
+  <p>The simplest model of a phase transition: write the free energy as <i>F</i> = <i>a</i>(<i>T</i> &minus; <i>T</i><sub>c</sub>)&phi;<sup>2</sup> + <i>b</i>&phi;<sup>4</sup>. Above <i>T</i><sub>c</sub>, the single minimum at &phi; = 0 is the only stable state. Below <i>T</i><sub>c</sub>, two symmetric minima appear &mdash; the system must choose one, breaking the symmetry. Drag the temperature slider.</p>
+
+  <div class="grid2">
+    <div class="panel">
+      <canvas id="landauCanvas" width="500" height="320"></canvas>
+    </div>
+    <div class="panel" style="align-content:start">
+      <div class="ctrl">
+        <label>Temperature</label>
+        <input type="range" id="landauT" min="-2" max="2" step="0.02" value="0.5">
+        <span class="val" id="landauTval">T &gt; T<sub>c</sub></span>
+      </div>
+      <p class="note" style="margin-top:8px"><b>Above T<sub>c</sub>:</b> One minimum at &phi; = 0. The system is in the disordered phase. In a magnet, the magnetisation is zero. In steel, this is austenite above the Curie temperature.</p>
+      <p class="note"><b>At T<sub>c</sub>:</b> The minimum flattens. Fluctuations diverge. This is the critical point, where universality holds.</p>
+      <p class="note"><b>Below T<sub>c</sub>:</b> Two minima appear at &pm;&phi;<sub>0</sub>. The system &ldquo;falls&rdquo; into one of them &mdash; spontaneous symmetry breaking. In a magnet, it picks a direction of magnetisation. In a ferroelectric, it picks a polarisation direction.</p>
+      <p class="note" style="margin-top:6px">This is the &phi;<sup>4</sup> (Ginzburg&ndash;Landau) model. It is the starting point for nearly every field that studies phase transitions, from condensed matter to cosmology. The Higgs mechanism is a gauged version of exactly this picture.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ NUCLEATION & SPINODAL ============ -->
+<section id="nucleation">
+  <span class="eyebrow">4 &middot; The two universal mechanisms</span>
+  <h2>Nucleation-and-growth vs spinodal decomposition</h2>
+  <p>You know these from steel: a pro-eutectoid ferrite grain nucleates at an austenite grain boundary (nucleation and growth), while the Fe&ndash;Cr miscibility gap below ~475 &deg;C decomposes spinodally into Cr-rich &alpha;&prime; and Fe-rich &alpha;. The same two mechanisms appear in every system that phase-separates.</p>
+
+  <div class="pair">
+    <div>
+      <h3>Nucleation and growth</h3>
+      <p class="note">Between the equilibrium boundary (binodal) and the spinodal, the system is <em>metastable</em>: small fluctuations cost energy because the interfacial term dominates at small sizes. A nucleus must exceed the critical radius r* to grow. This applies equally to an ice crystal in supercooled water, a protein condensate in a cell, and a ferrite allotriomorph on an austenite grain boundary.</p>
+      <div class="panel" style="margin-top:6px">
+        <h3>Generic nucleation barrier</h3>
+        <div class="ctrl">
+          <label>&Delta;G<sub>v</sub> (driving force)</label>
+          <input type="range" id="cntDGv" min="0.05" max="2" step="0.01" value="0.5">
+          <span class="val" id="cntDGvVal">0.50</span>
+        </div>
+        <div class="ctrl">
+          <label>&gamma; (surface energy)</label>
+          <input type="range" id="cntGamma" min="0.1" max="2" step="0.01" value="1.0">
+          <span class="val" id="cntGammaVal">1.00</span>
+        </div>
+        <canvas id="cntCanvas" width="460" height="240"></canvas>
+        <p class="note">&Delta;G = &minus;&frac43;&pi;r&sup3;&Delta;G<sub>v</sub> + 4&pi;r&sup2;&gamma;. Critical radius r* = 2&gamma;/&Delta;G<sub>v</sub>; barrier &Delta;G* = 16&pi;&gamma;&sup3;/(3&Delta;G<sub>v</sub>&sup2;). The units are arbitrary &mdash; the shape is universal.</p>
+      </div>
+    </div>
+    <div>
+      <h3>Spinodal decomposition</h3>
+      <p class="note">Inside the spinodal, the system is <em>unstable</em>: any infinitesimal fluctuation in the right wavelength grows. No nucleation barrier exists. The result is an interconnected, sponge-like morphology at early times, which coarsens into droplets later. Cahn and Hilliard&rsquo;s 1958 theory describes this with a gradient energy term &mdash; the &kappa;(&nabla;c)&sup2; you may recognise from diffuse-interface models of solidification.</p>
+      <div class="panel" style="margin-top:6px">
+        <h3>Cahn&ndash;Hilliard spinodal decomposition</h3>
+        <div class="sim-controls">
+          <button id="chStart">&#9654; Start</button>
+          <button id="chReset">Reset</button>
+          <span class="sim-stat">Step: <span id="chStep">0</span></span>
+        </div>
+        <canvas id="chCanvas" width="256" height="256" style="image-rendering:pixelated"></canvas>
+        <p class="note">A 128 &times; 128 composition field, starting from c = 0.5 with small random noise. The equation &part;c/&part;t = M&nabla;&sup2;[&part;f/&part;c &minus; &kappa;&nabla;&sup2;c] with f = c&sup2;(1 &minus; c)&sup2; generates the characteristic interconnected morphology, then coarsens. The same equation describes polymer blends, lipid membranes, and alloy decomposition.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WATER & ICE ============ -->
+<section id="water">
+  <span class="eyebrow">5 &middot; Water and ice</span>
+  <h2>The most familiar phase transition is also one of the strangest</h2>
+  <p>Water has at least 20 experimentally confirmed crystalline polymorphs of ice, plus several amorphous forms. That makes it one of the most polymorphic substances known &mdash; more polymorphs than iron, though iron&rsquo;s four allotropes (&alpha;, &gamma;, &delta;, &epsilon;) are remarkable for a metal.</p>
+
+  <div class="grid2">
+    <div class="panel">
+      <h3>Connections to what you know</h3>
+      <ul class="tight note">
+        <li><b>Polymorphism:</b> Ice I<sub>h</sub> &harr; ice II &harr; ice III&hellip; is directly analogous to BCC &harr; FCC &harr; HCP in metals. The driving force for each transition is the free-energy difference between crystal structures at a given P and T.</li>
+        <li><b>Nucleation:</b> Water supercools easily &mdash; small droplets in clouds routinely reach &minus;35 &deg;C before freezing. The homogeneous nucleation rate follows classical nucleation theory (CNT) just as it does for solidification of a metal melt, with the same competition between volume driving force and interfacial energy.</li>
+        <li><b>Martensitic character:</b> Several ice-to-ice transitions are displacive (the molecules shift without long-range diffusion), making them structurally analogous to the martensitic transformation in steel. The ice I<sub>h</sub> &rarr; ice XI transition is an order&ndash;disorder transition of the hydrogen sublattice, analogous to the order&ndash;disorder transitions in metallic alloys (Cu<sub>3</sub>Au, Fe<sub>3</sub>Al).</li>
+        <li><b>Metastability:</b> Diamond is a metastable polymorph of carbon at ambient pressure, just as retained austenite is a metastable phase in quenched steel. Ice IV is thought to be always metastable with respect to other ice phases, yet can be made and studied.</li>
+      </ul>
+    </div>
+    <div class="panel" style="align-content:start">
+      <h3>Water&rsquo;s anomalies</h3>
+      <p class="note">Water is anomalous: it expands on freezing (ice floats), has a density maximum at 4 &deg;C, and its viscosity <em>decreases</em> under modest pressure. These anomalies may be explained by a hypothesised <em>liquid&ndash;liquid critical point</em> hidden deep in the supercooled regime &mdash; a second critical point between two forms of liquid water, one denser and more structured than the other. If this exists, it would mean water has a <em>liquid&ndash;liquid phase separation</em>, conceptually identical to the miscibility gap in Fe&ndash;Cr.</p>
+      <p class="note" style="margin-top:8px">This is an active research area. Experimental evidence is growing but not conclusive; see Debenedetti &amp; Stillinger (2001) and Kim <i>et al.</i> (2017, 2020) for reviews of the two-liquid hypothesis.</p>
+      <h3>Snow crystal morphology</h3>
+      <p class="note">The shape of a snow crystal &mdash; plates vs columns vs dendrites vs needles &mdash; is controlled by the supersaturation and temperature, mapped on the Nakaya diagram (1954). This is a morphology diagram, directly analogous to the ferrite morphology map (allotriomorphs &rarr; Widmanst&auml;tten &rarr; bainite) you study as a function of undercooling and composition. The physics is the same: interface kinetics and diffusion compete to select the growth form.</p>
+    </div>
+  </div>
+
+  <blockquote>&ldquo;The nucleation of ice in the atmosphere is the most common first-order phase transition on Earth and remains one of the least understood.&rdquo;<cite>T. Koop, &ldquo;Homogeneous ice nucleation in water and aqueous solutions,&rdquo; Z. Phys. Chem. 218, 1231 (2004)</cite></blockquote>
+</section>
+
+<!-- ============ SOFT MATTER ============ -->
+<section id="soft">
+  <span class="eyebrow">6 &middot; Soft matter</span>
+  <h2>Polymers, liquid crystals, and block copolymers</h2>
+  <p>Soft matter is the field where phase transformations meet large, floppy molecules. The thermodynamics is Gibbs&rsquo;; the kinetics are slower (chains must reptate, not just jump one lattice site); and the morphologies are spectacular.</p>
+
+  <div class="rules">
+    <div class="rule">
+      <span class="k">Polymer crystallisation</span>
+      <b>Spherulites are the grains of polymer metallurgy</b>
+      <p class="note">Semicrystalline polymers (polyethylene, nylon, PET) crystallise from the melt into <em>spherulites</em>: radially symmetric aggregates of thin lamellar crystals separated by amorphous material. A spherulite in a polarised-light micrograph shows a Maltese cross &mdash; the polymer equivalent of a grain under crossed polars. The lamellae grow by chain-folding and secondary nucleation on the growth face; the Lauritzen&ndash;Hoffman theory of polymer crystallisation is the polymer analogue of the Jackson&ndash;Hunt or Turnbull nucleation theories in metals.</p>
+    </div>
+    <div class="rule">
+      <span class="k">The glass transition</span>
+      <b>A frozen liquid, not a crystal</b>
+      <p class="note">Cool a polymer melt fast enough and it does not crystallise: instead, the viscosity rises by 14 orders of magnitude and the material becomes a glass. The glass transition temperature T<sub>g</sub> is not a true thermodynamic phase transition (there is no latent heat, no discontinuity in a thermodynamic potential) &mdash; it is a <em>kinetic</em> arrest. Metallic glasses form by the same mechanism: quench an alloy fast enough to prevent crystallisation. The analogy is exact: Zr-based bulk metallic glasses have a T<sub>g</sub> around 350&ndash;400 &deg;C, and their crystallisation on reheating is studied by the same DSC and dilatometry methods you use for steel.</p>
+    </div>
+    <div class="rule">
+      <span class="k">Block copolymers</span>
+      <b>Self-assembly by microphase separation</b>
+      <p class="note">A diblock copolymer (A-block-B) cannot macroscopically phase-separate because the blocks are covalently bonded. Instead, it <em>microphase-separates</em> into periodic nanostructures: lamellae, cylinders, a bicontinuous gyroid, or spheres, depending on the volume fraction and the Flory&ndash;Huggins interaction parameter &chi;N. The &chi;N parameter plays the role of temperature in a conventional phase diagram. This is spinodal decomposition arrested at the nanoscale by molecular architecture &mdash; a beautiful example of how a new constraint (the covalent bond) transforms a familiar thermodynamic instability into an entirely new class of microstructures.</p>
+    </div>
+    <div class="rule">
+      <span class="k">Liquid crystals</span>
+      <b>Order in one direction at a time</b>
+      <p class="note">Liquid crystals are phases intermediate between an isotropic liquid and a crystal. In the <em>nematic</em> phase, rod-shaped molecules align their long axes but have no positional order &mdash; like a crowd standing up but not in rows. In the <em>smectic</em> phase, they also arrange into layers. The order parameter is the orientational distribution, and the isotropic&ndash;nematic transition is usually weakly first-order. These transitions are relevant to displays, biological membranes, and any system of anisotropic particles. The nematic order parameter S is a second-rank tensor, making liquid crystals a distinct universality class from the scalar (Ising) and vector (Heisenberg) models.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GEOLOGY ============ -->
+<section id="earth">
+  <span class="eyebrow">7 &middot; Deep in the Earth</span>
+  <h2>Phase transformations at geological pressures and timescales</h2>
+  <p>The interior of the Earth is structured by phase transitions. The major seismic discontinuities at 410 km and 660 km depth are not compositional boundaries &mdash; they are phase transformations in olivine, the most abundant mineral in the upper mantle.</p>
+
+  <div class="grid2">
+    <div class="panel">
+      <h3>Olivine&rsquo;s journey downward</h3>
+      <ul class="tight note">
+        <li><b>0&ndash;410 km:</b> (Mg,Fe)<sub>2</sub>SiO<sub>4</sub> olivine, the stable phase of the upper mantle. Orthorhombic.</li>
+        <li><b>~410 km (~13.5 GPa):</b> Olivine transforms to <em>wadsleyite</em>, a modified spinel. This is the 410-km seismic discontinuity. The transformation is reconstructive (bonds break and reform) and exothermic.</li>
+        <li><b>~520 km:</b> Wadsleyite transforms to <em>ringwoodite</em>, a true spinel. Cubic.</li>
+        <li><b>~660 km (~23 GPa):</b> Ringwoodite decomposes into bridgmanite (perovskite structure) + ferropericlase. This is the 660-km discontinuity. It defines the boundary between the upper and lower mantle.</li>
+      </ul>
+      <p class="note" style="margin-top:6px">The kinetics of the olivine &rarr; wadsleyite transformation control how fast a subducting slab can equilibrate at depth. A cold, fast-subducting slab may carry metastable olivine well below 410 km &mdash; the geological equivalent of retained austenite.</p>
+    </div>
+    <div class="panel" style="align-content:start">
+      <h3>Displacive transitions in minerals</h3>
+      <p class="note">The &alpha; &harr; &beta; quartz transition at 573 &deg;C (at 1 atm) is <em>displacive</em>: the SiO<sub>4</sub> tetrahedra tilt without breaking bonds, changing the symmetry from trigonal (&alpha;) to hexagonal (&beta;). This is structurally identical to a martensitic transformation: it is diffusionless, involves a symmetry change, and produces a shape strain. Zirconia (ZrO<sub>2</sub>) undergoes a tetragonal &rarr; monoclinic martensitic transformation that is so similar to the one in steel that it is used for <em>transformation toughening</em> in ceramics &mdash; the volume expansion of the transformation absorbs crack energy, just as TRIP steel uses retained austenite &rarr; martensite.</p>
+      <h3>Exsolution in feldspars</h3>
+      <p class="note">Alkali feldspars (Na,K)AlSi<sub>3</sub>O<sub>8</sub> have a miscibility gap between Na-rich (albite) and K-rich (orthoclase) compositions. On slow cooling, they unmix by <em>spinodal decomposition</em>, producing the lamellar intergrowths called <em>perthite</em>. These are visible under the polarising microscope as fine parallel lamellae &mdash; the geological equivalent of the Fe&ndash;Cr spinodal in duplex stainless steels, or the decomposition of Al&ndash;Zn alloys into GP zones. The geology textbooks describe it with the same Cahn&ndash;Hilliard equation you would use for an alloy.</p>
+    </div>
+  </div>
+
+  <p class="callout a">Transformation toughening in zirconia ceramics is a direct application of the metallurgist&rsquo;s insight: if a metastable phase transforms under stress and the transformation has a volume change, the work done by the transformation absorbs energy from an advancing crack. Garvie, Hannink &amp; Pascoe published the concept in <i>Nature</i> in 1975, explicitly inspired by the TRIP effect in steels.</p>
+</section>
+
+<!-- ============ MAGNETISM ============ -->
+<section id="magnet">
+  <span class="eyebrow">8 &middot; Magnetism</span>
+  <h2>The Curie point: a phase transition you already know from steel</h2>
+  <p>Iron is ferromagnetic below 770 &deg;C (1043 K) and paramagnetic above it. At the Curie temperature, the spontaneous magnetisation drops continuously to zero &mdash; this is a continuous (second-order) phase transition. You have encountered it on the Fe&ndash;C phase diagram as the A<sub>2</sub> line, and it shows up in your dilatometry as a kink in the thermal expansion curve.</p>
+
+  <div class="pair">
+    <div>
+      <h3>Domain walls are grain boundaries</h3>
+      <p class="note">In a ferromagnet below T<sub>C</sub>, the material divides into <em>magnetic domains</em>, each uniformly magnetised in one direction. The boundaries between domains are <em>domain walls</em> (Bloch walls or N&eacute;el walls), across which the magnetisation rotates smoothly. The analogy to grain boundaries is direct: both are interfaces between regions of different orientation, both have an energy per unit area, and both migrate under driving forces (an applied field for domain walls, a chemical potential gradient for grain boundaries). Magnetic domain images under Kerr microscopy look strikingly like EBSD maps.</p>
+    </div>
+    <div>
+      <h3>Hysteresis and the coercive field</h3>
+      <p class="note">The magnetisation curve (M vs H) shows hysteresis &mdash; the magnetisation lags behind the applied field, just as a dilatometer curve shows thermal hysteresis between heating and cooling through a phase transformation. The coercive field (the field needed to demagnetise the material) depends on microstructure: precipitates, dislocations, and grain boundaries pin domain walls, raising the coercive field. This is exactly the same physics as solute drag and precipitate pinning of interfaces in metallurgy: an interface moving through a field of obstacles.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ISING MODEL ============ -->
+<section id="ising">
+  <span class="eyebrow">9 &middot; Interactive: the 2D Ising model</span>
+  <h2>A lattice of spins that shows you universality in real time</h2>
+  <p>The Ising model is the simplest model of a phase transition: a grid of spins, each +1 or &minus;1, interacting only with their nearest neighbours. Below the critical temperature T<sub>c</sub> = 2J/[k<sub>B</sub> ln(1 + &radic;2)] &approx; 2.269 J/k<sub>B</sub> (Onsager, 1944), the system spontaneously magnetises &mdash; most spins align. Above T<sub>c</sub>, thermal fluctuations destroy the order. At T<sub>c</sub>, you see fractal clusters of aligned spins at every length scale. Drag the temperature slider and watch.</p>
+
+  <div class="grid2">
+    <div class="panel">
+      <div class="sim-controls">
+        <button id="isingStart">&#9654; Start</button>
+        <button id="isingReset">Reset</button>
+        <span class="sim-stat">T/T<sub>c</sub> = <span id="isingTdisp">1.00</span></span>
+        <span class="sim-stat">|M| = <span id="isingMdisp">0.00</span></span>
+      </div>
+      <canvas id="isingCanvas" width="400" height="400" style="image-rendering:pixelated"></canvas>
+      <div class="ctrl">
+        <label>Temperature T/T<sub>c</sub></label>
+        <input type="range" id="isingT" min="0.1" max="3.0" step="0.01" value="1.0">
+        <span class="val" id="isingTval">1.00</span>
+      </div>
+    </div>
+    <div class="panel" style="align-content:start">
+      <h3>What you are seeing</h3>
+      <p class="note"><b>Gold pixels:</b> spin up (+1). <b>Dark pixels:</b> spin down (&minus;1). The simulation uses the Metropolis algorithm: at each step, pick a random spin, calculate the energy change if it flips, and accept the flip if it lowers the energy or with probability exp(&minus;&Delta;E/k<sub>B</sub>T) if it raises it.</p>
+      <p class="note"><b>Below T<sub>c</sub>:</b> Large domains of aligned spins form, separated by domain walls. The magnetisation |M| is close to 1. This is the ordered (ferromagnetic) phase.</p>
+      <p class="note"><b>Near T<sub>c</sub>:</b> Fractal, scale-free clusters. The correlation length diverges. Critical slowing down: the simulation takes many steps to decorrelate. This is the critical point.</p>
+      <p class="note"><b>Above T<sub>c</sub>:</b> Random noise. |M| &approx; 0. This is the disordered (paramagnetic) phase.</p>
+      <p class="note" style="margin-top:10px">The 2D Ising model is the only nontrivial lattice model with an exact analytical solution (Onsager 1944). Its critical exponents (&beta; = 1/8, &gamma; = 7/4, &nu; = 1) are in a <em>different universality class</em> from the 3D Ising model (&beta; &approx; 0.326, &gamma; &approx; 1.237, &nu; &approx; 0.630), because dimensionality matters. Real magnets and alloy order&ndash;disorder transitions live in the 3D Ising class.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SUPERCONDUCTIVITY ============ -->
+<section id="super">
+  <span class="eyebrow">10 &middot; Superconductivity and quantum transitions</span>
+  <h2>When electrons pair up and condense</h2>
+  <p>The superconducting transition is a phase transition in which electrons form Cooper pairs that condense into a macroscopic quantum state. The order parameter is the gap function &Delta; (or equivalently the condensate wave function &Psi;), and the Ginzburg&ndash;Landau theory of superconductivity is literally Landau&rsquo;s &phi;<sup>4</sup> theory with a complex order parameter coupled to the electromagnetic field.</p>
+
+  <div class="rules">
+    <div class="rule">
+      <span class="k">Type I superconductors</span>
+      <b>A clean first-order transition</b>
+      <p class="note">Pure metals (Pb, Sn, Al, Hg) become superconducting below T<sub>c</sub> with a sharp first-order transition in a magnetic field &mdash; the Meissner effect expels the field completely. Above the critical field H<sub>c</sub>, superconductivity is destroyed.</p>
+    </div>
+    <div class="rule">
+      <span class="k">Type II superconductors</span>
+      <b>Vortex lattices: a new periodic structure</b>
+      <p class="note">Alloys and high-T<sub>c</sub> cuprates (NbTi, YBCO) allow magnetic flux to penetrate in quantised vortices between H<sub>c1</sub> and H<sub>c2</sub>. These vortices arrange themselves into a triangular <em>Abrikosov lattice</em>, a periodic crystal of magnetic flux tubes. The vortex lattice can melt, pin on defects (analogous to precipitate pinning of dislocations), and undergo its own phase transitions.</p>
+    </div>
+    <div class="rule">
+      <span class="k">Bose&ndash;Einstein condensation</span>
+      <b>A macroscopic quantum phase transition</b>
+      <p class="note">At sufficiently low temperatures, bosons (integer-spin particles) condense into the same quantum ground state. This was predicted by Einstein in 1924 and first achieved experimentally in 1995 by Cornell &amp; Wieman (rubidium atoms, Nobel Prize 2001). BEC is a phase transition: the order parameter is the fraction of particles in the ground state, which goes from zero above T<sub>c</sub> to a macroscopic fraction below it. Superfluid helium-4 is a related phenomenon.</p>
+    </div>
+    <div class="rule">
+      <span class="k">Quantum phase transitions</span>
+      <b>Transitions at absolute zero</b>
+      <p class="note">Some phase transitions occur at T = 0, driven not by thermal fluctuations but by <em>quantum fluctuations</em> as you tune a parameter like pressure, magnetic field, or composition. The superconductor&ndash;insulator transition, the quantum Hall transitions, and heavy-fermion quantum criticality are examples. These have their own universality classes, with an extra &ldquo;imaginary time&rdquo; dimension that makes a d-dimensional quantum system equivalent to a (d+1)-dimensional classical one.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BIOLOGY ============ -->
+<section id="bio">
+  <span class="eyebrow">11 &middot; Biology: liquid&ndash;liquid phase separation</span>
+  <h2>The cell as a phase-separating system</h2>
+  <p>In 2009, Clifford Brangwynne and Anthony Hyman showed that P granules in <i>C. elegans</i> embryos are not membrane-bound organelles but <em>liquid droplets</em> &mdash; they fuse, drip, and dissolve like any other liquid phase. This paper launched the field of biological liquid&ndash;liquid phase separation (LLPS), which has transformed cell biology. The thermodynamics is the same as any other phase separation: a free energy of mixing with an unfavourable enthalpy term that drives demixing at low temperatures (or high concentrations).</p>
+
+  <div class="grid2">
+    <div class="panel">
+      <h3>Membrane-less organelles</h3>
+      <ul class="tight note">
+        <li><b>Nucleolus:</b> The largest membrane-less organelle, where ribosomal RNA is transcribed and processed. A liquid condensate of RNA and proteins.</li>
+        <li><b>Stress granules:</b> Form when the cell is stressed (heat shock, oxidative stress). Contain stalled mRNA and RNA-binding proteins. Dissolve when the stress is removed &mdash; reversible phase separation.</li>
+        <li><b>P bodies:</b> Sites of mRNA decay and storage.</li>
+        <li><b>Heterochromatin:</b> The compacted, gene-silent form of chromatin may be organised by phase separation of HP1 protein (Strom <i>et al.</i>, <i>Nature</i>, 2017; Larson <i>et al.</i>, <i>Nature</i>, 2017).</li>
+      </ul>
+      <p class="note" style="margin-top:6px">All of these are thermodynamic phases that form by the same nucleation-and-growth or spinodal decomposition you study in alloys, except the &ldquo;alloy&rdquo; is a solution of proteins and RNA.</p>
+    </div>
+    <div class="panel" style="align-content:start">
+      <h3>The metallurgist&rsquo;s perspective</h3>
+      <p class="note"><b>GP zones:</b> The closest metallurgical analogue to biological LLPS is Guinier&ndash;Preston zone formation in Al&ndash;Cu: coherent solute clusters that nucleate from a supersaturated solid solution after quenching. Replace &ldquo;Al matrix&rdquo; with &ldquo;cytoplasm&rdquo; and &ldquo;Cu atoms&rdquo; with &ldquo;intrinsically disordered proteins,&rdquo; and the thermodynamic picture is the same.</p>
+      <p class="note"><b>Spinodal inside a cell:</b> Some biological condensates may form by spinodal decomposition rather than nucleation &mdash; the onset is fast and produces an interconnected morphology before coarsening into droplets. Distinguishing the two experimentally is a challenge in biology, just as it is in metallurgy.</p>
+      <p class="note"><b>Amyloid as a &ldquo;wrong phase&rdquo;:</b> Proteins can also solidify into ordered amyloid fibrils &mdash; the pathological aggregates of Alzheimer&rsquo;s and Parkinson&rsquo;s disease. In LLPS language, the liquid condensate can undergo a further transition to a solid (gel or amyloid). This is a liquid-to-solid phase transition within the condensate, analogous to the liquid &rarr; crystal transition in an undercooled metallic melt.</p>
+    </div>
+  </div>
+
+  <blockquote>&ldquo;We propose that the P granule is actually a liquid-phase droplet&hellip; The localisation of P granules is controlled by local changes in the condensation point.&rdquo;<cite>C.P. Brangwynne <i>et al.</i>, &ldquo;Germline P granules are liquid droplets,&rdquo; <i>Science</i> 324, 1729 (2009)</cite></blockquote>
+</section>
+
+<!-- ============ COSMOS ============ -->
+<section id="cosmos">
+  <span class="eyebrow">12 &middot; The early universe</span>
+  <h2>The biggest phase transition of all</h2>
+  <p>In the standard model of particle physics, the universe underwent at least one phase transition in its first fraction of a second: the <em>electroweak symmetry breaking</em>, in which the Higgs field acquired a nonzero vacuum expectation value, giving mass to the W and Z bosons. This is spontaneous symmetry breaking in the Landau sense, with the Higgs field as the order parameter.</p>
+
+  <div class="pair">
+    <div>
+      <h3>The Higgs mechanism is a phase transition</h3>
+      <p class="note">At temperatures above ~10<sup>15</sup> K (energies above ~100 GeV), the Higgs potential has a single minimum at &phi; = 0: the electroweak symmetry is unbroken, and all particles are massless. As the universe cooled below this scale (~10<sup>&minus;12</sup> s after the Big Bang), the potential developed a &ldquo;Mexican hat&rdquo; shape &mdash; the same double-well you see in the Landau &phi;<sup>4</sup> model above, but with a continuous rotational symmetry. The field rolled into one of the minima, breaking the symmetry and giving particles their masses.</p>
+      <p class="note">Whether this transition was first-order (with bubble nucleation &mdash; literal cosmological nucleation and growth!) or a smooth crossover depends on the Higgs mass and the details of physics beyond the Standard Model. Current evidence suggests the Standard Model electroweak transition is a crossover, but extensions of the Standard Model can make it first-order.</p>
+    </div>
+    <div>
+      <h3>Cosmic inflation as a phase transition</h3>
+      <p class="note">The inflationary epoch (~10<sup>&minus;36</sup> to ~10<sup>&minus;32</sup> s) may have been driven by a phase transition of a scalar field (the &ldquo;inflaton&rdquo;). In this picture, the universe was trapped in a metastable state (a &ldquo;false vacuum&rdquo;) and underwent a first-order transition to the true vacuum, with the energy difference driving exponential expansion. Guth&rsquo;s original 1981 model used exactly this language: the inflaton field supercools, then the transition proceeds by <em>bubble nucleation</em>, with each bubble growing at the speed of light.</p>
+      <p class="note">The original model had a &ldquo;graceful exit problem&rdquo; &mdash; the bubbles never percolated &mdash; which was solved by Linde&rsquo;s and Albrecht &amp; Steinhardt&rsquo;s &ldquo;slow-roll&rdquo; models, but the phase-transition language remains: the universe&rsquo;s large-scale structure may carry the imprint of a nucleation event.</p>
+    </div>
+  </div>
+
+  <p class="callout c">The QCD phase transition (~10<sup>&minus;6</sup> s, ~150 MeV): quarks and gluons, free in the quark&ndash;gluon plasma, condensed into hadrons (protons, neutrons). This is a confinement transition, analogous to polymerisation or gelation &mdash; free monomers binding into composite objects. It is studied experimentally at CERN (ALICE at the LHC) and Brookhaven (RHIC) by colliding heavy nuclei and briefly recreating the early-universe conditions.</p>
+</section>
+
+<!-- ============ UNIVERSALITY ============ -->
+<section id="universality">
+  <span class="eyebrow">13 &middot; Universality</span>
+  <h2>Why a magnet and a fluid obey the same power laws</h2>
+  <p>The deepest result in the theory of phase transitions is <em>universality</em>: at a continuous phase transition, the critical exponents depend only on the dimensionality of space and the symmetry of the order parameter, not on the microscopic details of the system. A 3D Ising magnet and the liquid&ndash;gas critical point of water have the same critical exponents.</p>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Universality class</th><th>Order parameter symmetry</th><th>Examples</th><th>&beta;</th><th>&gamma;</th><th>&nu;</th></tr></thead>
+      <tbody>
+        <tr><td>2D Ising</td><td>Scalar, Z<sub>2</sub></td><td>Monolayer magnets, surface adsorption</td><td class="m">1/8 (exact)</td><td class="m">7/4 (exact)</td><td class="m">1 (exact)</td></tr>
+        <tr><td>3D Ising</td><td>Scalar, Z<sub>2</sub></td><td>Uniaxial magnets, binary alloys (Fe&ndash;Cr), liquid&ndash;gas critical point</td><td class="m">&approx; 0.326</td><td class="m">&approx; 1.237</td><td class="m">&approx; 0.630</td></tr>
+        <tr><td>3D XY</td><td>2-component vector</td><td>Superfluid helium, easy-plane magnets</td><td class="m">&approx; 0.348</td><td class="m">&approx; 1.316</td><td class="m">&approx; 0.671</td></tr>
+        <tr><td>3D Heisenberg</td><td>3-component vector</td><td>Isotropic magnets (EuO, Ni near T<sub>c</sub>)</td><td class="m">&approx; 0.366</td><td class="m">&approx; 1.395</td><td class="m">&approx; 0.707</td></tr>
+        <tr><td>Mean field</td><td>Any (d &ge; 4)</td><td>Landau theory, long-range interactions</td><td class="m">1/2</td><td class="m">1</td><td class="m">1/2</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note" style="margin-top:6px">&beta; governs the order parameter near T<sub>c</sub>: &phi; ~ (T<sub>c</sub> &minus; T)<sup>&beta;</sup>. &gamma; governs the susceptibility: &chi; ~ |T &minus; T<sub>c</sub>|<sup>&minus;&gamma;</sup>. &nu; governs the correlation length: &xi; ~ |T &minus; T<sub>c</sub>|<sup>&minus;&nu;</sup>. The 2D Ising values are exact (Onsager 1944; Yang 1952 for &beta;). The 3D values are from Monte Carlo simulations and high-temperature series expansions (Pelissetto &amp; Vicari, <i>Phys. Reports</i> 368, 549, 2002).</p>
+
+  <div class="pair" style="margin-top:14px">
+    <div>
+      <h3>Why universality works</h3>
+      <p class="note">Wilson&rsquo;s renormalization group (RG) gives the reason: near a continuous phase transition, the correlation length &xi; diverges. Fluctuations occur at all length scales. If you &ldquo;zoom out&rdquo; (coarse-grain) the system, the short-range details wash out. After enough coarse-graining, all systems with the same symmetry and dimensionality flow to the same <em>fixed point</em> of the RG transformation &mdash; the same effective Hamiltonian, and therefore the same critical exponents.</p>
+    </div>
+    <div>
+      <h3>What this means for you</h3>
+      <p class="note">If you have characterised one system in a universality class &mdash; measured its critical exponents, understood its scaling functions &mdash; you have characterised them all. A metallurgist studying the spinodal in Fe&ndash;Cr and a biologist studying liquid&ndash;liquid phase separation in a protein solution are, near their respective critical points, studying the same physics. The microscopic details (atoms vs proteins, eV vs k<sub>B</sub>T) change the energy and length scales but not the exponents.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FUTURE PI ============ -->
+<section id="pi">
+  <span class="eyebrow">14 &middot; What transfers</span>
+  <h2>The skills that follow you out of the metallurgy lab</h2>
+  <p>If you become a PI one day and move into a different field &mdash; soft matter, geophysics, biophysics, energy materials &mdash; here is what you already know and what you will need to learn.</p>
+
+  <div class="rules">
+    <div class="rule">
+      <span class="k">Transfers directly</span>
+      <b>Thermodynamic reasoning</b>
+      <p class="note">Phase diagrams, free energy, chemical potential, the lever rule, equilibrium conditions. This is Gibbs, and it is universal. You can read a polymer phase diagram or a geological P&ndash;T diagram with the same eye you use for Fe&ndash;C.</p>
+    </div>
+    <div class="rule">
+      <span class="k">Transfers directly</span>
+      <b>Nucleation theory</b>
+      <p class="note">Classical nucleation theory (CNT) is the same equation whether you are nucleating ferrite from austenite, ice from supercooled water, or a protein condensate from cytoplasm. The driving force, interfacial energy, and barrier height are the universal ingredients. What changes between systems is the values of &gamma; and &Delta;G<sub>v</sub>, not the framework.</p>
+    </div>
+    <div class="rule">
+      <span class="k">Transfers directly</span>
+      <b>Diffusion and kinetics</b>
+      <p class="note">Fick&rsquo;s laws, diffusion coefficients, the Stefan problem, moving-boundary problems. Whether the diffusing species is carbon in austenite, a polymer chain reptating through a melt, or a protein diffusing in the cytoplasm, the mathematical framework is the same.</p>
+    </div>
+    <div class="rule">
+      <span class="k">Transfers with adaptation</span>
+      <b>CALPHAD thinking</b>
+      <p class="note">The idea of parameterising free energies from experimental data, building databases, and computing phase diagrams &mdash; what CALPHAD is for alloys &mdash; exists in other fields but with different names. Polymer thermodynamics uses Flory&ndash;Huggins theory with fitted &chi; parameters. Geological thermodynamics uses programs like Perple_X and Theriak-Domino to compute P&ndash;T phase diagrams of rocks. The spirit is identical: build a free-energy model, fit it to data, then compute equilibria.</p>
+    </div>
+    <div class="rule">
+      <span class="k">Transfers with adaptation</span>
+      <b>Microstructural characterisation</b>
+      <p class="note">EBSD, SEM, TEM &mdash; these instruments exist in every materials lab. In soft matter you add confocal microscopy, DLS, SAXS/SANS. In biology, cryo-EM and fluorescence microscopy. The underlying skill &mdash; interpreting an image of a microstructure, understanding what contrast mechanism is operating, recognising artefacts &mdash; transfers completely.</p>
+    </div>
+    <div class="rule">
+      <span class="k">Needs to be learned</span>
+      <b>Statistical mechanics and field theory</b>
+      <p class="note">Metallurgy gives you a strong thermodynamic foundation but typically does not teach the Ising model, renormalization group, or field-theoretic methods. These are the tools of the phase-transitions theorist. If you move toward soft matter, biophysics, or any field where critical phenomena matter, you will want to learn them. Chaikin &amp; Lubensky&rsquo;s <i>Principles of Condensed Matter Physics</i> (1995) and Goldenfeld&rsquo;s <i>Lectures on Phase Transitions and the Renormalization Group</i> (1992) are standard starting points.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SOURCES ============ -->
+<section id="sources">
+  <span class="eyebrow">15 &middot; Sources</span>
+  <h2>References and further reading</h2>
+  <ol class="refs">
+    <li>J.W. Gibbs, &ldquo;On the Equilibrium of Heterogeneous Substances,&rdquo; <i>Trans. Connecticut Acad.</i> 3, 108&ndash;248 (1876); 343&ndash;524 (1878).</li>
+    <li>P. Ehrenfest, &ldquo;Phase changes in the ordinary and extended sense,&rdquo; <i>Proc. Kon. Akad. Wetensch. Amsterdam</i> 36, 153 (1933).</li>
+    <li>L.D. Landau, &ldquo;On the theory of phase transitions,&rdquo; <i>Zh. Eksp. Teor. Fiz.</i> 7, 19 (1937); translated in <i>Collected Papers of L.D. Landau</i>, ed. D. ter Haar (Pergamon, 1965).</li>
+    <li>L. Onsager, &ldquo;Crystal statistics. I. A two-dimensional model with an order&ndash;disorder transition,&rdquo; <i>Phys. Rev.</i> 65, 117 (1944).</li>
+    <li>J.W. Cahn &amp; J.E. Hilliard, &ldquo;Free energy of a nonuniform system. I. Interfacial free energy,&rdquo; <i>J. Chem. Phys.</i> 28, 258 (1958).</li>
+    <li>K.G. Wilson, &ldquo;The renormalization group and critical phenomena,&rdquo; <i>Rev. Mod. Phys.</i> 55, 583 (1983); Nobel lecture.</li>
+    <li>A. Pelissetto &amp; E. Vicari, &ldquo;Critical phenomena and renormalization-group theory,&rdquo; <i>Phys. Reports</i> 368, 549 (2002). [Universality class exponents]</li>
+    <li>C.P. Brangwynne <i>et al.</i>, &ldquo;Germline P granules are liquid droplets that localize by controlled dissolution/condensation,&rdquo; <i>Science</i> 324, 1729 (2009).</li>
+    <li>P.G. Debenedetti &amp; F.H. Stillinger, &ldquo;Supercooled liquids and the glass transition,&rdquo; <i>Nature</i> 410, 259 (2001). [Water anomalies, glass transition]</li>
+    <li>C.G. Salzmann, &ldquo;Advances in the experimental exploration of water&rsquo;s phase diagram,&rdquo; <i>J. Chem. Phys.</i> 150, 060901 (2019). [Ice polymorphs]</li>
+    <li>T. Koop, &ldquo;Homogeneous ice nucleation in water and aqueous solutions,&rdquo; <i>Z. Phys. Chem.</i> 218, 1231 (2004). [Ice nucleation]</li>
+    <li>R.C. Garvie, R.H. Hannink &amp; R.T. Pascoe, &ldquo;Ceramic steel?&rdquo; <i>Nature</i> 258, 703 (1975). [Transformation toughening in ZrO<sub>2</sub>]</li>
+    <li>U. Nakaya, <i>Snow Crystals: Natural and Artificial</i> (Harvard University Press, 1954). [Snow crystal morphology]</li>
+    <li>A.R. Strom <i>et al.</i>, &ldquo;Phase separation drives heterochromatin domain formation,&rdquo; <i>Nature</i> 547, 241 (2017).</li>
+    <li>A.G. Larson <i>et al.</i>, &ldquo;Liquid droplet-like behavior of HP1&alpha; mediates heterochromatin formation,&rdquo; <i>Nature</i> 547, 236 (2017).</li>
+    <li>A.H. Guth, &ldquo;Inflationary universe: a possible solution to the horizon and flatness problems,&rdquo; <i>Phys. Rev. D</i> 23, 347 (1981). [Inflation as phase transition]</li>
+    <li>P.M. Chaikin &amp; T.C. Lubensky, <i>Principles of Condensed Matter Physics</i> (Cambridge University Press, 1995). [Universality, soft matter]</li>
+    <li>N. Goldenfeld, <i>Lectures on Phase Transitions and the Renormalization Group</i> (Addison-Wesley, 1992). [RG theory]</li>
+    <li>F.S. Bates &amp; G.H. Fredrickson, &ldquo;Block copolymer thermodynamics: theory and experiment,&rdquo; <i>Annu. Rev. Phys. Chem.</i> 41, 525 (1990). [Block copolymer self-assembly]</li>
+    <li>D.A. Porter, K.E. Easterling &amp; M.Y. Sherif, <i>Phase Transformations in Metals and Alloys</i>, 3rd edn (CRC Press, 2009). [The metallurgist&rsquo;s standard reference]</li>
+    <li>M.H. Anderson <i>et al.</i>, &ldquo;Observation of Bose&ndash;Einstein condensation in a dilute atomic vapor,&rdquo; <i>Science</i> 269, 198 (1995). [First BEC]</li>
+  </ol>
+</section>
+
+</div><!-- /.wrap -->
+
+<!-- ============ JAVASCRIPT ============ -->
+<script>
+"use strict";
+
+/* ---------- LANDAU FREE ENERGY ---------- */
+(function(){
+  const canvas = document.getElementById('landauCanvas');
+  const ctx = canvas.getContext('2d');
+  const slider = document.getElementById('landauT');
+  const valSpan = document.getElementById('landauTval');
+
+  function draw(){
+    const T = parseFloat(slider.value); // T-Tc in arbitrary units: negative = below Tc
+    const W = canvas.width, H = canvas.height;
+    const dpr = window.devicePixelRatio||1;
+    canvas.width = canvas.clientWidth*dpr;
+    canvas.height = Math.round(canvas.clientWidth*0.64)*dpr;
+    ctx.scale(dpr,dpr);
+    const w = canvas.clientWidth, h = Math.round(canvas.clientWidth*0.64);
+    ctx.clearRect(0,0,w,h);
+
+    const cs = getComputedStyle(document.documentElement);
+    const ink = cs.getPropertyValue('--ink').trim();
+    const muted = cs.getPropertyValue('--muted').trim();
+    const ferrite = cs.getPropertyValue('--ferrite').trim();
+    const tip = cs.getPropertyValue('--tip').trim();
+    const rule = cs.getPropertyValue('--rule').trim();
+
+    // F(phi) = a*(T-Tc)*phi^2 + b*phi^4, with a=1, b=1
+    // T slider goes from -2 to 2
+    const a = T; // this is a*(T-Tc)
+    const b = 1;
+    const phiRange = 1.8;
+    const fMax = 1.5;
+    const fMin = -1.0;
+    const margin = {l:50, r:20, t:20, b:40};
+    const pw = w - margin.l - margin.r;
+    const ph = h - margin.t - margin.b;
+
+    function toX(phi){ return margin.l + (phi + phiRange)/(2*phiRange)*pw; }
+    function toY(f){ return margin.t + (fMax - f)/(fMax - fMin)*ph; }
+
+    // Axes
+    ctx.strokeStyle = rule;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(toX(-phiRange), toY(0));
+    ctx.lineTo(toX(phiRange), toY(0));
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(toX(0), toY(fMax));
+    ctx.lineTo(toX(0), toY(fMin));
+    ctx.stroke();
+
+    // Labels
+    ctx.fillStyle = muted;
+    ctx.font = '12px "Plus Jakarta Sans",system-ui,sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('φ', toX(phiRange)-2, toY(0)+18);
+    ctx.fillText('F(φ)', toX(0)+20, toY(fMax)+12);
+
+    // F curve
+    ctx.strokeStyle = ferrite;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    let first = true;
+    for(let px = 0; px <= pw; px++){
+      const phi = -phiRange + (px/pw)*2*phiRange;
+      const f = a*phi*phi + b*phi*phi*phi*phi;
+      const x = margin.l + px;
+      const y = toY(f);
+      if(y < margin.t - 10 || y > h - margin.b + 10) { first = true; continue; }
+      if(first){ ctx.moveTo(x, y); first = false; }
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Mark minima
+    if(a < 0){
+      const phi0 = Math.sqrt(-a/(2*b));
+      const fMin0 = a*phi0*phi0 + b*phi0*phi0*phi0*phi0;
+      [phi0, -phi0].forEach(p => {
+        ctx.fillStyle = tip;
+        ctx.beginPath();
+        ctx.arc(toX(p), toY(fMin0), 5, 0, 2*Math.PI);
+        ctx.fill();
+      });
+      // Label
+      ctx.fillStyle = tip;
+      ctx.font = '11px "JetBrains Mono",monospace';
+      ctx.fillText('±φ₀ = ±'+phi0.toFixed(2), toX(phi0), toY(fMin0)+18);
+    } else {
+      ctx.fillStyle = tip;
+      ctx.beginPath();
+      ctx.arc(toX(0), toY(0), 5, 0, 2*Math.PI);
+      ctx.fill();
+    }
+
+    // Update label
+    if(T > 0.05) valSpan.innerHTML = 'T > T<sub>c</sub>';
+    else if(T < -0.05) valSpan.innerHTML = 'T < T<sub>c</sub>';
+    else valSpan.innerHTML = 'T ≈ T<sub>c</sub>';
+  }
+
+  slider.addEventListener('input', draw);
+  window.addEventListener('resize', draw);
+  draw();
+})();
+
+/* ---------- CNT NUCLEATION BARRIER ---------- */
+(function(){
+  const canvas = document.getElementById('cntCanvas');
+  const ctx = canvas.getContext('2d');
+  const dgvSlider = document.getElementById('cntDGv');
+  const gammaSlider = document.getElementById('cntGamma');
+  const dgvVal = document.getElementById('cntDGvVal');
+  const gammaVal = document.getElementById('cntGammaVal');
+
+  function draw(){
+    const DGv = parseFloat(dgvSlider.value);
+    const gamma = parseFloat(gammaSlider.value);
+    dgvVal.textContent = DGv.toFixed(2);
+    gammaVal.textContent = gamma.toFixed(2);
+
+    const dpr = window.devicePixelRatio||1;
+    canvas.width = canvas.clientWidth*dpr;
+    canvas.height = Math.round(canvas.clientWidth*0.52)*dpr;
+    ctx.scale(dpr,dpr);
+    const w = canvas.clientWidth, h = Math.round(canvas.clientWidth*0.52);
+    ctx.clearRect(0,0,w,h);
+
+    const cs = getComputedStyle(document.documentElement);
+    const ink = cs.getPropertyValue('--ink').trim();
+    const muted = cs.getPropertyValue('--muted').trim();
+    const ferrite = cs.getPropertyValue('--ferrite').trim();
+    const tip = cs.getPropertyValue('--tip').trim();
+    const rule = cs.getPropertyValue('--rule').trim();
+    const ok = cs.getPropertyValue('--ok').trim();
+
+    const rStar = 2*gamma/DGv;
+    const dGStar = (16*Math.PI*gamma*gamma*gamma)/(3*DGv*DGv);
+    const rMax = Math.max(rStar*2.5, 6);
+    const fMax = Math.max(dGStar*1.3, 2);
+    const fMin = -fMax*0.3;
+
+    const margin = {l:50, r:20, t:20, b:36};
+    const pw = w - margin.l - margin.r;
+    const ph = h - margin.t - margin.b;
+    function toX(r){ return margin.l + (r/rMax)*pw; }
+    function toY(f){ return margin.t + (fMax - f)/(fMax - fMin)*ph; }
+
+    // Axes
+    ctx.strokeStyle = rule; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(toX(0), toY(fMax)); ctx.lineTo(toX(0), toY(fMin)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(toX(0), toY(0)); ctx.lineTo(toX(rMax), toY(0)); ctx.stroke();
+
+    ctx.fillStyle = muted; ctx.font = '12px "Plus Jakarta Sans",system-ui,sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('r', toX(rMax)-4, toY(0)+16);
+    ctx.fillText('ΔG(r)', toX(0)+28, toY(fMax)+14);
+
+    // Volume term (dashed)
+    ctx.strokeStyle = ok; ctx.lineWidth = 1; ctx.setLineDash([4,4]);
+    ctx.beginPath();
+    for(let px=0;px<=pw;px++){
+      const r=px/pw*rMax;
+      const fv = -(4/3)*Math.PI*r*r*r*DGv;
+      const y=toY(fv); if(y>h-margin.b+5){continue;}
+      if(px===0)ctx.moveTo(toX(r),y);else ctx.lineTo(toX(r),y);
+    }
+    ctx.stroke(); ctx.setLineDash([]);
+
+    // Surface term (dashed)
+    ctx.strokeStyle = '#7ea8c4'; ctx.lineWidth = 1; ctx.setLineDash([4,4]);
+    ctx.beginPath();
+    for(let px=0;px<=pw;px++){
+      const r=px/pw*rMax;
+      const fs = 4*Math.PI*r*r*gamma;
+      const y=toY(fs); if(y<margin.t-5){continue;}
+      if(px===0)ctx.moveTo(toX(r),y);else ctx.lineTo(toX(r),y);
+    }
+    ctx.stroke(); ctx.setLineDash([]);
+
+    // Total curve
+    ctx.strokeStyle = ferrite; ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    let first=true;
+    for(let px=0;px<=pw;px++){
+      const r=px/pw*rMax;
+      const f = -(4/3)*Math.PI*r*r*r*DGv + 4*Math.PI*r*r*gamma;
+      const y=toY(f);
+      if(y<margin.t-10||y>h-margin.b+10){first=true;continue;}
+      if(first){ctx.moveTo(toX(r),y);first=false;}else ctx.lineTo(toX(r),y);
+    }
+    ctx.stroke();
+
+    // Mark r* and DG*
+    ctx.fillStyle = tip;
+    ctx.beginPath(); ctx.arc(toX(rStar), toY(dGStar), 5, 0, 2*Math.PI); ctx.fill();
+    ctx.fillStyle = tip; ctx.font = '11px "JetBrains Mono",monospace';
+    ctx.fillText('r*='+rStar.toFixed(1)+' ΔG*='+dGStar.toFixed(1), toX(rStar)+5, toY(dGStar)-10);
+  }
+
+  dgvSlider.addEventListener('input', draw);
+  gammaSlider.addEventListener('input', draw);
+  window.addEventListener('resize', draw);
+  draw();
+})();
+
+/* ---------- CAHN-HILLIARD ---------- */
+(function(){
+  const N = 128;
+  const canvas = document.getElementById('chCanvas');
+  const ctx = canvas.getContext('2d');
+  const startBtn = document.getElementById('chStart');
+  const resetBtn = document.getElementById('chReset');
+  const stepSpan = document.getElementById('chStep');
+  let c = null, running = false, step = 0, animId = null;
+  const M = 1.0, kappa = 0.5, dt = 0.005;
+
+  function init(){
+    c = new Float64Array(N*N);
+    for(let i=0;i<N*N;i++) c[i] = 0.5 + (Math.random()-0.5)*0.02;
+    step = 0; stepSpan.textContent = '0';
+    drawField();
+  }
+
+  function drawField(){
+    const dpr = window.devicePixelRatio||1;
+    canvas.width = canvas.clientWidth*dpr;
+    canvas.height = canvas.clientWidth*dpr;
+    const ctx2 = canvas.getContext('2d');
+    const s = canvas.width/N;
+    const cs = getComputedStyle(document.documentElement);
+    const isDark = cs.getPropertyValue('--bg').trim().startsWith('#1');
+    for(let j=0;j<N;j++) for(let i=0;i<N;i++){
+      const v = c[j*N+i];
+      if(isDark){
+        const r = Math.round(30 + v*200);
+        const g = Math.round(25 + v*140);
+        const b = Math.round(20 + v*50);
+        ctx2.fillStyle = `rgb(${r},${g},${b})`;
+      } else {
+        const r = Math.round(255 - v*120);
+        const g = Math.round(245 - v*130);
+        const b = Math.round(235 - v*180);
+        ctx2.fillStyle = `rgb(${r},${g},${b})`;
+      }
+      ctx2.fillRect(i*s, j*s, Math.ceil(s), Math.ceil(s));
+    }
+  }
+
+  function evolve(steps){
+    const c2 = new Float64Array(N*N);
+    const mu = new Float64Array(N*N);
+    for(let s=0;s<steps;s++){
+      // Compute chemical potential mu = df/dc - kappa*laplacian(c)
+      for(let j=0;j<N;j++) for(let i=0;i<N;i++){
+        const idx = j*N+i;
+        const cv = c[idx];
+        const dfdc = 2*cv*(1-cv)*(1-2*cv); // derivative of c^2(1-c)^2
+        const jp=(j+1)%N, jm=(j-1+N)%N, ip=(i+1)%N, im=(i-1+N)%N;
+        const lapC = c[jp*N+i]+c[jm*N+i]+c[j*N+ip]+c[j*N+im]-4*cv;
+        mu[idx] = dfdc - kappa*lapC;
+      }
+      // dc/dt = M * laplacian(mu)
+      for(let j=0;j<N;j++) for(let i=0;i<N;i++){
+        const idx = j*N+i;
+        const jp=(j+1)%N, jm=(j-1+N)%N, ip=(i+1)%N, im=(i-1+N)%N;
+        const lapMu = mu[jp*N+i]+mu[jm*N+i]+mu[j*N+ip]+mu[j*N+im]-4*mu[idx];
+        c2[idx] = c[idx] + M*dt*lapMu;
+        // clamp
+        if(c2[idx]<0) c2[idx]=0;
+        if(c2[idx]>1) c2[idx]=1;
+      }
+      for(let k=0;k<N*N;k++) c[k]=c2[k];
+      step++;
+    }
+    stepSpan.textContent = step;
+  }
+
+  function loop(){
+    if(!running) return;
+    evolve(10);
+    drawField();
+    animId = requestAnimationFrame(loop);
+  }
+
+  startBtn.addEventListener('click', ()=>{
+    running = !running;
+    startBtn.textContent = running ? '⏸ Pause' : '▶ Start';
+    if(running) loop();
+  });
+  resetBtn.addEventListener('click', ()=>{
+    running = false;
+    startBtn.textContent = '▶ Start';
+    if(animId) cancelAnimationFrame(animId);
+    init();
+  });
+  init();
+})();
+
+/* ---------- 2D ISING MODEL ---------- */
+(function(){
+  const N = 200;
+  const Tc = 2.0 / Math.log(1 + Math.SQRT2); // ~2.269
+  const canvas = document.getElementById('isingCanvas');
+  const startBtn = document.getElementById('isingStart');
+  const resetBtn = document.getElementById('isingReset');
+  const tSlider = document.getElementById('isingT');
+  const tVal = document.getElementById('isingTval');
+  const tDisp = document.getElementById('isingTdisp');
+  const mDisp = document.getElementById('isingMdisp');
+  let spins = null, running = false, animId = null;
+
+  function init(){
+    spins = new Int8Array(N*N);
+    for(let i=0;i<N*N;i++) spins[i] = Math.random()<0.5 ? 1 : -1;
+    drawSpins();
+    updateStats();
+  }
+
+  function drawSpins(){
+    const dpr = window.devicePixelRatio||1;
+    canvas.width = canvas.clientWidth*dpr;
+    canvas.height = canvas.clientWidth*dpr;
+    const ctx2 = canvas.getContext('2d');
+    const s = canvas.width/N;
+    const cs = getComputedStyle(document.documentElement);
+    const isDark = cs.getPropertyValue('--bg').trim().startsWith('#1');
+    // up = gold, down = dark
+    const upColor = isDark ? '#f2b84b' : '#d9a62a';
+    const downColor = isDark ? '#1a2128' : '#2d3740';
+    for(let j=0;j<N;j++) for(let i=0;i<N;i++){
+      ctx2.fillStyle = spins[j*N+i]===1 ? upColor : downColor;
+      ctx2.fillRect(i*s, j*s, Math.ceil(s), Math.ceil(s));
+    }
+  }
+
+  function updateStats(){
+    let m = 0;
+    for(let i=0;i<N*N;i++) m += spins[i];
+    mDisp.textContent = Math.abs(m/(N*N)).toFixed(3);
+  }
+
+  function sweep(nSweeps){
+    const T_over_Tc = parseFloat(tSlider.value);
+    const T = T_over_Tc * Tc;
+    const beta = 1.0/T;
+    // Precompute exp values for possible dE: -8J, -4J, 0, 4J, 8J
+    const expTable = new Float64Array(9);
+    for(let de=-8;de<=8;de+=4){
+      expTable[de+8] = Math.exp(-de*beta);
+    }
+    const total = N*N*nSweeps;
+    for(let k=0;k<total;k++){
+      const i = (Math.random()*N)|0;
+      const j = (Math.random()*N)|0;
+      const idx = j*N+i;
+      const s = spins[idx];
+      const jp=(j+1)%N, jm=(j-1+N)%N, ip=(i+1)%N, im=(i-1+N)%N;
+      const neighbors = spins[jp*N+i]+spins[jm*N+i]+spins[j*N+ip]+spins[j*N+im];
+      const dE = 2*s*neighbors; // energy change if we flip
+      if(dE<=0 || Math.random() < expTable[dE+8]){
+        spins[idx] = -s;
+      }
+    }
+  }
+
+  function loop(){
+    if(!running) return;
+    sweep(3); // 3 sweeps per frame
+    drawSpins();
+    updateStats();
+    animId = requestAnimationFrame(loop);
+  }
+
+  tSlider.addEventListener('input', ()=>{
+    tVal.textContent = parseFloat(tSlider.value).toFixed(2);
+    tDisp.textContent = parseFloat(tSlider.value).toFixed(2);
+  });
+
+  startBtn.addEventListener('click', ()=>{
+    running = !running;
+    startBtn.textContent = running ? '⏸ Pause' : '▶ Start';
+    if(running) loop();
+  });
+  resetBtn.addEventListener('click', ()=>{
+    running = false;
+    startBtn.textContent = '▶ Start';
+    if(animId) cancelAnimationFrame(animId);
+    init();
+  });
+  init();
+})();
+</script>
+</body>
+</html>
