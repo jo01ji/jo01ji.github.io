@@ -1,0 +1,1064 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>How LLMs Hold Knowledge</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="A lesson on large language models from the API up: tokens, prompts, pretraining, fine-tuning, prompt engineering, RAG, agents, and the ways knowledge is represented and delivered to a model.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column with full-width figure panels; same lab-notebook palette as the phase-transformation lessons */
+:root{
+  --bg:#eef1f3; --panel:#f8fafb; --ink:#17212b; --muted:#56636f; --rule:#cfd6dc; --grid:#e2e7eb;
+  --accent:#a8650a; --honey:#d29a12; --amber:#e07b12; --rust:#b4480e; --stable:#8d979f; --window:#f5e6bd;
+  --code:#e6eaee;
+  --display:"Fraunces",Georgia,serif; --body:"Plus Jakarta Sans","Segoe UI",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12171c; --panel:#1a2128; --ink:#e3e8ec; --muted:#9aa6b1; --rule:#2d3740; --grid:#222b33;
+  --accent:#f2b84b; --honey:#f5c542; --amber:#f39a3c; --rust:#ff7a3d; --stable:#6c7782; --window:#3a3221; --code:#0f1418; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12171c; --panel:#1a2128; --ink:#e3e8ec; --muted:#9aa6b1; --rule:#2d3740; --grid:#222b33;
+  --accent:#f2b84b; --honey:#f5c542; --amber:#f39a3c; --rust:#ff7a3d; --stable:#6c7782; --window:#3a3221; --code:#0f1418; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--body)}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:32px 72px}
+h1,h2,h3{font-family:var(--display);font-weight:600;text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:clamp(30px,4.6vw,46px)}
+h2{font-size:clamp(23px,3vw,30px)}
+h3{font-size:19px;margin-top:6px}
+p,ul,ol{margin:0;max-width:70ch}
+ul,ol{padding-left:22px;display:grid;gap:4px}
+.lede{color:var(--muted);font-size:18px;margin-top:8px}
+.eyebrow{font:500 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+header{display:grid;gap:8px;padding-bottom:22px}
+section{display:grid;gap:14px;padding-block:38px;border-top:1px solid var(--rule)}
+a{color:var(--accent)}
+nav.toc{display:flex;flex-wrap:wrap;gap:6px 8px;margin-top:14px}
+nav.toc a{font:500 13px var(--mono);text-decoration:none;color:var(--ink);border:1px solid var(--rule);border-radius:4px;padding:3px 8px;background:var(--panel)}
+nav.toc a:hover{border-color:var(--accent)}
+nav.toc a b{color:var(--accent);font-weight:500}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:16px;display:grid;gap:12px;min-width:0}
+.fig{overflow-x:auto}
+.fig svg{display:block;width:100%;height:auto;min-width:560px}
+.fig.narrow svg{min-width:0}
+.cap{font-size:14px;color:var(--muted);max-width:80ch}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:820px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.note{font-size:15px;border-left:3px solid var(--honey);padding:8px 12px;background:var(--panel);border-radius:0 4px 4px 0;max-width:78ch}
+.note i{font-style:normal;font-weight:600}
+.note b{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);display:block;margin-bottom:2px;font-weight:500}
+.metal{border-left-color:var(--rust)}
+.metal b{color:var(--rust)}
+pre{margin:0;background:var(--code);border:1px solid var(--rule);border-radius:4px;padding:12px 14px;overflow-x:auto;font:13px/1.55 var(--mono);color:var(--ink)}
+code{font-family:var(--mono);font-size:.88em;background:var(--code);padding:1px 4px;border-radius:3px}
+pre code{background:none;padding:0;font-size:inherit}
+.c{color:var(--muted)} .k{color:var(--accent)} .s{color:var(--rust)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;font-size:14.5px;width:100%}
+th,td{padding:7px 10px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font:500 12px var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+td.y{color:var(--accent);font-weight:600}
+td.n0{color:var(--stable)}
+button{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--rule);border-radius:4px;padding:5px 10px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button[aria-pressed="true"]{border-color:var(--accent);background:var(--panel);font-weight:600;box-shadow:inset 0 -2px 0 var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.lab{font-size:13px;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+output{font:500 13px var(--mono);font-variant-numeric:tabular-nums}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:500 12px var(--mono);padding:2px 8px;border-radius:999px;border:1px solid var(--rule);color:var(--stable)}
+.chip.on{border-color:var(--honey);color:var(--ink);background:var(--window)}
+.chip.on::before{content:"● ";color:var(--accent)}
+.chip:not(.on)::before{content:"○ "}
+.bars{display:grid;gap:5px}
+.barrow{display:grid;grid-template-columns:110px minmax(0,1fr) 56px;gap:8px;align-items:center;font-size:14px}
+.barrow .tok{font-family:var(--mono);font-size:13px}
+.barrow .track{height:16px;background:var(--grid);border-radius:2px;overflow:hidden}
+.barrow .fill{height:100%;background:var(--stable);transition:width .25s}
+.barrow.top .fill{background:var(--honey)}
+.barrow.pick .tok{color:var(--rust);font-weight:600}
+.barrow .pv{font:13px var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.chunks{display:grid;gap:6px}
+.chunk{display:grid;grid-template-columns:52px minmax(0,1fr);gap:10px;align-items:start;font-size:14px;padding:7px 9px;border:1px solid var(--rule);border-radius:4px;background:var(--bg)}
+.chunk .sc{font:500 13px var(--mono);font-variant-numeric:tabular-nums;color:var(--muted)}
+.chunk.hit{border-color:var(--honey);background:var(--window)}
+.chunk.hit .sc{color:var(--accent)}
+.chunk .src{font:500 11px var(--mono);color:var(--muted);letter-spacing:.04em}
+.steps{display:grid;gap:8px}
+.msg{border:1px solid var(--rule);border-radius:4px;padding:8px 10px;font-size:14px;background:var(--bg);display:grid;gap:3px}
+.msg .who{font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.msg.tool{border-style:dashed}
+.msg.new{border-color:var(--honey)}
+.msg pre{padding:6px 8px;font-size:12px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.repview{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px}
+@media (max-width:820px){.repview{grid-template-columns:minmax(0,1fr)}}
+.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;font-size:14px;margin:0}
+.kv dt{color:var(--muted)} .kv dd{margin:0}
+#repbody{min-width:0}
+.refs li{font-size:14.5px}
+.refs i{font-style:italic}
+svg text{fill:var(--ink);font-family:var(--body);font-size:13px}
+svg .tm{fill:var(--muted)} svg .mono{font-family:var(--mono);font-size:12px}
+svg .ta{fill:var(--accent)} svg .tr{fill:var(--rust)}
+svg .h{font-family:var(--display);font-weight:600;font-size:16px}
+.f-panel{fill:var(--panel)} .f-bg{fill:var(--bg)} .f-win{fill:var(--window)} .f-honey{fill:var(--honey)} .f-amber{fill:var(--amber)} .f-rust{fill:var(--rust)} .f-ink{fill:var(--ink)} .f-muted{fill:var(--muted)} .f-stable{fill:var(--stable)} .f-grid{fill:var(--grid)} .f-none{fill:none} .f-acc{fill:var(--accent)}
+.s-rule{stroke:var(--rule)} .s-ink{stroke:var(--ink)} .s-muted{stroke:var(--muted)} .s-honey{stroke:var(--honey)} .s-amber{stroke:var(--amber)} .s-rust{stroke:var(--rust)} .s-acc{stroke:var(--accent)} .s-stable{stroke:var(--stable)}
+.dash{stroke-dasharray:4 3}
+footer{border-top:1px solid var(--rule);padding-top:20px;font-size:14px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="f-muted" d="M0,0L10,5L0,10z"/></marker>
+<marker id="aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="f-acc" d="M0,0L10,5L0,10z"/></marker>
+<marker id="ahr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="f-rust" d="M0,0L10,5L0,10z"/></marker>
+</defs></svg>
+
+<div class="wrap">
+<header>
+  <a href="./" style="color:var(--muted);font-size:15px;text-decoration:none">← Machine intelligence</a>
+  <div class="eyebrow">Machine intelligence · lesson 1</div>
+  <h1>How LLMs hold knowledge</h1>
+  <p class="lede">From the very basics (what an API call is, what a token is) up to pretraining, fine-tuning, prompting, retrieval and agents. The thread running through all of it is one question: where does the knowledge live, what shape is it in, and how does it reach the model at the moment it answers?</p>
+  <nav class="toc" aria-label="Sections">
+    <a href="#map"><b>0</b> The map</a><a href="#api"><b>1</b> API</a><a href="#tokens"><b>2</b> Tokens</a><a href="#predict"><b>3</b> Next-token prediction</a><a href="#inside"><b>4</b> Inside the model</a><a href="#pretrain"><b>5</b> Pretraining</a><a href="#finetune"><b>6</b> Fine-tuning</a><a href="#prompt"><b>7</b> Prompt engineering</a><a href="#context"><b>8</b> The context window</a><a href="#rag"><b>9</b> RAG</a><a href="#kr"><b>10</b> Knowledge representation</a><a href="#arch"><b>11</b> Three architectures</a><a href="#agents"><b>12</b> Agents</a><a href="#eval"><b>13</b> Measuring it</a><a href="#refs"><b>14</b> Reading list</a>
+  </nav>
+</header>
+
+<!-- 0 MAP -->
+<section id="map">
+  <div class="eyebrow">0 · The map</div>
+  <h2>Three places knowledge can live</h2>
+  <p>Everything in this lesson is a way of getting knowledge into one of three places. Keep this picture in mind; every later section points back to it.</p>
+  <div class="panel fig">
+    <svg viewBox="0 0 900 360" role="img" aria-label="Diagram: knowledge can be in the model weights, in the context window, or in external tools">
+      <!-- weights -->
+      <rect x="20" y="40" width="270" height="280" rx="6" class="f-bg s-rule"/>
+      <text x="38" y="68" class="h">1 · In the weights</text>
+      <text x="38" y="88" class="tm">parametric knowledge</text>
+      <g transform="translate(60,110)">
+        <!-- neural mesh -->
+        <g class="s-stable" stroke-width="1">
+          <line x1="0" y1="10" x2="90" y2="0"/><line x1="0" y1="10" x2="90" y2="50"/><line x1="0" y1="10" x2="90" y2="100"/>
+          <line x1="0" y1="60" x2="90" y2="0"/><line x1="0" y1="60" x2="90" y2="50"/><line x1="0" y1="60" x2="90" y2="100"/>
+          <line x1="0" y1="110" x2="90" y2="0"/><line x1="0" y1="110" x2="90" y2="50"/><line x1="0" y1="110" x2="90" y2="100"/>
+          <line x1="90" y1="0" x2="180" y2="25"/><line x1="90" y1="50" x2="180" y2="25"/><line x1="90" y1="100" x2="180" y2="25"/>
+          <line x1="90" y1="0" x2="180" y2="85"/><line x1="90" y1="50" x2="180" y2="85"/><line x1="90" y1="100" x2="180" y2="85"/>
+        </g>
+        <g class="f-panel s-muted" stroke-width="1.2">
+          <circle cx="0" cy="10" r="7"/><circle cx="0" cy="60" r="7"/><circle cx="0" cy="110" r="7"/>
+          <circle cx="90" cy="0" r="7"/><circle cx="90" cy="50" r="7"/><circle cx="90" cy="100" r="7"/>
+          <circle cx="180" cy="25" r="7"/><circle cx="180" cy="85" r="7"/>
+        </g>
+      </g>
+      <text x="38" y="262">Set by <tspan class="ta">pretraining</tspan> and</text>
+      <text x="38" y="280"><tspan class="ta">fine-tuning</tspan>. Fixed at answer time.</text>
+      <text x="38" y="302" class="tm">Billions of numbers. No labels, no sources.</text>
+      <!-- context -->
+      <rect x="315" y="40" width="270" height="280" rx="6" class="f-win s-honey"/>
+      <text x="333" y="68" class="h">2 · In the context window</text>
+      <text x="333" y="88" class="tm">in-context knowledge</text>
+      <g class="mono">
+        <rect x="333" y="104" width="234" height="22" rx="3" class="f-panel s-rule"/><text x="342" y="119" class="mono">system prompt</text>
+        <rect x="333" y="130" width="234" height="22" rx="3" class="f-panel s-rule"/><text x="342" y="145" class="mono">examples</text>
+        <rect x="333" y="156" width="234" height="40" rx="3" class="f-panel s-acc"/><text x="342" y="171" class="mono ta">retrieved documents</text><text x="342" y="187" class="mono ta">structured knowledge</text>
+        <rect x="333" y="200" width="234" height="22" rx="3" class="f-panel s-rule"/><text x="342" y="215" class="mono">conversation so far</text>
+        <rect x="333" y="226" width="234" height="22" rx="3" class="f-panel s-rule"/><text x="342" y="241" class="mono">your question</text>
+      </g>
+      <text x="333" y="280">Set by <tspan class="ta">prompting</tspan>, <tspan class="ta">RAG</tspan>,</text>
+      <text x="333" y="298"><tspan class="ta">memory</tspan>. Changes every call.</text>
+      <!-- tools -->
+      <rect x="610" y="40" width="270" height="280" rx="6" class="f-bg s-rule"/>
+      <text x="628" y="68" class="h">3 · Outside, behind tools</text>
+      <text x="628" y="88" class="tm">fetched on demand</text>
+      <g class="f-panel s-muted">
+        <rect x="640" y="110" width="90" height="46" rx="4"/><rect x="760" y="110" width="90" height="46" rx="4"/>
+        <rect x="640" y="176" width="90" height="46" rx="4"/><rect x="760" y="176" width="90" height="46" rx="4"/>
+      </g>
+      <text x="653" y="138" class="mono">search</text><text x="772" y="138" class="mono">database</text>
+      <text x="653" y="204" class="mono">code</text><text x="772" y="204" class="mono">CALPHAD</text>
+      <text x="628" y="262">Reached by <tspan class="ta">agents</tspan>. The result</text>
+      <text x="628" y="280">lands back in the context window.</text>
+      <!-- arrows -->
+      <line x1="610" y1="300" x2="590" y2="300" class="s-acc" stroke-width="1.6" marker-end="url(#aha)"/>
+      <!-- model bar -->
+      <text x="450" y="350" text-anchor="middle" class="tm">The model only ever "sees" its weights plus the tokens in its context window.</text>
+    </svg>
+  </div>
+  <div class="note metal"><b>Metallurgy link</b>Weights are like a microstructure: the whole processing history is in there, but implicitly, and you cannot read the furnace log back off it. The context window is like the mill certificate stapled to the sample: explicit, readable, and only as good as what someone chose to write on it.</div>
+</section>
+
+<!-- 1 API -->
+<section id="api">
+  <div class="eyebrow">1 · Basics</div>
+  <h2>What an API is</h2>
+  <p>An <b>API</b> (application programming interface) is a fixed way for one program to ask another program to do something. For an LLM, the "other program" runs on the provider's servers. Your code sends a <b>request</b> over the internet (a block of text in a format called JSON), and gets back a <b>response</b> (more JSON). The chat window you use is just a friendly program sending these requests for you.</p>
+  <div class="panel fig">
+    <svg viewBox="0 0 900 230" role="img" aria-label="Diagram: your script sends a JSON request to the provider's server, the model runs, and a JSON response comes back">
+      <rect x="20" y="40" width="200" height="140" rx="6" class="f-bg s-rule"/>
+      <text x="40" y="68" class="h">Your computer</text>
+      <text x="40" y="92" class="mono">script.py</text>
+      <text x="40" y="112" class="tm">or the Claude app,</text>
+      <text x="40" y="130" class="tm">or VS Code extension</text>
+      <rect x="680" y="40" width="200" height="140" rx="6" class="f-win s-honey"/>
+      <text x="700" y="68" class="h">Provider's server</text>
+      <text x="700" y="92" class="mono">the model</text>
+      <text x="700" y="112" class="tm">GPUs run the network</text>
+      <text x="700" y="130" class="tm">on your tokens</text>
+      <line x1="230" y1="85" x2="670" y2="85" class="s-acc" stroke-width="1.8" marker-end="url(#aha)"/>
+      <rect x="300" y="60" width="300" height="22" rx="3" class="f-panel s-rule"/>
+      <text x="450" y="76" text-anchor="middle" class="mono">request: model, system, messages, key</text>
+      <line x1="670" y1="140" x2="230" y2="140" class="s-muted" stroke-width="1.8" marker-end="url(#ah)"/>
+      <rect x="300" y="146" width="300" height="22" rx="3" class="f-panel s-rule"/>
+      <text x="450" y="162" text-anchor="middle" class="mono">response: text, stop reason, token counts</text>
+      <text x="450" y="212" text-anchor="middle" class="tm">Each call is independent. The server keeps no memory of your last call.</text>
+    </svg>
+  </div>
+  <p>Here is a complete call in Python using Anthropic's SDK (a library that builds the JSON for you). Line by line:</p>
+<pre><code><span class="k">import</span> anthropic                       <span class="c"># load the library (install once: pip install anthropic)</span>
+client = anthropic.Anthropic()          <span class="c"># reads your secret key from the ANTHROPIC_API_KEY variable</span>
+
+reply = client.messages.create(         <span class="c"># send one request</span>
+    model=<span class="s">"claude-opus-5-5"</span>,            <span class="c"># which model to run</span>
+    max_tokens=<span class="k">500</span>,                     <span class="c"># stop after at most 500 output tokens</span>
+    system=<span class="s">"You are a physical metallurgist."</span>,   <span class="c"># standing instructions</span>
+    messages=[                          <span class="c"># the conversation, oldest first</span>
+        {<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: <span class="s">"What is Widmanstätten ferrite?"</span>}
+    ],
+)
+print(reply.content[<span class="k">0</span>].text)            <span class="c"># the model's answer</span>
+print(reply.usage)                      <span class="c"># input_tokens and output_tokens: what you pay for</span></code></pre>
+  <div class="grid2">
+    <div class="note"><b>The most important fact on this page</b>The model is <b>stateless</b>. It remembers nothing between calls. A "conversation" works because your program re-sends the whole history every time. Any "memory" an app seems to have is the app putting text back into the context window.</div>
+    <div class="note"><b>Words you will meet</b><code>system</code> = standing instructions. <code>messages</code> = alternating user and assistant turns. <code>max_tokens</code> = output budget. <code>temperature</code> = randomness (section 3). <code>tools</code> = functions the model may ask you to run (section 12).</div>
+  </div>
+</section>
+
+<!-- 2 TOKENS -->
+<section id="tokens">
+  <div class="eyebrow">2 · Basics</div>
+  <h2>Tokens: the unit the model actually reads</h2>
+  <p>The model never sees letters or words. Text is first cut into <b>tokens</b>: common chunks of characters from a fixed vocabulary of tens of thousands to a few hundred thousand entries, built by an algorithm such as byte-pair encoding (BPE). Each token becomes an integer ID. Common words are one token; rare words, numbers, chemical formulas and non-English text are split into several. As a rough rule for English, one token is about three quarters of a word.</p>
+  <div class="panel fig">
+    <svg viewBox="0 0 900 200" role="img" aria-label="Illustration: a sentence split into tokens and mapped to integer IDs">
+      <text x="20" y="30" class="tm">text</text>
+      <text x="20" y="60" style="font-size:18px">Widmanstätten ferrite forms at 650 °C in Fe-0.1C-1.5Mn</text>
+      <text x="20" y="100" class="tm">tokens (illustrative split; every tokenizer cuts differently)</text>
+      <g class="mono" id="tokrow"></g>
+      <text x="20" y="190" class="tm">The model receives only the row of integers. Spelling, digits and formulas are fragmented, which is one reason LLMs are clumsy with arithmetic and compositions.</text>
+    </svg>
+  </div>
+  <p>Tokens matter for three practical reasons: you <b>pay</b> per token in and out; the <b>context window</b> (section 8) is measured in tokens; and anything the model must reason over, from a paper to a knowledge graph, has to be turned into tokens first. That last point comes back in section 10.</p>
+</section>
+
+<!-- 3 PREDICT -->
+<section id="predict">
+  <div class="eyebrow">3 · How a prompt becomes an answer</div>
+  <h2>One token at a time</h2>
+  <p>An LLM does one thing: given all the tokens so far, it outputs a <b>probability for every token in its vocabulary</b> being next. One token is picked, appended, and the whole thing runs again. A 500-token answer is 500 passes. This loop is called <b>autoregressive generation</b>.</p>
+  <div class="panel fig">
+    <svg viewBox="0 0 900 150" role="img" aria-label="Diagram: tokens go into the model, a probability distribution comes out, one token is sampled and appended">
+      <rect x="20" y="40" width="300" height="60" rx="4" class="f-bg s-rule"/>
+      <text x="34" y="64" class="mono">…nucleates at prior austenite</text>
+      <text x="34" y="86" class="tm">context so far</text>
+      <line x1="325" y1="70" x2="385" y2="70" class="s-muted" stroke-width="1.6" marker-end="url(#ah)"/>
+      <rect x="390" y="30" width="140" height="80" rx="6" class="f-win s-honey"/>
+      <text x="460" y="66" text-anchor="middle" class="h">model</text>
+      <text x="460" y="86" text-anchor="middle" class="tm">one forward pass</text>
+      <line x1="535" y1="70" x2="595" y2="70" class="s-muted" stroke-width="1.6" marker-end="url(#ah)"/>
+      <g class="f-stable"><rect x="600" y="40" width="14" height="60"/><rect x="618" y="80" width="14" height="20"/><rect x="636" y="90" width="14" height="10"/><rect x="654" y="94" width="14" height="6"/></g>
+      <rect x="600" y="40" width="14" height="60" class="f-honey"/>
+      <text x="680" y="64">pick one</text><text x="680" y="82" class="mono ta">"grain"</text>
+      <path d="M720 100 C 720 140, 170 140, 170 106" class="f-none s-acc dash" stroke-width="1.4" marker-end="url(#aha)"/>
+      <text x="445" y="142" text-anchor="middle" class="tm">append and repeat</text>
+    </svg>
+  </div>
+  <h3>Try it: temperature</h3>
+  <p>The model's raw scores (logits, <i>z</i>) are turned into probabilities by the softmax, <i>p</i><sub>i</sub> = exp(<i>z</i><sub>i</sub>/<i>T</i>) / Σ exp(<i>z</i><sub>j</sub>/<i>T</i>). <b>Temperature</b> <i>T</i> sharpens or flattens the distribution. The softmax maths below is exact; the six logits are invented for illustration.</p>
+  <div class="panel">
+    <div class="mono" style="font-size:14px">Allotriomorphic ferrite nucleates at prior austenite <span style="color:var(--accent)">___</span></div>
+    <div style="display:grid;gap:2px;max-width:420px">
+      <label for="temp" class="row" style="justify-content:space-between"><span class="lab">Temperature T</span><output id="tempv">1.00</output></label>
+      <input id="temp" type="range" min="0.1" max="2.5" step="0.05" value="1">
+    </div>
+    <div class="bars" id="bars"></div>
+    <div class="row"><button id="sample" type="button">Sample a token</button><span class="lab" id="sampled">Low T: almost always the top token. High T: more variety, more nonsense.</span></div>
+  </div>
+  <div class="note"><b>Why this matters for knowledge</b>The model never "looks up" a fact. A fact the model "knows" is just a continuation it assigns high probability. A wrong fact stated fluently (a <b>hallucination</b>) is a high-probability continuation that happens to be false. Nothing inside marks which continuations are sourced.</div>
+</section>
+
+<!-- 4 INSIDE -->
+<section id="inside">
+  <div class="eyebrow">4 · Inside the model</div>
+  <h2>Embeddings, attention and layers</h2>
+  <p>Modern LLMs are <b>transformers</b> (Vaswani et al., 2017). Three ideas cover most of what happens in one forward pass.</p>
+  <div class="grid2">
+    <div class="panel fig narrow">
+      <svg viewBox="0 0 420 300" role="img" aria-label="Illustration: words placed in a 2D embedding space, with phases, instruments and ML words in separate clusters">
+        <rect x="10" y="10" width="400" height="250" rx="4" class="f-bg s-rule"/>
+        <g class="f-honey"><circle cx="90" cy="70" r="5"/><circle cx="130" cy="95" r="5"/><circle cx="80" cy="115" r="5"/><circle cx="125" cy="55" r="5"/></g>
+        <text x="100" y="74">ferrite</text><text x="140" y="99">austenite</text><text x="40" y="132">martensite</text><text x="135" y="52">bainite</text>
+        <g class="f-stable"><circle cx="300" cy="80" r="5"/><circle cx="330" cy="115" r="5"/><circle cx="280" cy="125" r="5"/></g>
+        <text x="310" y="76">furnace</text><text x="300" y="138">dilatometer</text><text x="210" y="150">quench</text>
+        <g class="f-rust"><circle cx="210" cy="210" r="5"/><circle cx="250" cy="225" r="5"/><circle cx="180" cy="235" r="5"/></g>
+        <text x="220" y="206">token</text><text x="260" y="229">attention</text><text x="120" y="250">embedding</text>
+        <text x="20" y="282" class="tm">Illustrative 2D sketch. Real embeddings have thousands of dimensions.</text>
+      </svg>
+      <p class="cap"><b>Embeddings.</b> Each token ID is turned into a long vector of numbers. Training moves related meanings close together, so distance in this space means something. RAG (section 9) uses the same trick to find relevant documents.</p>
+    </div>
+    <div class="panel fig narrow">
+      <svg viewBox="0 0 420 300" role="img" aria-label="Illustration: attention arcs from the word 'it' back to earlier words, strongest to 'plate'">
+        <g id="attn"></g>
+        <text x="20" y="282" class="tm">Illustrative weights. Thicker arc = more attention.</text>
+      </svg>
+      <p class="cap"><b>Attention.</b> Each token looks back at every earlier token and decides how much each one matters to it. Here "it" attends mostly to "plate". This is how context changes meaning, and how text you put in the prompt gets used.</p>
+    </div>
+  </div>
+  <div class="panel fig">
+    <svg viewBox="0 0 900 170" role="img" aria-label="Diagram: tokens become embeddings, pass through a stack of repeated attention and feed-forward layers, and come out as next-token probabilities">
+      <text x="20" y="90" class="mono">tokens</text>
+      <line x1="75" y1="86" x2="115" y2="86" class="s-muted" marker-end="url(#ah)"/>
+      <rect x="120" y="60" width="90" height="52" rx="4" class="f-bg s-rule"/><text x="165" y="90" text-anchor="middle">embed</text>
+      <line x1="210" y1="86" x2="245" y2="86" class="s-muted" marker-end="url(#ah)"/>
+      <g id="layers"></g>
+      <line x1="705" y1="86" x2="740" y2="86" class="s-muted" marker-end="url(#ah)"/>
+      <rect x="745" y="60" width="130" height="52" rx="4" class="f-win s-honey"/><text x="810" y="84" text-anchor="middle">probabilities</text><text x="810" y="102" text-anchor="middle" class="tm">over vocabulary</text>
+      <text x="475" y="150" text-anchor="middle" class="tm">Tens to around a hundred identical blocks. Attention mixes information between tokens; the feed-forward part (MLP) works on each token alone.</text>
+    </svg>
+  </div>
+  <div class="note"><b>Where facts sit</b>Probing studies suggest much factual recall runs through the feed-forward (MLP) layers, which behave a bit like a key-value memory (Geva et al., 2021; Meng et al., 2022 located and edited single facts this way). But a fact is smeared over many weights and entangled with others. You cannot point to "the weight that stores the eutectoid temperature".</div>
+</section>
+
+<!-- 5 PRETRAIN -->
+<section id="pretrain">
+  <div class="eyebrow">5 · Knowledge into the weights</div>
+  <h2>Pretraining a foundation model</h2>
+  <p><b>Pretraining</b> starts from random weights and trains on trillions of tokens of text (web pages, books, code, papers) with one objective: predict the next token. Every wrong guess nudges billions of weights slightly (gradient descent). Run this for weeks on thousands of GPUs and the model that comes out is a <b>foundation model</b> or <b>base model</b>.</p>
+  <div class="panel fig">
+    <svg viewBox="0 0 900 250" role="img" aria-label="Diagram: a huge mixed corpus feeds next-token training, producing weights that hold compressed knowledge with no source labels">
+      <g class="f-bg s-rule">
+        <rect x="20" y="30" width="70" height="40" rx="3"/><rect x="100" y="30" width="70" height="40" rx="3"/><rect x="20" y="80" width="70" height="40" rx="3"/><rect x="100" y="80" width="70" height="40" rx="3"/><rect x="20" y="130" width="70" height="40" rx="3"/><rect x="100" y="130" width="70" height="40" rx="3"/>
+      </g>
+      <text x="55" y="55" text-anchor="middle" class="mono">web</text><text x="135" y="55" text-anchor="middle" class="mono">books</text><text x="55" y="105" text-anchor="middle" class="mono">code</text><text x="135" y="105" text-anchor="middle" class="mono">papers</text><text x="55" y="155" text-anchor="middle" class="mono">forums</text><text x="135" y="155" text-anchor="middle" class="mono">wikis</text>
+      <text x="95" y="198" text-anchor="middle" class="tm">trillions of tokens</text>
+      <line x1="180" y1="100" x2="250" y2="100" class="s-muted" stroke-width="1.6" marker-end="url(#ah)"/>
+      <rect x="255" y="55" width="210" height="90" rx="6" class="f-win s-honey"/>
+      <text x="360" y="85" text-anchor="middle" class="h">predict next token</text>
+      <text x="360" y="106" text-anchor="middle" class="tm">measure error (loss)</text>
+      <text x="360" y="124" text-anchor="middle" class="tm">nudge all weights</text>
+      <path d="M465 120 C 500 175, 230 175, 255 120" class="f-none s-acc dash" marker-end="url(#aha)"/>
+      <text x="360" y="182" text-anchor="middle" class="tm">repeat ~10¹² times</text>
+      <line x1="470" y1="100" x2="540" y2="100" class="s-muted" stroke-width="1.6" marker-end="url(#ah)"/>
+      <rect x="545" y="30" width="335" height="170" rx="6" class="f-bg s-rule"/>
+      <text x="563" y="56" class="h">What ends up in the weights</text>
+      <text x="563" y="80">✓ grammar, style, many languages</text>
+      <text x="563" y="100">✓ widely repeated facts</text>
+      <text x="563" y="120">✓ patterns of reasoning and argument</text>
+      <text x="563" y="140">✓ how code and maths are written</text>
+      <text x="563" y="164" class="tr">✗ which source said what, or when</text>
+      <text x="563" y="184" class="tr">✗ anything after the data cutoff</text>
+      <text x="450" y="236" text-anchor="middle" class="tm">Rare facts (one paper, one table) are learned weakly or not at all. Frequent claims dominate, whether or not they are right.</text>
+    </svg>
+  </div>
+  <div class="grid2">
+    <div class="note"><b>Scale</b>Kaplan et al. (2020) and Hoffmann et al. (2022, "Chinchilla") showed loss falls predictably as you add parameters, data and compute together. That is why models are huge, and why almost nobody outside a few labs pretrains a frontier model. You will use a pretrained one.</div>
+    <div class="note"><b>Knowledge cutoff</b>The model knows nothing after the date its training data was collected, and it is uneven before that: a 2023 debate in a niche journal may be barely represented. Petroni et al. (2019) first measured how much factual knowledge a model holds by "fill in the blank" probes.</div>
+  </div>
+  <div class="note metal"><b>Metallurgy link</b>Pretraining is lossy compression, a bit like a CALPHAD assessment: thousands of measurements are fitted into a compact parameter set that generalises well, but you cannot recover which experiment pinned which parameter, and sparse regions of composition space are extrapolations.</div>
+</section>
+
+<!-- 6 FINETUNE -->
+<section id="finetune">
+  <div class="eyebrow">6 · Changing the weights after pretraining</div>
+  <h2>Fine-tuning and post-training</h2>
+  <p>A base model just continues text; it is not yet a helpful assistant. <b>Post-training</b> reshapes it with much smaller, curated datasets. The same tools are what people mean by <b>fine-tuning</b> a model for their own task.</p>
+  <div class="panel fig">
+    <svg viewBox="0 0 900 190" role="img" aria-label="Pipeline: pretraining, then supervised fine-tuning, then preference tuning, then a deployed assistant">
+      <g id="pipe"></g>
+    </svg>
+  </div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Stage</th><th>Data</th><th>What changes</th></tr></thead>
+    <tbody>
+      <tr><td><b>Supervised fine-tuning (SFT)</b></td><td>Thousands of example prompt → ideal answer pairs</td><td>Format, tone, following instructions, domain style</td></tr>
+      <tr><td><b>Preference tuning</b> (RLHF, RLAIF, DPO)</td><td>Pairs of answers ranked better/worse by people or by a model against written principles</td><td>Helpfulness, honesty, refusing harm, judgement (Ouyang et al., 2022)</td></tr>
+      <tr><td><b>Reinforcement learning on tasks</b></td><td>Problems with checkable answers (maths, code)</td><td>Longer step-by-step reasoning; the basis of "reasoning" models</td></tr>
+      <tr><td><b>Your own fine-tune</b></td><td>Your labelled examples, often a few hundred to a few thousand</td><td>Narrow behaviour: a fixed output schema, a classification, a house style</td></tr>
+    </tbody>
+  </table></div>
+  <div class="grid2">
+    <div class="panel fig narrow">
+      <svg viewBox="0 0 420 210" role="img" aria-label="Diagram of LoRA: a large frozen weight matrix plus the product of two thin trainable matrices">
+        <rect x="20" y="30" width="140" height="140" class="f-grid s-rule"/>
+        <text x="90" y="104" text-anchor="middle" class="h">W</text>
+        <text x="90" y="190" text-anchor="middle" class="tm">frozen, d × d</text>
+        <text x="180" y="108" class="h">+</text>
+        <rect x="210" y="30" width="22" height="140" class="f-honey"/>
+        <text x="221" y="190" text-anchor="middle" class="tm">B</text>
+        <text x="245" y="108">×</text>
+        <rect x="262" y="88" width="140" height="22" class="f-amber"/>
+        <text x="332" y="130" text-anchor="middle" class="tm">A, r × d</text>
+        <text x="300" y="60" class="tm">r ≈ 8–64</text>
+        <text x="300" y="76" class="tm">trainable</text>
+      </svg>
+      <p class="cap"><b>LoRA</b> (Hu et al., 2021). Instead of updating a huge matrix W, train two thin matrices whose product is a small correction. Often well under 1% of the parameters, so a fine-tune fits on one GPU.</p>
+    </div>
+    <div class="panel">
+      <h3 style="margin:0">Is fine-tuning a good way to add facts?</h3>
+      <p>Usually not on its own. Ovadia et al. (2024) compared unsupervised fine-tuning with retrieval for injecting new facts and found retrieval consistently better. Gekhman et al. (2024) found that fine-tuning on facts the model did not already know is learned slowly and increases its tendency to hallucinate. Fine-tuning is good at teaching <b>how</b> to behave; it is weak at teaching <b>what</b> is true, and it erases provenance just as pretraining does.</p>
+    </div>
+  </div>
+  <div class="note metal"><b>Metallurgy link</b>Fine-tuning is tempering, not re-melting: a small, cheap treatment that changes properties of the existing structure. It cannot add an alloying element the heat never had.</div>
+</section>
+
+<!-- 7 PROMPT -->
+<section id="prompt">
+  <div class="eyebrow">7 · Steering without training</div>
+  <h2>Prompt engineering</h2>
+  <p>If the weights are fixed, the only lever left is the text you send. Prompt engineering is the craft of writing that text so the model's most probable continuation is the one you want. It works because of <b>in-context learning</b>: Brown et al. (2020) showed large models can pick up a task from a few examples in the prompt, with no weight change at all.</p>
+  <div class="panel fig">
+    <svg viewBox="0 0 900 300" role="img" aria-label="Anatomy of a well-structured prompt with labelled parts">
+      <rect x="20" y="20" width="520" height="262" rx="4" class="f-bg s-rule"/>
+      <g class="mono">
+        <text x="36" y="46" class="ta">&lt;role&gt;</text><text x="104" y="46">You are a physical metallurgist reviewing…</text>
+        <text x="36" y="74" class="ta">&lt;task&gt;</text><text x="104" y="74">Classify each excerpt's stance on the…</text>
+        <text x="36" y="102" class="ta">&lt;rules&gt;</text><text x="104" y="102">Use only the excerpts. Say "unknown" if…</text>
+        <text x="36" y="130" class="ta">&lt;example&gt;</text><text x="122" y="130">Excerpt: … → stance: diffusional</text>
+        <text x="36" y="158" class="ta">&lt;documents&gt;</text><text x="136" y="158">[1] … [2] … [3] …</text>
+        <text x="36" y="186" class="ta">&lt;question&gt;</text><text x="130" y="186">Which sources disagree, and on what?</text>
+        <text x="36" y="214" class="ta">&lt;format&gt;</text><text x="112" y="214">Think step by step, then return JSON:</text>
+        <text x="112" y="234">{"agree":[…], "disagree":[…]}</text>
+      </g>
+      <g id="promptlabels"></g>
+    </svg>
+  </div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Technique</th><th>What you do</th><th>Why it helps</th></tr></thead>
+    <tbody>
+      <tr><td><b>Role / system prompt</b></td><td>Say who the model is and who the reader is</td><td>Shifts vocabulary and level of detail</td></tr>
+      <tr><td><b>Clear task + constraints</b></td><td>State the goal, the limits, what to do when unsure</td><td>Removes guessing about intent</td></tr>
+      <tr><td><b>Few-shot examples</b></td><td>Show 2–5 worked input → output pairs</td><td>Fixes format and the decision boundary</td></tr>
+      <tr><td><b>Delimiters / tags</b></td><td>Wrap documents and instructions in labelled blocks</td><td>Model can tell instructions from data</td></tr>
+      <tr><td><b>Chain of thought</b></td><td>Ask for reasoning before the answer</td><td>Gives the model tokens to "think" in (Wei et al., 2022). Reasoning models now do this internally.</td></tr>
+      <tr><td><b>Structured output</b></td><td>Ask for JSON matching a schema</td><td>Machine-readable, easy to score</td></tr>
+      <tr><td><b>Grounding instruction</b></td><td>"Answer only from the documents and cite them"</td><td>Pushes the model toward in-context knowledge over its weights</td></tr>
+      <tr><td><b>Decomposition</b></td><td>Split a big task into a chain of smaller calls</td><td>Each call is simpler and checkable</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>The key insight</b>A prompt is already a knowledge representation. Ordering, labels, which details you include and which you leave out all change what the model attends to. Every method in sections 9 and 10 is, in the end, a disciplined way of building a prompt.</div>
+</section>
+
+<!-- 8 CONTEXT -->
+<section id="context">
+  <div class="eyebrow">8 · Working memory</div>
+  <h2>The context window</h2>
+  <p>The <b>context window</b> is the maximum number of tokens the model can take in one call (input plus output). Current frontier models handle hundreds of thousands of tokens, some up to around a million. Everything the model can use at answer time, apart from its weights, must fit here.</p>
+  <div class="panel fig">
+    <svg viewBox="0 0 900 140" role="img" aria-label="Stacked bar showing how a context window is filled: system prompt, tool definitions, retrieved documents, history, question, and room for output">
+      <g id="ctxbar"></g>
+    </svg>
+  </div>
+  <div class="grid2">
+    <div class="panel fig narrow">
+      <svg viewBox="0 0 420 220" role="img" aria-label="U-shaped curve: accuracy is higher when the relevant document is at the start or end of the context and lower in the middle">
+        <line x1="50" y1="20" x2="50" y2="170" class="s-rule"/><line x1="50" y1="170" x2="400" y2="170" class="s-rule"/>
+        <path d="M60 45 C 140 140, 310 140, 390 60" class="f-none s-honey" stroke-width="2.5"/>
+        <circle cx="60" cy="45" r="4" class="f-acc"/><circle cx="390" cy="60" r="4" class="f-acc"/>
+        <text x="60" y="190" class="tm">start</text><text x="225" y="190" text-anchor="middle" class="tm">middle</text><text x="390" y="190" text-anchor="end" class="tm">end</text>
+        <text x="225" y="210" text-anchor="middle" class="tm">position of the useful document in the context</text>
+        <text x="40" y="100" text-anchor="middle" class="tm" transform="rotate(-90 40 100)">accuracy</text>
+      </svg>
+      <p class="cap">Shape of the "lost in the middle" result (Liu et al., 2024): models used information at the start and end of a long context better than in the middle. Schematic curve; newer models are better but position still matters.</p>
+    </div>
+    <div class="panel">
+      <h3 style="margin:0">Why not just paste everything?</h3>
+      <ul>
+        <li><b>Cost and speed</b> grow with every token.</li>
+        <li><b>Distraction:</b> irrelevant text lowers accuracy (Shi et al., 2023).</li>
+        <li><b>Position effects:</b> see the curve.</li>
+        <li><b>No built-in structure:</b> 40 pasted papers are one long string. Which claim came from which paper, and which is newer, is only recoverable if you wrote it into the text.</li>
+      </ul>
+      <p>So the real question becomes: <b>which</b> knowledge to put in, and in <b>what form</b>. That is retrieval (section 9) and representation (section 10).</p>
+    </div>
+  </div>
+</section>
+
+<!-- 9 RAG -->
+<section id="rag">
+  <div class="eyebrow">9 · Fetching knowledge at answer time</div>
+  <h2>Retrieval-augmented generation (RAG)</h2>
+  <p><b>RAG</b> (Lewis et al., 2020) splits the job in two. A <b>retriever</b> finds the few passages most relevant to the question; the LLM then answers with those passages in its context. The model stays fixed; you change what it reads.</p>
+  <div class="panel fig">
+    <svg viewBox="0 0 900 330" role="img" aria-label="RAG architecture: offline indexing of documents into a vector store, and online retrieval of top chunks into the prompt">
+      <text x="20" y="28" class="eyebrow" style="font-family:var(--mono);font-size:11px;letter-spacing:.08em" fill="currentColor"><tspan class="tm">OFFLINE · BUILD THE INDEX ONCE</tspan></text>
+      <g id="ragoff"></g>
+      <line x1="20" y1="150" x2="880" y2="150" class="s-rule dash"/>
+      <text x="20" y="176" class="mono tm">ONLINE · EVERY QUESTION</text>
+      <g id="ragon"></g>
+    </svg>
+  </div>
+  <h3>Try it: a toy retriever</h3>
+  <p>Ten short chunks written for this lesson (not quotes from real papers). Scoring is real TF-IDF cosine similarity computed in your browser: it rewards shared rare words. Pick a question and watch which chunks reach the prompt.</p>
+  <div class="panel">
+    <div class="row" id="qbtns" role="group" aria-label="Choose a question"></div>
+    <div class="row"><span class="lab">top-k</span><button type="button" data-k="2">2</button><button type="button" data-k="3" aria-pressed="true">3</button><button type="button" data-k="5">5</button></div>
+    <div class="chunks" id="chunks"></div>
+    <div class="lab">What the LLM actually receives</div>
+    <pre id="ragprompt"></pre>
+    <p class="cap" id="raglesson"></p>
+  </div>
+  <h3>The design choices inside a RAG system</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Choice</th><th>Options</th><th>What goes wrong</th></tr></thead>
+    <tbody>
+      <tr><td><b>Chunking</b></td><td>Fixed length, by paragraph or section, with overlap</td><td>A claim and its caveat land in different chunks</td></tr>
+      <tr><td><b>Retrieval</b></td><td>Sparse (keywords, BM25), dense (embeddings), hybrid</td><td>Keywords miss synonyms; embeddings miss exact terms like "Fe-0.1C"</td></tr>
+      <tr><td><b>Reranking</b></td><td>A second model rescores the top 50 to pick the best 5</td><td>Extra cost and latency</td></tr>
+      <tr><td><b>Context enrichment</b></td><td>Prepend each chunk with its paper, section, year (Anthropic, 2024, "contextual retrieval")</td><td>More tokens per chunk</td></tr>
+      <tr><td><b>Query rewriting</b></td><td>LLM rephrases or splits the question before searching</td><td>Can drift from what was asked</td></tr>
+      <tr><td><b>Conflict handling</b></td><td>Retrieve across stances; label sources; ask the model to report disagreement</td><td>Similarity search finds what is similar, not what disagrees</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>Knowledge conflicts</b>When retrieved passages disagree with each other or with the model's weights, behaviour is hard to predict: models may side with the more frequent claim, the more fluent one, or their own prior. Xu et al. (2024) survey this "knowledge conflict" problem across context-vs-memory, inter-context and intra-memory cases. Variants of RAG that deliberately retrieve and present multiple positions are one response.</div>
+  <div class="note metal"><b>Metallurgy link</b>Plain RAG is like answering a question by flipping the ASM Handbook to the three pages whose index words best match your question. Fast and usually useful. But the index does not know that page 412 was written to rebut page 388.</div>
+</section>
+
+<!-- 10 KR -->
+<section id="kr">
+  <div class="eyebrow">10 · The centre of the lesson</div>
+  <h2>Knowledge representation: what shape the knowledge takes</h2>
+  <p><b>Knowledge representation</b> is the choice of structure used to store knowledge and hand it to a reasoner. For an LLM there is one hard constraint: <b>whatever the structure, it arrives as tokens</b> (or as weights). A knowledge graph, a table and a timeline all become text in the context window. So the representation decides two things: what retrieval can select on, and what is <b>explicit</b> in the text the model reads, rather than left for it to infer.</p>
+  <div class="panel fig">
+    <svg viewBox="0 0 900 200" role="img" aria-label="Spectrum of representations from implicit in weights to highly structured explicit forms">
+      <defs><linearGradient id="spec" x1="0" x2="1"><stop offset="0" stop-color="var(--grid)"/><stop offset="1" stop-color="var(--honey)"/></linearGradient></defs>
+      <rect x="40" y="70" width="820" height="14" rx="7" fill="url(#spec)"/>
+      <g id="specticks"></g>
+      <text x="40" y="40" class="tm">implicit · cheap · no provenance</text>
+      <text x="860" y="40" text-anchor="end" class="tm">explicit · costly to build · auditable</text>
+    </svg>
+  </div>
+  <h3>Explorer: one contested topic, eight representations</h3>
+  <p>The example is a real, long-running argument in our field: does Widmanstätten ferrite grow by a <b>displacive</b> mechanism or by <b>diffusional</b> ledge migration? The sources below are labelled A, B, C and the wording is schematic, so nothing here should be quoted as what a specific paper said. Switch representations and watch what becomes explicit.</p>
+  <div class="panel">
+    <div class="tabs" id="reptabs" role="tablist" aria-label="Representation"></div>
+    <div class="repview">
+      <div style="display:grid;gap:8px;min-width:0">
+        <div class="lab">What the model reads (serialised into the context)</div>
+        <div id="repbody"></div>
+      </div>
+      <div style="display:grid;gap:10px;min-width:0">
+        <div class="lab">Made explicit</div>
+        <div class="chips" id="repchips"></div>
+        <dl class="kv" id="repmeta"></dl>
+        <p class="cap" id="repnote"></p>
+      </div>
+    </div>
+  </div>
+  <h3>The families, in more detail</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Representation</th><th>Unit of knowledge</th><th>How it reaches the LLM</th><th>Known examples</th></tr></thead>
+    <tbody>
+      <tr><td><b>Parametric</b></td><td>Distributed weights</td><td>Built in; recalled by prompting</td><td>Any base model; LAMA probes (Petroni et al., 2019)</td></tr>
+      <tr><td><b>Unstructured chunks</b></td><td>Passage of text</td><td>Retrieved and pasted</td><td>Standard RAG (Lewis et al., 2020)</td></tr>
+      <tr><td><b>Hierarchical summaries</b></td><td>Summary node over chunks</td><td>Retrieve at the right level of detail</td><td>RAPTOR (Sarthi et al., 2024)</td></tr>
+      <tr><td><b>Structured records</b></td><td>Row or JSON object with fields</td><td>Query, then serialise as table or JSON</td><td>Materials databases, extraction pipelines</td></tr>
+      <tr><td><b>Knowledge graph</b></td><td>Triple: subject, relation, object</td><td>Traverse neighbourhood, serialise triples or summaries</td><td>Wikidata; GraphRAG (Edge et al., 2024)</td></tr>
+      <tr><td><b>Ontology</b></td><td>Classes, relations and rules with formal meaning</td><td>Constrains extraction and queries; serialised as text</td><td>EMMO for materials; OWL</td></tr>
+      <tr><td><b>Argumentation</b></td><td>Claim with support and attack links</td><td>Serialise the graph of claims</td><td>Toulmin (1958); Dung (1995); micropublications (Clark et al., 2014)</td></tr>
+      <tr><td><b>Provenance</b></td><td>Entity, activity, agent and their links</td><td>Metadata attached to each claim</td><td>W3C PROV (Moreau &amp; Missier, 2013); nanopublications (Groth et al., 2010)</td></tr>
+      <tr><td><b>Temporal / versioned</b></td><td>Fact with valid-time interval or version</td><td>Filter by time; show the sequence</td><td>Temporal KGs; bitemporal databases</td></tr>
+      <tr><td><b>Agent memory</b></td><td>Notes the agent writes and re-reads</td><td>Paged in and out of context</td><td>MemGPT (Packer et al., 2023)</td></tr>
+    </tbody>
+  </table></div>
+  <div class="grid2">
+    <div class="note"><b>Three questions to ask of any representation</b>1. What does it make explicit that plain text leaves implicit? 2. Can retrieval select on that structure (by source, date, stance), or only on word similarity? 3. Once serialised into tokens, does the model actually use the extra structure, or treat it as more prose?</div>
+    <div class="note"><b>Separating the variables</b>"Representation" and "retrieval" are different knobs. Two systems can retrieve the same passages and present them differently, or present the same structure but retrieve different items. Clean comparisons hold one fixed while varying the other.</div>
+  </div>
+</section>
+
+<!-- 11 ARCH -->
+<section id="arch">
+  <div class="eyebrow">11 · Three architectures compared</div>
+  <h2>Implicit, retrieved, structured: is it really one spectrum?</h2>
+  <p>It is natural to line the three up as implicit → explicit, and as a first ordering that is useful. But it hides something important, and the thing it hides is exactly where the interesting design decisions are. "Implicit versus explicit" is really at least <b>four independent axes</b>, and the three architectures sit in different places on each.</p>
+
+  <div class="panel fig">
+    <svg viewBox="0 0 900 390" role="img" aria-label="Four independent axes along which parametric, RAG and knowledge-graph systems differ">
+      <g id="axes4"></g>
+    </svg>
+    <p class="cap">The same three systems, placed on four axes that do not move together. A knowledge graph is far right on formality and addressability, but on the fourth axis (does the model reason over the structure itself?) it collapses back to the left along with everything else, because the triples are serialised into tokens before the model sees them.</p>
+  </div>
+
+  <h3>The thing the one-spectrum picture hides</h3>
+  <p>Whatever structure you build, the transformer at the end receives <b>a string of tokens</b>. A knowledge graph is not explicit <i>to the model</i>. It is explicit to the <b>retrieval and checking machinery that runs before and after the model</b>. That is where the value is, and it is real, but it is worth being precise about it.</p>
+  <div class="panel fig">
+    <svg viewBox="0 0 900 420" role="img" aria-label="Data paths for three architectures: parametric only, RAG, and knowledge graph, all converging on the same token stream into a fixed model">
+      <g id="threepaths"></g>
+    </svg>
+  </div>
+  <div class="note"><b>Put another way</b>Structure buys you three things, all of them outside the model: <i>selection</i> (you can ask for claims by source, date or stance, not just by word similarity), <i>aggregation</i> (you can count, group and traverse, which a pile of passages cannot do), and <i>audit</i> (every token in the prompt traces back to something). It does not give the model a different way of thinking. The reasoning is soft, probabilistic and in the weights, whatever you feed it.</div>
+
+  <h3>Strengths and weaknesses, honestly</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>&nbsp;</th><th>Parametric (weights only)</th><th>RAG (retrieved passages)</th><th>Knowledge graph / structured</th></tr></thead>
+    <tbody>
+      <tr><th>Unit</th><td>Nothing addressable</td><td>Passage</td><td>Typed triple or record</td></tr>
+      <tr><th>Freshness</th><td class="n0">Frozen at the cutoff</td><td class="y">Reindex and it is current</td><td class="y">Current, if the pipeline keeps up</td></tr>
+      <tr><th>Cost to add one fact</th><td class="n0">A training run</td><td class="y">One document</td><td>One extraction, plus schema work</td></tr>
+      <tr><th>Provenance</th><td class="n0">None</td><td>Passage level</td><td class="y">Per claim, with method and date</td></tr>
+      <tr><th>Handles a vague question</th><td class="y">Very well</td><td>Depends on the retriever</td><td class="n0">Poorly; needs a query that fits the schema</td></tr>
+      <tr><th>Counting and aggregation</th><td class="n0">Guesses</td><td class="n0">Cannot: it sees only k passages</td><td class="y">Native (how many groups claim X?)</td></tr>
+      <tr><th>Multi-hop</th><td>Sometimes, unreliably</td><td>Needs several retrieval rounds</td><td class="y">Graph traversal</td></tr>
+      <tr><th>Contradiction</th><td class="n0">Invisible; one view just wins</td><td>Visible only if both sides are retrieved</td><td class="y">Two edges, same relation: a detectable state</td></tr>
+      <tr><th>Time</th><td class="n0">Flattened</td><td>Only if dates are in the text</td><td class="y">Validity intervals, versions</td></tr>
+      <tr><th>Nuance and hedging</th><td class="y">Preserved in the prose it learned</td><td class="y">Preserved; you pass the real sentences</td><td class="n0">Squeezed out by the schema</td></tr>
+      <tr><th>Long tail of a niche field</th><td class="n0">Weak or absent</td><td class="y">As good as your corpus</td><td class="y">As good as your extraction</td></tr>
+      <tr><th>Build effort</th><td class="y">None (you buy it)</td><td>Days</td><td class="n0">Months, and it needs maintaining</td></tr>
+      <tr><th>Main failure</th><td class="n0">Fluent, confident, wrong</td><td class="n0">Retrieved the wrong k passages</td><td class="n0">The schema was wrong, or extraction was</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Is explicit structure good for science?</h3>
+  <p>For some of what science needs, yes, and decisively so. Structured knowledge is the only one of the three that supports the operations a literature review actually consists of: <b>count</b> how many independent groups report an effect, <b>group</b> them by method, <b>sort</b> by date, <b>detect</b> that two measurements of the same quantity disagree, <b>slice</b> by what was believed before a given paper, and <b>trace</b> a number back to the sample it came off. A pile of retrieved passages cannot do any of those, because the retriever only ever hands over the k passages that look most like your question.</p>
+  <p>There is a second reason, specific to physical science: structured knowledge is <b>computable</b>. A triple carrying a value, a unit and a condition can be fed to a solver, checked for dimensional consistency, or compared against a model. A sentence cannot.</p>
+  <div class="panel fig">
+    <svg viewBox="0 0 900 230" role="img" aria-label="One scientific claim shown as prose, then as a bare triple that loses its qualifiers, then as a qualified record that keeps them">
+      <g id="hedge"></g>
+    </svg>
+    <p class="cap">The cost of formalising. The bare triple is clean, queryable and wrong in a way that matters: it has dropped the conditions, the strength of the claim and who is making it. A schema rich enough to keep them is most of the work in building a scientific knowledge base.</p>
+  </div>
+  <div class="note"><b>Where formal structure fights science</b>Scientific claims are <i>conditional</i> ("at low undercooling"), <i>hedged</i> ("appears to be", "consistent with"), <i>contested</i>, and <i>revised</i>. A schema is a commitment, made in advance, about what kinds of things can be said. Anything the schema has no slot for silently disappears, and in an open, moving field that is a lot. This is the open-world problem, and it is why formal scientific knowledge representation keeps reinventing qualifiers: nanopublications, micropublications, PROV, and the assertion/provenance split all exist to put the hedging back in.</div>
+
+  <h3>Does explicit structure lack contextual understanding?</h3>
+  <p>This is worth stating carefully, because the obvious answer is slightly off. A knowledge graph does not understand anything, but neither does a passage of text. Neither is a reasoner. The understanding, such as it is, happens in the model in all three cases, and the model is the same model.</p>
+  <p>So the real question is not whether the representation understands. It is <b>what the representation throws away before the model gets to read it</b>. And a graph throws away a great deal: the reasons, the "although" and "because", the argument the author was making, the way a result was qualified three sentences later. Prose carries all of that for free, which is why a retrieved paragraph often beats a set of triples extracted from the same paragraph, even on questions the triples were built to answer.</p>
+  <div class="panel fig">
+    <svg viewBox="0 0 900 250" role="img" aria-label="Diagram: a hybrid architecture where structure is used for selection and aggregation while the original passages are what the model reads">
+      <g id="hybrid"></g>
+    </svg>
+  </div>
+  <p>Which points at the design that most serious systems converge on. Use the structure for what structure is good at, which is <b>finding and organising</b>, and then hand the model the <b>original prose</b> for the things it chose. The graph decides what is relevant and in what relation; the passages carry the nuance. GraphRAG (Edge et al., 2024) works this way: it builds a graph and community summaries over a corpus, but the nodes point back at the source text.</p>
+  <div class="note metal"><b>Metallurgy link: a fourth mode</b>There is one more source of knowledge that is neither remembered nor retrieved: <i>computed</i>. When you call Thermo-Calc, the answer does not exist anywhere until you ask. A CALPHAD database is an explicit, versioned, auditable knowledge representation whose contents are Gibbs energy functions rather than sentences, and the way a model uses it is as a <i>tool</i> (section 12), not as a document. For quantitative questions this is usually better than any of the three above: the LLM decides what to calculate, and the calculation is right for reasons that have nothing to do with the LLM.</div>
+  <div class="note"><b>A rough rule</b>Use the <i>weights</i> for language, framing and common ground. Use <i>retrieval</i> when the answer is written down somewhere and you need the nuance of how it was written. Use <i>structure</i> when the question is about the shape of the literature rather than its content: how many, who, when, which disagree, what changed. Use a <i>tool</i> when the answer can be calculated. Most real questions want more than one.</div>
+</section>
+
+<!-- 12 AGENTS -->
+<section id="agents">
+  <div class="eyebrow">12 · Letting the model act</div>
+  <h2>Agent architecture</h2>
+  <p>An <b>agent</b> is an LLM in a loop with <b>tools</b>. You describe functions the model may call (name, description, input schema). Instead of answering, the model can reply "call <code>search_papers</code> with these arguments". <b>Your program</b> runs the function and sends the result back as a new message. The loop repeats until the model answers. ReAct (Yao et al., 2023) named this reason-then-act pattern.</p>
+  <div class="grid2">
+    <div class="panel fig narrow">
+      <svg viewBox="0 0 420 330" role="img" aria-label="Agent loop: the model decides, calls a tool, your code runs it, the result goes back into the context">
+        <rect x="140" y="20" width="140" height="56" rx="6" class="f-win s-honey"/><text x="210" y="45" text-anchor="middle" class="h">LLM</text><text x="210" y="64" text-anchor="middle" class="tm">reads context</text>
+        <rect x="290" y="150" width="120" height="56" rx="6" class="f-bg s-rule"/><text x="350" y="175" text-anchor="middle">tool call</text><text x="350" y="194" text-anchor="middle" class="mono tm">JSON args</text>
+        <rect x="140" y="250" width="140" height="56" rx="6" class="f-bg s-rule"/><text x="210" y="275" text-anchor="middle">your code runs it</text><text x="210" y="294" text-anchor="middle" class="tm">search, DB, script</text>
+        <rect x="10" y="150" width="120" height="56" rx="6" class="f-bg s-rule"/><text x="70" y="175" text-anchor="middle">result</text><text x="70" y="194" text-anchor="middle" class="tm">added to context</text>
+        <path d="M282 60 Q 350 80 350 146" class="f-none s-acc" stroke-width="1.6" marker-end="url(#aha)"/>
+        <path d="M350 210 Q 350 270 284 278" class="f-none s-acc" stroke-width="1.6" marker-end="url(#aha)"/>
+        <path d="M138 278 Q 70 270 70 210" class="f-none s-acc" stroke-width="1.6" marker-end="url(#aha)"/>
+        <path d="M70 146 Q 70 80 138 60" class="f-none s-acc" stroke-width="1.6" marker-end="url(#aha)"/>
+        <text x="210" y="160" text-anchor="middle" class="tm">loop until</text><text x="210" y="178" text-anchor="middle" class="tm">the model answers</text>
+      </svg>
+    </div>
+    <div class="panel">
+      <h3 style="margin:0">The parts of an agent</h3>
+      <ul>
+        <li><b>Model</b>: the fixed LLM doing the reasoning.</li>
+        <li><b>Tools</b>: functions with schemas. The model never runs code itself; it only asks.</li>
+        <li><b>Loop / harness</b>: the program that runs tools and feeds results back.</li>
+        <li><b>Planning</b>: writing a plan or to-do list into the context and updating it.</li>
+        <li><b>Memory</b>: files or databases the agent writes and re-reads across sessions.</li>
+        <li><b>Multi-agent</b>: one model hands sub-tasks to others with their own contexts.</li>
+      </ul>
+      <p>Protocols such as MCP standardise how tools are described so one agent can plug into many services. Retrieval as a tool, where the model decides when and what to search, is often called <b>agentic RAG</b>.</p>
+    </div>
+  </div>
+  <h3>Step through a trace</h3>
+  <div class="panel">
+    <div class="row"><button type="button" id="agprev">Back</button><button type="button" id="agnext">Next step</button><span class="lab" id="agstep"></span></div>
+    <div class="steps" id="agmsgs"></div>
+  </div>
+  <div class="note"><b>Agents and knowledge</b>An agent does not change how knowledge is represented; tool results still land in the context as tokens. What it changes is <b>who chooses</b> the knowledge: the model itself decides what to look up next, based on what it has read so far.</div>
+</section>
+
+<!-- 12 EVAL -->
+<section id="eval">
+  <div class="eyebrow">13 · Knowing whether it worked</div>
+  <h2>How people measure knowledge delivery</h2>
+  <p>Methods in this field are compared empirically. A few habits separate convincing comparisons from anecdotes.</p>
+  <div class="grid2">
+    <div class="panel">
+      <h3 style="margin:0">Controls</h3>
+      <ul>
+        <li><b>Fix the model</b> (same version, same temperature) so differences come from the knowledge, not the model.</li>
+        <li><b>Fix the sources</b> so one system is not simply reading more.</li>
+        <li><b>Match the token budget</b>; more context can help or hurt on its own.</li>
+        <li><b>Ablate</b>: remove one ingredient at a time to see which one carries the effect.</li>
+        <li><b>Closed-book baseline</b>: no retrieval, to see what the weights already know.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3 style="margin:0">Pitfalls</h3>
+      <ul>
+        <li><b>Contamination</b>: the answers may already be in the pretraining data.</li>
+        <li><b>LLM-as-judge bias</b>: a model grading answers may prefer longer or more confident ones (Zheng et al., 2023).</li>
+        <li><b>Variance</b>: run repeats; small differences are often noise.</li>
+        <li><b>Metric choice</b>: accuracy, faithfulness to sources, citation correctness and calibration can move in different directions.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 13 REFS -->
+<section id="refs">
+  <div class="eyebrow">14 · Reading list</div>
+  <h2>Sources cited in this lesson</h2>
+  <ol class="refs">
+    <li>Vaswani et al. (2017). Attention is all you need. <i>NeurIPS</i>.</li>
+    <li>Petroni et al. (2019). Language models as knowledge bases? <i>EMNLP</i>.</li>
+    <li>Brown et al. (2020). Language models are few-shot learners. <i>NeurIPS</i>.</li>
+    <li>Kaplan et al. (2020). Scaling laws for neural language models. <i>arXiv:2001.08361</i>.</li>
+    <li>Lewis et al. (2020). Retrieval-augmented generation for knowledge-intensive NLP tasks. <i>NeurIPS</i>.</li>
+    <li>Geva et al. (2021). Transformer feed-forward layers are key-value memories. <i>EMNLP</i>.</li>
+    <li>Hu et al. (2021). LoRA: Low-rank adaptation of large language models. <i>arXiv:2106.09685</i> (ICLR 2022).</li>
+    <li>Hoffmann et al. (2022). Training compute-optimal large language models. <i>arXiv:2203.15556</i>.</li>
+    <li>Meng et al. (2022). Locating and editing factual associations in GPT. <i>NeurIPS</i>.</li>
+    <li>Ouyang et al. (2022). Training language models to follow instructions with human feedback. <i>NeurIPS</i>.</li>
+    <li>Wei et al. (2022). Chain-of-thought prompting elicits reasoning in large language models. <i>NeurIPS</i>.</li>
+    <li>Shi et al. (2023). Large language models can be easily distracted by irrelevant context. <i>ICML</i>.</li>
+    <li>Yao et al. (2023). ReAct: Synergizing reasoning and acting in language models. <i>ICLR</i>.</li>
+    <li>Packer et al. (2023). MemGPT: Towards LLMs as operating systems. <i>arXiv:2310.08560</i>.</li>
+    <li>Zheng et al. (2023). Judging LLM-as-a-judge with MT-Bench and Chatbot Arena. <i>NeurIPS</i>.</li>
+    <li>Liu et al. (2024). Lost in the middle: How language models use long contexts. <i>TACL</i>.</li>
+    <li>Ovadia et al. (2024). Fine-tuning or retrieval? Comparing knowledge injection in LLMs. <i>EMNLP</i>.</li>
+    <li>Gekhman et al. (2024). Does fine-tuning LLMs on new knowledge encourage hallucinations? <i>EMNLP</i>.</li>
+    <li>Sarthi et al. (2024). RAPTOR: Recursive abstractive processing for tree-organized retrieval. <i>ICLR</i>.</li>
+    <li>Edge et al. (2024). From local to global: A graph RAG approach to query-focused summarization. <i>arXiv:2404.16130</i>.</li>
+    <li>Xu et al. (2024). Knowledge conflicts for LLMs: A survey. <i>EMNLP</i>.</li>
+    <li>Anthropic (2024). Introducing contextual retrieval. Engineering blog.</li>
+    <li>Toulmin, S. (1958). <i>The Uses of Argument</i>. Cambridge University Press.</li>
+    <li>Dung, P. M. (1995). On the acceptability of arguments… <i>Artificial Intelligence</i> 77.</li>
+    <li>Groth, Gibson &amp; Velterop (2010). The anatomy of a nanopublication. <i>Information Services &amp; Use</i> 30.</li>
+    <li>Moreau &amp; Missier, eds. (2013). PROV-DM: The PROV data model. W3C Recommendation.</li>
+    <li>Clark, Ciccarese &amp; Goble (2014). Micropublications: a semantic model for claims, evidence, arguments and annotations in biomedical communications. <i>J. Biomedical Semantics</i> 5.</li>
+  </ol>
+  <p class="cap">Venues and years are given from memory of the literature; check the exact citation before using any of these in a manuscript.</p>
+</section>
+
+<footer>Interactive parts run entirely in your browser. Logits, attention weights, embeddings, the toy corpus and the A/B/C sources are illustrative and written for this lesson.</footer>
+</div>
+
+<script>
+(function(){
+const NS="http://www.w3.org/2000/svg";
+function el(tag,attrs,parent,text){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(text!=null)e.textContent=text;if(parent)parent.appendChild(e);return e;}
+function esc(s){return s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
+
+/* tokens */
+const toks=[["Wid",48213],["man",1290],["st",267],["ät",7641],["ten",2002],[" ferr",31045],["ite",635],[" forms",7739],[" at",520],[" 650",22542],[" °",6355],["C",34],[" in",304],[" Fe",3926],["-",12],["0",15],[".",13],["1",16],["C",34],["-",12],["1",16],[".",13],["5",20],["Mn",29984]];
+(function(){const g=document.getElementById("tokrow");let x=20;toks.forEach((t,i)=>{const w=Math.max(22,t[0].length*8.4+10);if(x+w>885)return;el("rect",{x,y:112,width:w-3,height:24,rx:3,class:i%2?"f-win s-honey":"f-panel s-rule"},g);el("text",{x:x+(w-3)/2,y:129,"text-anchor":"middle",class:"mono"},g,t[0].replace(/ /g,"·"));el("text",{x:x+(w-3)/2,y:156,"text-anchor":"middle",class:"mono tm",style:"font-size:9px"},g,t[1]);x+=w;});})();
+
+/* temperature */
+const cands=[["grain",5.0],["boundaries",3.1],["twin",1.6],["triple",1.1],["inclusions",0.5],["surfaces",0.2]];
+const bars=document.getElementById("bars"),tempIn=document.getElementById("temp"),tempV=document.getElementById("tempv");
+cands.forEach(c=>{const r=document.createElement("div");r.className="barrow";r.innerHTML=`<span class="tok">${c[0]}</span><span class="track"><span class="fill"></span></span><span class="pv"></span>`;bars.appendChild(r);});
+let probs=[];
+function updT(){const T=+tempIn.value;tempV.textContent=T.toFixed(2);const ex=cands.map(c=>Math.exp(c[1]/T));const s=ex.reduce((a,b)=>a+b,0);probs=ex.map(e=>e/s);[...bars.children].forEach((r,i)=>{r.querySelector(".fill").style.width=(probs[i]*100).toFixed(1)+"%";r.querySelector(".pv").textContent=(probs[i]*100).toFixed(1)+"%";r.classList.toggle("top",i===0);});}
+tempIn.addEventListener("input",updT);updT();
+document.getElementById("sample").addEventListener("click",()=>{let u=Math.random(),i=0;while(i<probs.length-1&&u>probs[i]){u-=probs[i];i++;}[...bars.children].forEach((r,j)=>r.classList.toggle("pick",j===i));document.getElementById("sampled").textContent=`Sampled "${cands[i][0]}" (p = ${(probs[i]*100).toFixed(1)}%)`;});
+
+/* attention */
+(function(){const g=document.getElementById("attn");const w=["The","ferrite","plate","grew","fast","because","it"];const xs=[];let x=20;w.forEach(t=>{xs.push(x+t.length*4.5);x+=t.length*9+16;});const sc=400/x;const X=xs.map(v=>20+(v-20)*sc*0.98);const wt=[0.04,0.18,0.55,0.12,0.03,0.05];
+w.slice(0,6).forEach((t,i)=>{const x1=X[6],x2=X[i];const h=Math.min(190,30+(x1-x2)*0.55);el("path",{d:`M${x1} 210 C ${x1} ${210-h}, ${x2} ${210-h}, ${x2} 210`,class:"f-none "+(i===2?"s-honey":"s-stable"),"stroke-width":(wt[i]*14+0.8).toFixed(1),"stroke-linecap":"round",opacity:i===2?1:0.8},g);});
+w.forEach((t,i)=>{el("text",{x:X[i],y:235,"text-anchor":"middle",class:i===6?"ta":(i===2?"":"tm"),style:"font-size:15px;font-weight:"+(i===6||i===2?"600":"400")},g,t);});
+el("text",{x:X[2],y:255,"text-anchor":"middle",class:"mono tm"},g,"0.55");})();
+
+/* layers */
+(function(){const g=document.getElementById("layers");for(let i=0;i<5;i++){const x=250+i*92;el("rect",{x,y:48,width:80,height:76,rx:4,class:"f-bg s-rule"},g);el("rect",{x:x+6,y:56,width:68,height:26,rx:3,class:"f-win s-honey"},g);el("text",{x:x+40,y:73,"text-anchor":"middle",style:"font-size:11px"},g,"attention");el("rect",{x:x+6,y:90,width:68,height:26,rx:3,class:"f-panel s-rule"},g);el("text",{x:x+40,y:107,"text-anchor":"middle",style:"font-size:11px"},g,"MLP");if(i<4)el("line",{x1:x+80,y1:86,x2:x+92,y2:86,class:"s-muted"},g);}el("text",{x:475,y:38,"text-anchor":"middle",class:"tm"},g,"× N layers");})();
+
+/* pipeline */
+(function(){const g=document.getElementById("pipe");const st=[["Pretraining","trillions of tokens","weeks, huge compute","f-grid s-rule"],["SFT","demonstrations","thousands of examples","f-bg s-rule"],["Preference tuning","ranked answers","RLHF / RLAIF / DPO","f-bg s-rule"],["Assistant","what you call","via the API","f-win s-honey"]];
+st.forEach((s,i)=>{const x=20+i*222;el("rect",{x,y:40,width:190,height:96,rx:6,class:s[3]},g);el("text",{x:x+95,y:70,"text-anchor":"middle",class:"h"},g,s[0]);el("text",{x:x+95,y:94,"text-anchor":"middle"},g,s[1]);el("text",{x:x+95,y:114,"text-anchor":"middle",class:"tm"},g,s[2]);if(i<3)el("line",{x1:x+192,y1:88,x2:x+218,y2:88,class:"s-muted","stroke-width":1.6,"marker-end":"url(#ah)"},g);});
+el("text",{x:20,y:166,class:"tm"},g,"Most knowledge enters here ↑");el("text",{x:242,y:166,class:"tm"},g,"Mostly behaviour, style and judgement enter in the later stages ↑");})();
+
+/* prompt labels */
+(function(){const g=document.getElementById("promptlabels");const L=[[46,"who"],[74,"what"],[102,"guard-rails"],[130,"show, don't tell"],[158,"knowledge goes here"],[186,"the actual ask"],[222,"shape of the answer"]];L.forEach(l=>{el("line",{x1:548,y1:l[0]-4,x2:600,y2:l[0]-4,class:"s-rule"},g);el("text",{x:608,y:l[0],class:l[1].startsWith("knowledge")?"ta":"tm"},g,l[1]);});})();
+
+/* context bar */
+(function(){const g=document.getElementById("ctxbar");const parts=[["system",6,"f-stable"],["tools",8,"f-grid"],["retrieved documents",40,"f-honey"],["history",22,"f-win"],["question",4,"f-amber"],["room for output",20,"f-bg"]];let x=20;const W=860;parts.forEach(p=>{const w=W*p[1]/100;el("rect",{x,y:40,width:w,height:40,class:p[2]+" s-rule"},g);if(w>50)el("text",{x:x+w/2,y:65,"text-anchor":"middle",class:"mono",style:"font-size:11px"},g,p[0]);else el("text",{x:x+w/2,y:100,"text-anchor":"middle",class:"mono tm",style:"font-size:11px"},g,p[0]);x+=w;});el("text",{x:20,y:28,class:"tm"},g,"One call's context window (illustrative proportions)");el("text",{x:880,y:28,"text-anchor":"end",class:"tm"},g,"limit →");el("text",{x:450,y:128,"text-anchor":"middle",class:"tm"},g,"Your knowledge representation competes for the same budget as everything else.");})();
+
+/* RAG diagrams */
+(function(){const off=document.getElementById("ragoff");const s1=[["papers (PDF)","f-bg s-rule"],["split into chunks","f-bg s-rule"],["embed each chunk","f-bg s-rule"],["vector index","f-win s-honey"]];s1.forEach((s,i)=>{const x=20+i*222;el("rect",{x,y:50,width:190,height:60,rx:5,class:s[1]},off);el("text",{x:x+95,y:85,"text-anchor":"middle"},off,s[0]);if(i<3)el("line",{x1:x+192,y1:80,x2:x+218,y2:80,class:"s-muted","stroke-width":1.5,"marker-end":"url(#ah)"},off);});
+const on=document.getElementById("ragon");const s2=[["question","f-bg s-rule",""],["embed question","f-bg s-rule",""],["nearest k chunks","f-win s-honey","similarity search"],["prompt = chunks + question","f-bg s-acc",""],["LLM answers","f-win s-honey","with citations"]];s2.forEach((s,i)=>{const x=20+i*176;el("rect",{x,y:200,width:156,height:64,rx:5,class:s[1]},on);el("text",{x:x+78,y:s[2]?228:236,"text-anchor":"middle",style:"font-size:12.5px"},on,s[0]);if(s[2])el("text",{x:x+78,y:248,"text-anchor":"middle",class:"tm",style:"font-size:12px"},on,s[2]);if(i<4)el("line",{x1:x+158,y1:232,x2:x+174,y2:232,class:"s-muted","stroke-width":1.5,"marker-end":"url(#ah)"},on);});
+el("path",{d:"M800 112 C 800 160, 450 150, 450 196",class:"f-none s-acc dash","stroke-width":1.4,"marker-end":"url(#aha)"},on);el("text",{x:640,y:142,class:"ta",style:"font-size:12px"},on,"lookup");
+el("text",{x:450,y:300,"text-anchor":"middle",class:"tm"},on,"The model's weights never change. Only the passages in its context do.");})();
+
+/* toy retriever */
+const corpus=[
+ ["A","Widmanstätten ferrite plates show surface relief consistent with a displacive shear mechanism."],
+ ["B","Widmanstätten ferrite plates thicken by the diffusional migration of ledges along the broad face."],
+ ["C","Plate lengthening rates of Widmanstätten ferrite are often modelled as carbon diffusion controlled."],
+ ["A","Allotriomorphic ferrite nucleates at prior austenite grain boundaries and grows along them."],
+ ["D","Manganese segregation to the moving interface produces solute drag and slows ferrite growth."],
+ ["D","Mn partitioning at the interface changes the effective driving force for ferrite growth."],
+ ["B","Sympathetic nucleation of ferrite plates on existing ferrite is reported in many low-carbon steels."],
+ ["E","Dilatometry measures the length change of a sample as austenite transforms to ferrite."],
+ ["C","The mechanism of Widmanstätten ferrite growth remains disputed between displacive and diffusional views."],
+ ["E","EBSD maps show orientation relationships between ferrite plates and the parent austenite grain."]];
+const queries=[
+ {q:"What controls Widmanstätten ferrite growth?",lesson:"The two chunks that actually take sides (A: displacive, B: diffusional) tie with less relevant ones and miss the top 3, while the Mn chunks get in on the word 'growth'. Try k = 5: even then only one side may make it. Retrieval ranks by shared words, not by stance, and deciding who disagrees is left entirely to the LLM."},
+ {q:"How does Mn affect ferrite growth?",lesson:"'Mn' and 'manganese' are different strings to a keyword retriever, so the manganese chunk relies on other shared words. Dense (embedding) retrieval handles synonyms better; hybrid systems combine both."},
+ {q:"Who disagrees about the mechanism, and why?",lesson:"The words 'disagree' and 'who' match nothing useful. Similarity search cannot select by stance, source or date unless those are written into the chunks or stored as structured fields."}];
+const stop=new Set("a an the of and or to by in on at as is are be for with what how who why does do about between along often many remains consistent effective".split(" "));
+function tokz(s){return s.toLowerCase().replace(/[^a-zäöü0-9 ]/g," ").split(/\s+/).filter(w=>w&&!stop.has(w)).map(w=>w.length>4&&w.endsWith("s")?w.slice(0,-1):w);}
+const docs=corpus.map(c=>tokz(c[1]));const df={};docs.forEach(d=>new Set(d).forEach(w=>df[w]=(df[w]||0)+1));
+function vec(t){const v={};t.forEach(w=>v[w]=(v[w]||0)+1);for(const w in v)v[w]*=Math.log((corpus.length+1)/((df[w]||0)+1))+1;return v;}
+function cos(a,b){let d=0,na=0,nb=0;for(const w in a){na+=a[w]*a[w];if(b[w])d+=a[w]*b[w];}for(const w in b)nb+=b[w]*b[w];return na&&nb?d/Math.sqrt(na*nb):0;}
+const dvec=docs.map(vec);let qi=0,K=3;
+const qb=document.getElementById("qbtns");queries.forEach((q,i)=>{const b=document.createElement("button");b.type="button";b.textContent=q.q;b.addEventListener("click",()=>{qi=i;runRag();});qb.appendChild(b);});
+document.querySelectorAll("[data-k]").forEach(b=>b.addEventListener("click",()=>{K=+b.dataset.k;document.querySelectorAll("[data-k]").forEach(x=>x.setAttribute("aria-pressed",x===b));runRag();}));
+function runRag(){[...qb.children].forEach((b,i)=>b.setAttribute("aria-pressed",i===qi));const qv=vec(tokz(queries[qi].q));const sc=dvec.map((d,i)=>[i,cos(qv,d)]).sort((a,b)=>b[1]-a[1]);const top=new Set(sc.slice(0,K).filter(s=>s[1]>0).map(s=>s[0]));
+const box=document.getElementById("chunks");box.innerHTML="";sc.forEach(([i,s])=>{const d=document.createElement("div");d.className="chunk"+(top.has(i)?" hit":"");d.innerHTML=`<span class="sc">${s.toFixed(2)}</span><span><span class="src">SOURCE ${corpus[i][0]} · chunk ${i+1}</span><br>${esc(corpus[i][1])}</span>`;box.appendChild(d);});
+const picked=sc.filter(s=>top.has(s[0]));document.getElementById("ragprompt").textContent="Answer using only the documents below. Cite them as [n].\n\n"+picked.map((s,n)=>`[${n+1}] ${corpus[s[0]][1]}`).join("\n")+`\n\nQuestion: ${queries[qi].q}`;document.getElementById("raglesson").textContent=queries[qi].lesson;}
+runRag();
+
+/* spectrum */
+const reps=[
+ {id:"param",name:"Weights only",short:"weights",chips:[],
+  body:`<pre>Prompt:  Widmanstätten ferrite grows by a ___ mechanism.
+
+Model's next-token probabilities (illustrative):
+  displacive    0.46
+  diffusional   0.31
+  shear         0.12
+  ledge         0.06
+  …</pre>`,
+  meta:[["Unit","distributed weights"],["Build cost","none for you (already trained)"],["Tokens in context","0"]],
+  note:"The whole debate is compressed into a probability split. You cannot see who holds each view, what evidence they used, or whether the split reflects the literature or just how often each word appeared online."},
+ {id:"chunk",name:"Raw chunks",short:"chunks",chips:["text of sources"],
+  body:`<pre>[1] Widmanstätten ferrite plates show surface relief
+    consistent with a displacive shear mechanism.
+[2] Plates thicken by the diffusional migration of
+    ledges along the broad face.
+[3] The mechanism remains disputed between displacive
+    and diffusional views.</pre>`,
+  meta:[["Unit","passage of text"],["Build cost","low (split and embed)"],["Tokens in context","~60"]],
+  note:"The evidence is here, but who wrote each chunk, when, and whether [2] was a reply to [1] is missing unless the chunk text happens to say so."},
+ {id:"summ",name:"Summary",short:"summary",chips:["text of sources","disagreement"],
+  body:`<pre>Summary of 12 papers:
+The growth mechanism of Widmanstätten ferrite is
+debated. One school cites surface relief as evidence
+of a displacive mechanism; another explains growth by
+diffusional ledge migration. Carbon diffusion control
+of lengthening is widely assumed in models.</pre>`,
+  meta:[["Unit","LLM-written synthesis"],["Build cost","medium (one LLM pass per group)"],["Tokens in context","~55"]],
+  note:"Compact and readable, and the disagreement is stated. But the summariser already made choices: which papers count as a 'school', what was dropped, and the citations have disappeared."},
+ {id:"rec",name:"Structured records",short:"records",chips:["text of sources","who said it","when","evidence type"],
+  body:`<pre>[
+ {"claim":"WF grows displacively","stance":"displacive",
+  "evidence":"surface relief","source":"A","year":"(yr A)"},
+ {"claim":"WF thickens by ledges","stance":"diffusional",
+  "evidence":"TEM of ledges","source":"B","year":"(yr B)"},
+ {"claim":"lengthening is C-diffusion controlled",
+  "stance":"model assumption","source":"C","year":"(yr C)"}
+]</pre>`,
+  meta:[["Unit","row / JSON object"],["Build cost","medium to high (schema + extraction)"],["Tokens in context","~110"]],
+  note:"Fields make source, date and evidence type explicit and filterable. The schema decides what can be said: a nuance with no field to go in is lost."},
+ {id:"kg",name:"Knowledge graph",short:"graph",chips:["who said it","relations between entities"],
+  body:`<div class="fig narrow"><svg viewBox="0 0 400 210" role="img" aria-label="Small knowledge graph with two conflicting growth_mechanism edges">
+   <rect x="140" y="88" width="120" height="34" rx="17" class="f-win s-honey"/><text x="200" y="110" text-anchor="middle">Widm. ferrite</text>
+   <rect x="10" y="10" width="110" height="30" rx="15" class="f-bg s-rule"/><text x="65" y="30" text-anchor="middle">displacive</text>
+   <rect x="280" y="10" width="110" height="30" rx="15" class="f-bg s-rule"/><text x="335" y="30" text-anchor="middle">diffusional</text>
+   <rect x="10" y="170" width="110" height="30" rx="15" class="f-bg s-rule"/><text x="65" y="190" text-anchor="middle">austenite</text>
+   <rect x="280" y="170" width="110" height="30" rx="15" class="f-bg s-rule"/><text x="335" y="190" text-anchor="middle">carbon</text>
+   <line x1="170" y1="88" x2="80" y2="42" class="s-acc" marker-end="url(#aha)"/><text x="80" y="66" class="mono" style="font-size:10px">mechanism [A]</text>
+   <line x1="230" y1="88" x2="320" y2="42" class="s-acc" marker-end="url(#aha)"/><text x="255" y="66" class="mono" style="font-size:10px">mechanism [B]</text>
+   <line x1="170" y1="122" x2="80" y2="168" class="s-muted" marker-end="url(#ah)"/><text x="40" y="150" class="mono tm" style="font-size:10px">forms_from</text>
+   <line x1="230" y1="122" x2="320" y2="168" class="s-muted" marker-end="url(#ah)"/><text x="290" y="150" class="mono tm" style="font-size:10px">rate_limited_by [C]</text>
+  </svg></div>
+<pre>(WidmanstättenFerrite, growth_mechanism, Displacive)  # src A
+(WidmanstättenFerrite, growth_mechanism, Diffusional) # src B
+(WidmanstättenFerrite, forms_from, Austenite)
+(PlateLengthening, rate_limited_by, CarbonDiffusion)  # src C</pre>`,
+  meta:[["Unit","triple (subject, relation, object)"],["Build cost","high (entity linking, relation extraction)"],["Tokens in context","~70 as triples"]],
+  note:"Two edges with the same relation and different objects make the conflict visible as structure, and retrieval can walk from 'Widmanstätten ferrite' to everything connected. Plain triples flatten the reasons and the evidence."},
+ {id:"arg",name:"Argument graph",short:"arguments",chips:["who said it","evidence type","disagreement","relations between claims"],
+  body:`<div class="fig narrow"><svg viewBox="0 0 400 220" role="img" aria-label="Argument graph: two claims attack each other, each supported by evidence">
+   <rect x="10" y="20" width="160" height="44" rx="4" class="f-win s-honey"/><text x="90" y="38" text-anchor="middle" style="font-size:12px">C1 · displacive [A]</text><text x="90" y="55" text-anchor="middle" class="tm" style="font-size:11px">claim</text>
+   <rect x="230" y="20" width="160" height="44" rx="4" class="f-win s-honey"/><text x="310" y="38" text-anchor="middle" style="font-size:12px">C2 · diffusional [B]</text><text x="310" y="55" text-anchor="middle" class="tm" style="font-size:11px">claim</text>
+   <rect x="10" y="150" width="160" height="44" rx="4" class="f-bg s-rule"/><text x="90" y="168" text-anchor="middle" style="font-size:12px">E1 · surface relief</text><text x="90" y="185" text-anchor="middle" class="tm" style="font-size:11px">evidence</text>
+   <rect x="230" y="150" width="160" height="44" rx="4" class="f-bg s-rule"/><text x="310" y="168" text-anchor="middle" style="font-size:12px">E2 · TEM ledges</text><text x="310" y="185" text-anchor="middle" class="tm" style="font-size:11px">evidence</text>
+   <line x1="90" y1="148" x2="90" y2="68" class="s-muted" marker-end="url(#ah)"/><text x="96" y="110" class="mono tm" style="font-size:10px">supports</text>
+   <line x1="310" y1="148" x2="310" y2="68" class="s-muted" marker-end="url(#ah)"/><text x="316" y="110" class="mono tm" style="font-size:10px">supports</text>
+   <line x1="172" y1="36" x2="226" y2="36" class="s-rust" marker-end="url(#ahr)" marker-start="url(#ahr)"/><text x="200" y="28" text-anchor="middle" class="mono tr" style="font-size:10px">attacks</text>
+   <line x1="292" y1="148" x2="150" y2="68" class="s-rust dash" marker-end="url(#ahr)"/><text x="200" y="128" class="mono tr" style="font-size:10px">B: relief ≠ shear</text>
+  </svg></div>`,
+  meta:[["Unit","claim + support / attack links"],["Build cost","high (needs expert or careful LLM annotation)"],["Tokens in context","~90 serialised"]],
+  note:"The structure of the debate is the representation: which evidence supports which claim, and which claims attack which. Formal argumentation (Dung, 1995) can even compute which claims survive. Time and the history of who replied to whom are not built in."},
+ {id:"prov",name:"Provenance record",short:"provenance",chips:["who said it","when","evidence type","how it was derived"],
+  body:`<pre>entity    claim:C1  "WF grows displacively"
+  wasDerivedFrom   data:relief_measurements
+  wasGeneratedBy   activity:interferometry_study
+  wasAttributedTo  agent:group_A
+  generatedAtTime  (yr A)
+
+activity  interferometry_study
+  used      sample:Fe-C-X, heat_treatment:isothermal
+  wasAssociatedWith agent:group_A</pre>`,
+  meta:[["Unit","entity, activity, agent (W3C PROV)"],["Build cost","high"],["Tokens in context","~80 per claim"]],
+  note:"Provenance answers 'where did this come from and how was it produced?' for every claim, down to sample and method. On its own it does not say how claims relate to each other."},
+ {id:"time",name:"Temporal / versioned",short:"timeline",chips:["who said it","when","disagreement","change over time"],
+  body:`<div class="fig narrow"><svg viewBox="0 0 400 170" role="img" aria-label="Timeline of positions by sources A, B, C with validity intervals">
+   <line x1="20" y1="140" x2="390" y2="140" class="s-rule"/>
+   <text x="20" y="160" class="tm mono" style="font-size:10px">earlier</text><text x="390" y="160" text-anchor="end" class="tm mono" style="font-size:10px">later</text>
+   <rect x="40" y="20" width="250" height="20" rx="3" class="f-honey"/><text x="48" y="34" style="font-size:11px">A: displacive</text>
+   <rect x="120" y="55" width="270" height="20" rx="3" class="f-amber"/><text x="128" y="69" style="font-size:11px">B: diffusional ledges</text>
+   <rect x="210" y="90" width="120" height="20" rx="3" class="f-stable"/><text x="218" y="104" style="font-size:11px">C: model v1</text>
+   <rect x="330" y="90" width="60" height="20" rx="3" class="f-win s-honey"/><text x="336" y="104" style="font-size:11px">C: v2</text>
+   <line x1="290" y1="44" x2="290" y2="136" class="s-muted dash"/><text x="286" y="128" text-anchor="end" class="tm" style="font-size:10px">A revised</text>
+  </svg></div>
+<pre>C1 [A]  valid (yr1)–(yr3)   then revised by A
+C2 [B]  valid (yr2)–now
+C3 [C]  v1 (yr4)–(yr5)  superseded by v2</pre>`,
+  meta:[["Unit","fact with a validity interval or version"],["Build cost","high (dating and linking versions)"],["Tokens in context","~70"]],
+  note:"Time becomes explicit: what was believed when, what was revised, what superseded what. Plain retrieval treats a 1970 claim and its 2015 revision as two equally valid chunks."}];
+const allChips=["text of sources","who said it","when","evidence type","disagreement","relations between entities","relations between claims","how it was derived","change over time"];
+(function(){const g=document.getElementById("specticks");reps.forEach((r,i)=>{const x=40+i*(820/7);el("circle",{cx:x,cy:77,r:7,class:"f-panel s-ink","stroke-width":1.5},g);el("text",{x,y:110,"text-anchor":"middle",class:"mono",style:"font-size:11px"},g,r.short);});
+el("text",{x:450,y:150,"text-anchor":"middle",class:"tm"},g,"Richer structure makes more of the knowledge explicit, and costs more effort to build and more tokens to serialise.");
+el("text",{x:450,y:172,"text-anchor":"middle",class:"tm"},g,"Real systems mix several: e.g. chunks with provenance fields, or a graph whose nodes link back to passages.");})();
+const tabs=document.getElementById("reptabs");let cur=0;
+reps.forEach((r,i)=>{const b=document.createElement("button");b.type="button";b.setAttribute("role","tab");b.textContent=r.name;b.addEventListener("click",()=>{cur=i;showRep();});tabs.appendChild(b);});
+function showRep(){const r=reps[cur];[...tabs.children].forEach((b,i)=>{b.setAttribute("aria-pressed",i===cur);b.setAttribute("aria-selected",i===cur);});document.getElementById("repbody").innerHTML=r.body;
+document.getElementById("repchips").innerHTML=allChips.map(c=>`<span class="chip${r.chips.includes(c)?" on":""}">${c}</span>`).join("");
+document.getElementById("repmeta").innerHTML=r.meta.map(m=>`<dt>${m[0]}</dt><dd>${m[1]}</dd>`).join("");document.getElementById("repnote").textContent=r.note;}
+showRep();
+
+/* agent trace */
+const trace=[
+ {who:"user",txt:"Which papers in my library argue against a displacive mechanism for Widmanstätten ferrite?"},
+ {who:"assistant · thinking",txt:"I need to search the library, then read the hits. Plan: 1) search 2) open the top results 3) answer with citations."},
+ {who:"assistant · tool call",tool:true,txt:'{"name":"search_papers","input":{"query":"Widmanstätten ferrite growth mechanism diffusional ledge","limit":5}}'},
+ {who:"tool result (your code ran the search)",tool:true,txt:'[{"id":"B","title":"…ledge migration…"},{"id":"C","title":"…lengthening kinetics…"},{"id":"F","title":"…review…"}]'},
+ {who:"assistant · tool call",tool:true,txt:'{"name":"read_paper","input":{"id":"B","section":"discussion"}}'},
+ {who:"tool result",tool:true,txt:'"…the observed relief can arise from a ledge mechanism without lattice-invariant shear…"'},
+ {who:"assistant",txt:"Source B argues against the displacive view, explaining the relief by ledge migration [B, Discussion]. Source C models lengthening with carbon diffusion but does not take a mechanism stance. I have not read F yet; want me to?"}];
+let ag=1;const agBox=document.getElementById("agmsgs");
+function showAg(){agBox.innerHTML="";trace.slice(0,ag).forEach((m,i)=>{const d=document.createElement("div");d.className="msg"+(m.tool?" tool":"")+(i===ag-1?" new":"");d.innerHTML=`<span class="who">${esc(m.who)}</span>`+(m.tool?`<pre>${esc(m.txt)}</pre>`:`<span>${esc(m.txt)}</span>`);agBox.appendChild(d);});document.getElementById("agstep").textContent=`Step ${ag} of ${trace.length}. Every box above is re-sent to the model on the next call.`;document.getElementById("agprev").disabled=ag<=1;document.getElementById("agnext").disabled=ag>=trace.length;}
+document.getElementById("agnext").addEventListener("click",()=>{if(ag<trace.length){ag++;showAg();}});document.getElementById("agprev").addEventListener("click",()=>{if(ag>1){ag--;showAg();}});showAg();
+})();
+</script>
+<script>
+(function(){
+const NS="http://www.w3.org/2000/svg";
+function el(t,a,p,x){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(x!=null)e.textContent=x;if(p)p.appendChild(e);return e;}
+
+/* four axes */
+(function(){const g=document.getElementById("axes4");if(!g)return;
+const axes=[
+ ["Where the knowledge sits","in the weights","outside the model",[0.02,0.80,0.95]],
+ ["How formal the structure is","free-running prose","typed, with a schema",[0.05,0.22,0.95]],
+ ["Can you point at one unit and date it?","no units at all","per claim, with a date",[0.02,0.52,0.96]],
+ ["Does the model reason over the structure?","no, it reads tokens","no, it reads tokens",[0.14,0.22,0.30]]];
+const sys=[["parametric","f-stable","s-stable"],["RAG","f-amber","s-amber"],["graph","f-honey","s-honey"]];
+axes.forEach((ax,i)=>{const y=52+i*86+(i===3?14:0);
+ el("text",{x:20,y:y-(i===3?36:16),class:"h",style:"font-size:14px"},g,ax[0]);
+ el("line",{x1:220,y1:y,x2:760,y2:y,class:"s-rule","stroke-width":2},g);
+ el("text",{x:214,y:y+5,"text-anchor":"end",class:"tm",style:"font-size:11px"},g,ax[1]);
+ el("text",{x:768,y:y+5,class:"tm",style:"font-size:11px"},g,ax[2]);
+ ax[3].forEach((v,j)=>{const x=220+v*540;const up=j===1?-1:1;
+  el("circle",{cx:x,cy:y,r:6,class:sys[j][1]+" s-rule","stroke-width":1.2},g);
+  el("line",{x1:x,y1:y+(up<0?-6:6),x2:x,y2:y+up*16,class:sys[j][2]},g);
+  el("text",{x:x,y:y+(up<0?-20:30),"text-anchor":"middle",class:"mono",style:"font-size:11px"},g,sys[j][0]);});
+ if(i===3){el("rect",{x:240,y:y-24,width:185,height:56,rx:4,class:"f-none s-rust dash"},g);el("text",{x:440,y:y+5,class:"tr",style:"font-size:12px"},g,"all three collapse to the left");}
+});})();
+
+/* three paths */
+(function(){const g=document.getElementById("threepaths");if(!g)return;
+const rows=[
+ {y:40,name:"Parametric",col:"f-bg",steps:[["question","f-bg"]],mid:null,note:"Nothing is selected, because nothing is addressable."},
+ {y:170,name:"RAG",col:"f-bg",steps:[["question","f-bg"],["embed → nearest k","f-bg"],["k passages","f-amber"]],mid:"similarity over words",note:"Selection is by surface similarity. Structure: none."},
+ {y:300,name:"Knowledge graph",col:"f-bg",steps:[["question","f-bg"],["query / traverse","f-bg"],["subgraph → serialise","f-honey"]],mid:"filter by source, date, relation",note:"Selection can use structure. Then it becomes prose anyway."}];
+rows.forEach(r=>{
+ el("text",{x:20,y:r.y+6,class:"h",style:"font-size:15px"},g,r.name);
+ let x=190;r.steps.forEach((s,i)=>{const w=i===0?92:150;
+  el("rect",{x,y:r.y-18,width:w,height:40,rx:4,class:s[1]+" s-rule"},g);
+  el("text",{x:x+w/2,y:r.y+6,"text-anchor":"middle",style:"font-size:12.5px"},g,s[0]);
+  x+=w;el("line",{x1:x,y1:r.y+2,x2:x+18,y2:r.y+2,class:"s-muted","marker-end":"url(#ah)"},g);x+=20;});
+ if(r.mid)el("text",{x:282,y:r.y+38,class:"tm",style:"font-size:11px"},g,r.mid);
+ el("line",{x1:x-20,y1:r.y+2,x2:688,y2:r.y+2,class:"s-acc","stroke-width":1.6,"marker-end":"url(#aha)"},g);
+ el("text",{x:(x+688)/2,y:r.y-8,"text-anchor":"middle",class:"mono ta",style:"font-size:11px"},g,"tokens");
+ el("text",{x:190,y:r.y+(r.steps.length>1?56:38),class:"tm",style:"font-size:11.5px"},g,r.note);});
+el("rect",{x:692,y:22,width:120,height:300,rx:6,class:"f-win s-honey"},g);
+el("text",{x:752,y:160,"text-anchor":"middle",class:"h"},g,"the same");
+el("text",{x:752,y:180,"text-anchor":"middle",class:"h"},g,"fixed model");
+el("text",{x:752,y:206,"text-anchor":"middle",class:"tm",style:"font-size:11px"},g,"reads a string");
+el("text",{x:752,y:222,"text-anchor":"middle",class:"tm",style:"font-size:11px"},g,"of tokens");
+el("text",{x:830,y:160,class:"tm",style:"font-size:12px"},g,"answer");
+el("line",{x1:815,y1:172,x2:862,y2:172,class:"s-muted","marker-end":"url(#ah)"},g);
+el("text",{x:450,y:400,"text-anchor":"middle",class:"tm"},g,"The difference between the three is entirely in what happens to the left of that box.");})();
+
+/* hedging */
+(function(){const g=document.getElementById("hedge");if(!g)return;
+el("rect",{x:20,y:30,width:270,height:150,rx:5,class:"f-bg s-rule"},g);
+el("text",{x:34,y:22,class:"mono tm",style:"font-size:11px"},g,"AS WRITTEN");
+el("text",{x:34,y:56,style:"font-size:12.5px"},g,"“At low undercooling the plates");
+el("text",{x:34,y:74,style:"font-size:12.5px"},g,"appear to lengthen at a rate");
+el("text",{x:34,y:92,style:"font-size:12.5px"},g,"consistent with carbon diffusion");
+el("text",{x:34,y:110,style:"font-size:12.5px"},g,"control, although the measured");
+el("text",{x:34,y:128,style:"font-size:12.5px"},g,"rates scatter by a factor of three.”");
+el("text",{x:34,y:158,class:"tm",style:"font-size:11px"},g,"condition, hedge, caveat, all present");
+el("line",{x1:296,y1:100,x2:316,y2:100,class:"s-rust","marker-end":"url(#ahr)"},g);
+el("rect",{x:322,y:60,width:230,height:76,rx:5,class:"f-bg s-rust"},g);
+el("text",{x:336,y:52,class:"mono tr",style:"font-size:11px"},g,"AS A BARE TRIPLE");
+el("text",{x:336,y:88,class:"mono",style:"font-size:11.5px"},g,"(PlateLengthening,");
+el("text",{x:336,y:106,class:"mono",style:"font-size:11.5px"},g,"  rate_limited_by,");
+el("text",{x:336,y:124,class:"mono",style:"font-size:11.5px"},g,"  CarbonDiffusion)");
+el("text",{x:336,y:158,class:"tr",style:"font-size:11.5px"},g,"condition, hedge and caveat: gone");
+el("line",{x1:558,y1:100,x2:578,y2:100,class:"s-honey","marker-end":"url(#aha)"},g);
+el("rect",{x:584,y:30,width:296,height:150,rx:5,class:"f-win s-honey"},g);
+el("text",{x:598,y:22,class:"mono ta",style:"font-size:11px"},g,"AS A QUALIFIED RECORD");
+el("text",{x:598,y:52,class:"mono",style:"font-size:11px"},g,"claim: rate_limited_by(C diffusion)");
+el("text",{x:598,y:70,class:"mono",style:"font-size:11px"},g,"holds_under: low undercooling");
+el("text",{x:598,y:88,class:"mono",style:"font-size:11px"},g,"strength: consistent_with");
+el("text",{x:598,y:106,class:"mono",style:"font-size:11px"},g,"caveat: scatter x3");
+el("text",{x:598,y:124,class:"mono",style:"font-size:11px"},g,"asserted_by: group C, (year)");
+el("text",{x:598,y:142,class:"mono",style:"font-size:11px"},g,"derived_from: passage p17");
+el("text",{x:598,y:170,class:"tm",style:"font-size:11px"},g,"queryable and faithful, and far more work");})();
+
+/* hybrid */
+(function(){const g=document.getElementById("hybrid");if(!g)return;
+el("rect",{x:20,y:40,width:150,height:60,rx:5,class:"f-bg s-rule"},g);
+el("text",{x:95,y:68,"text-anchor":"middle",style:"font-size:13px"},g,"question");
+el("text",{x:95,y:86,"text-anchor":"middle",class:"tm",style:"font-size:11px"},g,"who disagrees, and why?");
+el("line",{x1:172,y1:70,x2:196,y2:70,class:"s-muted","marker-end":"url(#ah)"},g);
+el("rect",{x:200,y:30,width:230,height:80,rx:5,class:"f-win s-honey"},g);
+el("text",{x:315,y:56,"text-anchor":"middle",class:"h",style:"font-size:14px"},g,"structure does the finding");
+el("text",{x:315,y:76,"text-anchor":"middle",class:"tm",style:"font-size:11.5px"},g,"filter by stance, source, date;");
+el("text",{x:315,y:93,"text-anchor":"middle",class:"tm",style:"font-size:11.5px"},g,"traverse, group, count");
+el("line",{x1:432,y1:70,x2:456,y2:70,class:"s-acc","stroke-width":1.6,"marker-end":"url(#aha)"},g);
+el("rect",{x:460,y:30,width:230,height:80,rx:5,class:"f-bg s-acc"},g);
+el("text",{x:575,y:56,"text-anchor":"middle",class:"h",style:"font-size:14px"},g,"prose does the carrying");
+el("text",{x:575,y:76,"text-anchor":"middle",class:"tm",style:"font-size:11.5px"},g,"the original passages each");
+el("text",{x:575,y:93,"text-anchor":"middle",class:"tm",style:"font-size:11.5px"},g,"node points back to");
+el("line",{x1:692,y1:70,x2:716,y2:70,class:"s-muted","marker-end":"url(#ah)"},g);
+el("rect",{x:720,y:30,width:160,height:80,rx:5,class:"f-win s-honey"},g);
+el("text",{x:800,y:66,"text-anchor":"middle",class:"h",style:"font-size:14px"},g,"model");
+el("text",{x:800,y:86,"text-anchor":"middle",class:"tm",style:"font-size:11px"},g,"reads both");
+el("rect",{x:200,y:140,width:490,height:56,rx:5,class:"f-bg s-rule dash"},g);
+el("text",{x:445,y:164,"text-anchor":"middle",style:"font-size:12.5px"},g,"The structure is also what you audit the answer against afterwards:");
+el("text",{x:445,y:184,"text-anchor":"middle",style:"font-size:12.5px"},g,"every cited claim should resolve to a node, and every node to a passage.");
+el("line",{x1:315,y1:112,x2:315,y2:136,class:"s-muted dash","marker-end":"url(#ah)"},g);
+el("line",{x1:575,y1:112,x2:575,y2:136,class:"s-muted dash","marker-end":"url(#ah)"},g);
+el("text",{x:450,y:228,"text-anchor":"middle",class:"tm"},g,"Hybrid: structure for selection and audit, prose for nuance. This is roughly what GraphRAG does.");})();
+})();
+</script>
+</body>
+</html>
